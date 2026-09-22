@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Secretos y credenciales: nunca al repo
+.env
+.env.*
+!.env.example
+wallet/
+*.pem
+*.key
+.oci/
+.streamlit/secrets.toml
+
+# Datos locales y salidas
+evals/output/
+evals/cache/
+*.log
+tmp/
+
+# Sistema
+.DS_Store
+.idea/
+.vscode/
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md

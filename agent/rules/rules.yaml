@@ -1,0 +1,50 @@
+# Reglas de triaje. En el sprint 3 se leen desde la tabla rules de ADB y se editan desde la UI.
+umbrales:
+  automatico: 0.85          # score >= automatico: enrutamiento sin revisión
+  segunda_opinion: 0.60     # entre segunda_opinion y automatico: segundo modelo
+  legibilidad_minima: 0.40  # debajo: revisión humana con motivo "ilegible"
+
+tipos_documento:
+  - Receta Medica
+  - Informe de Estudio por Imagenes
+  - Informe de Laboratorio
+  - Orden de Solicitud de Procedimiento
+  - Epicrisis
+  - Certificado Medico
+  - Otro
+
+destinos:
+  urgencia: Cola_Emergencia_Medica
+  revision: Cola_Revision_Humana
+  por_tipo:
+    Receta Medica: Farmacia_Hospitalaria
+    Informe de Estudio por Imagenes: Historia_Clinica_Electronica
+    Informe de Laboratorio: Historia_Clinica_Electronica
+    Orden de Solicitud de Procedimiento: Auditoria_Autorizaciones
+    Epicrisis: Historia_Clinica_Electronica
+    Certificado Medico: Historia_Clinica_Electronica
+    Otro: Cola_Revision_Humana
+
+hallazgos_criticos:
+  - tromboembolismo pulmonar
+  - tep agudo
+  - infarto agudo de miocardio
+  - accidente cerebrovascular
+  - sepsis
+  - neumotorax a tension
+  - hemorragia activa
+  - hiperpotasemia severa
+
+palabras_urgencia:
+  - urgente
+  - inmediato
+  - critico
+  - emergencia
+
+medicamentos_alto_riesgo:
+  - warfarina
+  - heparina
+  - insulina
+  - morfina
+  - fentanilo
+  - metotrexato

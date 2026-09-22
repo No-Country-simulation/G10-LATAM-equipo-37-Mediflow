@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = [".venv", "evals/output"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["B008"]  # File(...) y Form(...) de FastAPI
+
+[tool.pytest.ini_options]
+testpaths = ["agent/tests", "api/tests"]
