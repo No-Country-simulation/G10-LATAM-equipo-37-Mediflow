@@ -1,5 +1,21 @@
 <div align="center">
 
+# MediFlow
+
+### Agente autónomo para triaje, extracción y enrutamiento de documentos clínicos
+
+Hackathon ONE G10 · Oracle Next Education & Alura · Equipo 37
+
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-grafo%20de%20decisi%C3%B3n-1C3C3C)](https://github.com/langchain-ai/langgraph)
+[![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-UI-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![OCI](https://img.shields.io/badge/Oracle%20Cloud-Always%20Free-C74634?logo=oracle&logoColor=white)](https://www.oracle.com/cloud/free/)
+[![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)](#estado-del-proyecto)
+[![Licencia](https://img.shields.io/badge/licencia-MIT-blue)](LICENSE)
+
+</div>
+
 ---
 
 MediFlow recibe documentos clínicos en PDF, imagen, texto o JSON, los clasifica, extrae los datos esenciales en JSON validado, calcula un score de confianza, detecta urgencias y los enruta al destino correcto sin intervención manual para los casos estándar. Los casos ambiguos, inconsistentes o ilegibles van a un auditor humano. Los documentos y las decisiones se persisten en OCI Object Storage, y el sistema completo corre en la capa Always Free de Oracle Cloud.
@@ -48,14 +64,14 @@ Tres ejemplos de lo que le llega: el informe en PDF que exporta el sistema de im
 
 MediFlow hace triaje documental, no triaje clínico. No diagnostica: detecta que un documento ya dice algo urgente y lo mueve rápido. En el primer ejemplo, el tromboembolismo lo diagnosticó el radiólogo; lo que MediFlow evita es que ese informe espere seis horas en una bandeja.
 
-| Dimensión                 | Dentro de alcance                                                                | Fuera de alcance                                         |
-| -------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Qué lee                   | Recetas, informes de estudio, órdenes de procedimiento, epicrisis, certificados | Radiografías, resonancias, tomografías, archivos DICOM |
-| En qué formato            | PDF nativo, PDF escaneado, foto de un papel, texto, JSON                         | Imagen médica cruda para interpretación diagnóstica   |
-| Qué decide                | A qué cola va el documento y con qué prioridad                                 | Qué tiene el paciente                                   |
-| De dónde sale la urgencia | De lo que el documento ya dice o de un valor crítico de laboratorio             | De interpretar una imagen médica                        |
-| Quién lo usa              | Equipo administrativo, auditor clínico, gestor hospitalario                     | El médico durante la consulta                           |
-| Contra qué compite        | OCR tradicional y transcripción manual                                          | Software de diagnóstico asistido                        |
+| Dimensión | Dentro de alcance | Fuera de alcance |
+|---|---|---|
+| Qué lee | Recetas, informes de estudio, órdenes de procedimiento, epicrisis, certificados | Radiografías, resonancias, tomografías, archivos DICOM |
+| En qué formato | PDF nativo, PDF escaneado, foto de un papel, texto, JSON | Imagen médica cruda para interpretación diagnóstica |
+| Qué decide | A qué cola va el documento y con qué prioridad | Qué tiene el paciente |
+| De dónde sale la urgencia | De lo que el documento ya dice o de un valor crítico de laboratorio | De interpretar una imagen médica |
+| Quién lo usa | Equipo administrativo, auditor clínico, gestor hospitalario | El médico durante la consulta |
+| Contra qué compite | OCR tradicional y transcripción manual | Software de diagnóstico asistido |
 
 Un sistema que mira una radiografía y emite un juicio diagnóstico es un dispositivo médico, con las exigencias regulatorias que eso implica. MediFlow se mantiene deliberadamente de este lado de la línea, y por eso el Human-in-the-Loop es parte del diseño y no un extra.
 
@@ -83,11 +99,11 @@ Principios que gobiernan el diseño:
 
 Hay tres vías, y el bucket es la bandeja de entrada universal: cualquier canal nuevo solo necesita dejar el archivo en `recibidos/` para que el agente lo procese, sin escribir código específico para ese canal.
 
-| Vía                                         | Quién la usa                                                                                                      | Papel en producción                                                                 |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| Pantalla de carga en Streamlit               | Una persona administrativa sube el documento a mano                                                                | La excepción: sirve para lo que llega suelto, un papel que trae el paciente, un fax |
-| API,`POST /triage`                         | Otro sistema empuja el documento apenas se genera: laboratorio, imágenes, o el motor de integración del hospital | La vía principal. Es también la que exige el brief                                 |
-| Carpeta vigilada,`recibidos/` en el bucket | Cualquier proceso que deje un archivo ahí                                                                         | La más habitual en un hospital real                                                 |
+| Vía | Quién la usa | Papel en producción |
+|---|---|---|
+| Pantalla de carga en Streamlit | Una persona administrativa sube el documento a mano | La excepción: sirve para lo que llega suelto, un papel que trae el paciente, un fax |
+| API, `POST /triage` | Otro sistema empuja el documento apenas se genera: laboratorio, imágenes, o el motor de integración del hospital | La vía principal. Es también la que exige el brief |
+| Carpeta vigilada, `recibidos/` en el bucket | Cualquier proceso que deje un archivo ahí | La más habitual en un hospital real |
 
 Ejemplos de canales que se conectan a la tercera vía sin tocar el código del agente: el escáner de admisiones guardando en una carpeta de red sincronizada al bucket, un buzón de correo institucional cuyos adjuntos se depositan automáticamente, o un webhook de mensajería que deja la foto que envió el auxiliar de farmacia.
 
@@ -95,14 +111,14 @@ El worker vigila `recibidos/` de forma continua, así que el documento queda gua
 
 ## Formatos de entrada
 
-| Entrada                                               | Qué hace el sistema                                                                                                                                                                                                                |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PDF con capa de texto                                 | Extrae el texto directamente, sin usar visión. Es el camino más rápido y barato                                                                                                                                                  |
-| PDF escaneado                                         | Renderiza las páginas a imagen y las envía al modelo multimodal                                                                                                                                                                   |
-| Imagen (foto de receta manuscrita, informe escaneado) | Va directo al modelo multimodal                                                                                                                                                                                                     |
-| Texto plano                                           | Entra al grafo sin normalización previa                                                                                                                                                                                            |
-| JSON                                                  | Payload que envía otro sistema (HIS, laboratorio, formulario web o un flujo previo). Se valida contra el contrato y entra al grafo. Aquí el valor no es extraer, es clasificar, validar consistencia, detectar urgencia y enrutar |
-| Cualquiera de los anteriores, ilegible                | Mejora de imagen y un reintento. Si sigue ilegible, Cola de Revisión Humana con motivo "solicitar nueva captura". Nunca se inventan datos                                                                                          |
+| Entrada | Qué hace el sistema |
+|---|---|
+| PDF con capa de texto | Extrae el texto directamente, sin usar visión. Es el camino más rápido y barato |
+| PDF escaneado | Renderiza las páginas a imagen y las envía al modelo multimodal |
+| Imagen (foto de receta manuscrita, informe escaneado) | Va directo al modelo multimodal |
+| Texto plano | Entra al grafo sin normalización previa |
+| JSON | Payload que envía otro sistema (HIS, laboratorio, formulario web o un flujo previo). Se valida contra el contrato y entra al grafo. Aquí el valor no es extraer, es clasificar, validar consistencia, detectar urgencia y enrutar |
+| Cualquiera de los anteriores, ilegible | Mejora de imagen y un reintento. Si sigue ilegible, Cola de Revisión Humana con motivo "solicitar nueva captura". Nunca se inventan datos |
 
 ## Arquitectura
 
@@ -121,17 +137,17 @@ flowchart LR
     DB --> UI
 ```
 
-| Capa          | Tecnología                                                                                                                                                                               |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Orquestación | LangGraph, grafo con nodos y aristas condicionales y estado tipado                                                                                                                        |
-| Modelo        | LLM multimodal con adaptador único y cadena de respaldo ante fallos del proveedor                                                                                                        |
-| Validación   | Pydantic, un esquema por tipo de documento y contrato de entrada y salida                                                                                                                 |
-| API           | FastAPI                                                                                                                                                                                   |
-| Interfaz      | Streamlit: carga, cola de triaje, auditoría, reglas, métricas y trazas                                                                                                                  |
-| Documentos    | OCI Object Storage, Always Free                                                                                                                                                           |
-| Cómputo      | VM Ampere A1 en OCI, Always Free, con Docker Compose y Nginx como servidor web de entrada (recibe las peticiones, gestiona el certificado HTTPS y las reparte entre la API y la interfaz) |
-| Alertas       | OCI Notifications, Always Free                                                                                                                                                            |
-| CI/CD         | GitHub Actions, despliegue automático en cada merge a`main`                                                                                                                            |
+| Capa | Tecnología |
+|---|---|
+| Orquestación | LangGraph, grafo con nodos y aristas condicionales y estado tipado |
+| Modelo | LLM multimodal con adaptador único y cadena de respaldo ante fallos del proveedor |
+| Validación | Pydantic, un esquema por tipo de documento y contrato de entrada y salida |
+| API | FastAPI |
+| Interfaz | Streamlit: carga, cola de triaje, auditoría, reglas, métricas y trazas |
+| Documentos | OCI Object Storage, Always Free |
+| Cómputo | VM Ampere A1 en OCI, Always Free, con Docker Compose y Nginx como servidor web de entrada (recibe las peticiones, gestiona el certificado HTTPS y las reparte entre la API y la interfaz) |
+| Alertas | OCI Notifications, Always Free |
+| CI/CD | GitHub Actions, despliegue automático en cada merge a `main` |
 
 ## Grafo de decisión
 
@@ -187,15 +203,15 @@ flowchart TD
     class P persist
 ```
 
-| Color           | Qué significa                                                                                                                                              |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Gris azulado    | Paso de procesamiento automático                                                                                                                           |
-| Amarillo, rombo | Decisión que toma el sistema                                                                                                                               |
-| Lila, rombo     | Decisión que toma una persona                                                                                                                              |
-| Verde           | Destino final. El documento llega y no necesita a nadie más                                                                                                |
-| Ámbar          | Destino con marca de auditoría. El documento llega igual, y la línea punteada muestra que después pasa por la decisión del auditor, sin haberse frenado |
-| Rojo            | Se detiene. Nadie lo recibe hasta que un humano decida, o queda rechazado                                                                                   |
-| Azul oscuro     | Persistencia en Object Storage. Ocurre siempre, en todos los caminos                                                                                        |
+| Color | Qué significa |
+|---|---|
+| Gris azulado | Paso de procesamiento automático |
+| Amarillo, rombo | Decisión que toma el sistema |
+| Lila, rombo | Decisión que toma una persona |
+| Verde | Destino final. El documento llega y no necesita a nadie más |
+| Ámbar | Destino con marca de auditoría. El documento llega igual, y la línea punteada muestra que después pasa por la decisión del auditor, sin haberse frenado |
+| Rojo | Se detiene. Nadie lo recibe hasta que un humano decida, o queda rechazado |
+| Azul oscuro | Persistencia en Object Storage. Ocurre siempre, en todos los caminos |
 
 **Dos formas de intervención humana, y no son lo mismo.** Las dos las hace la misma persona, el auditor clínico, desde la misma pantalla. Lo que cambia es el momento.
 
@@ -218,12 +234,12 @@ Las reglas que alimentan el grafo (umbrales, destinos, hallazgos críticos, valo
 
 ## Escenarios de demostración
 
-| Escenario   | Entrada                                                   | Resultado esperado                                                                                                                                                              |
-| ----------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rutina      | Certificado médico en PDF                                | Historia Clínica Electrónica, sin auditoría, objeto en`procesados/historia_clinica/`                                                                                       |
-| Urgencia    | Informe de tomografía con tromboembolismo pulmonar agudo | Cola de Emergencia Médica, alerta enviada, objeto en`procesados/urgentes/`                                                                                                   |
-| Ambigüedad | Foto de receta manuscrita con dosis dudosa                | Cola de Revisión Humana. Si el auditor corrige, el documento se reencamina a Farmacia; si lo rechaza, termina en`rechazados/` y no continúa hacia ningún destino operativo |
-| Alto riesgo | Receta con anticoagulante                                 | Farmacia Hospitalaria con`requiere_auditoria_humana: true`. El alto riesgo farmacológico marca auditoría, no dispara Emergencia; solo la urgencia clínica va a Emergencia  |
+| Escenario | Entrada | Resultado esperado |
+|---|---|---|
+| Rutina | Certificado médico en PDF | Historia Clínica Electrónica, sin auditoría, objeto en `procesados/historia_clinica/` |
+| Urgencia | Informe de tomografía con tromboembolismo pulmonar agudo | Cola de Emergencia Médica, alerta enviada, objeto en `procesados/urgentes/` |
+| Ambigüedad | Foto de receta manuscrita con dosis dudosa | Cola de Revisión Humana. Si el auditor corrige, el documento se reencamina a Farmacia; si lo rechaza, termina en `rechazados/` y no continúa hacia ningún destino operativo |
+| Alto riesgo | Receta con anticoagulante | Farmacia Hospitalaria con `requiere_auditoria_humana: true`. El alto riesgo farmacológico marca auditoría, no dispara Emergencia; solo la urgencia clínica va a Emergencia |
 
 ## Contrato de la API
 
@@ -237,6 +253,7 @@ Entrada:
   "canal_origen": "Guardia_Emergencias"
 }
 ```
+
 
 Salida: el mismo contrato del brief, con `status`, `clasificacion`, `datos_extraidos`, `decision_enrutamiento` y `almacenamiento_oci`, más cuatro campos propios: `score_confianza`, `modelo_utilizado`, `evidencias` y `trace`. El ejemplo completo está en [`docs/examples/triage_response.json`](docs/examples/triage_response.json).
 
@@ -300,20 +317,20 @@ Ningún documento real de ningún paciente. Los datos de prueba los escribe el e
 
 Cada fuente resuelve una tarea distinta y conviene no mezclarlas:
 
-| Categoría    | Qué es                                                                           | Ejemplos                                                              |
-| ------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Referencia    | Vive dentro del producto y se consulta en cada documento, también en producción | Catálogo CIE-10 de la OMS, tabla de medicamentos con rangos de dosis |
-| Evaluación   | Solo mide qué tan bien funciona el sistema, nunca corre en producción           | Documentos generados, corpus públicos, fotos manuscritas             |
-| Entrenamiento | Modificaría los parámetros del modelo                                           | Ninguna. No se entrena ningún modelo                                 |
+| Categoría | Qué es | Ejemplos |
+|---|---|---|
+| Referencia | Vive dentro del producto y se consulta en cada documento, también en producción | Catálogo CIE-10 de la OMS, tabla de medicamentos con rangos de dosis |
+| Evaluación | Solo mide qué tan bien funciona el sistema, nunca corre en producción | Documentos generados, corpus públicos, fotos manuscritas |
+| Entrenamiento | Modificaría los parámetros del modelo | Ninguna. No se entrena ningún modelo |
 
 **El conjunto de prueba** funciona como un examen con solucionario: cada documento lleva escrito de antemano la respuesta correcta, se pasa por el agente y se compara lo que salió con lo esperado.
 
-| Qué                         | Cuántas           | De qué tipo son                                                                                                                                               | De dónde sale su etiqueta                                                                   |
-| ---------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Documentos de texto          | 30                 | Los seis tipos: receta médica, informe de estudio por imágenes, informe de laboratorio, orden de solicitud de procedimiento, epicrisis y certificado médico | Se define al generarlos: sabemos qué pusimos en cada uno                                    |
-| Imágenes degradadas         | 12                 | Sobre todo informes de estudio y certificados, que son los que en la vida real llegan escaneados o fotografiados. Salen de 12 de los 30 documentos             | Heredan el contenido del documento; la decisión esperada cambia con el nivel de legibilidad |
-| Fotos de recetas manuscritas | 8, una por persona | Todas son Receta Médica, que es lo que se escribe a mano                                                                                                      | La escribe quien redacta la receta                                                           |
-| **Total**              | **50**       |                                                                                                                                                                |                                                                                              |
+| Qué | Cuántas | De qué tipo son | De dónde sale su etiqueta |
+|---|---|---|---|
+| Documentos de texto | 30 | Los seis tipos: receta médica, informe de estudio por imágenes, informe de laboratorio, orden de solicitud de procedimiento, epicrisis y certificado médico | Se define al generarlos: sabemos qué pusimos en cada uno |
+| Imágenes degradadas | 12 | Sobre todo informes de estudio y certificados, que son los que en la vida real llegan escaneados o fotografiados. Salen de 12 de los 30 documentos | Heredan el contenido del documento; la decisión esperada cambia con el nivel de legibilidad |
+| Fotos de recetas manuscritas | 8, una por persona | Todas son Receta Médica, que es lo que se escribe a mano | La escribe quien redacta la receta |
+| **Total** | **50** | | |
 
 Los 30 documentos cubren los cinco resultados posibles para un documento legible: rutina, alto riesgo farmacológico, urgencia, urgencia con ambigüedad y ambigüedad. Las 20 imágenes agregan el sexto, ilegible, y se reparten en tres niveles de legibilidad, leve, media y severa, para ajustar los umbrales de 0,40 y 0,70 de rules.yaml. Hay un camino que no se etiqueta de antemano: cuando el score del modelo queda entre 0,60 y 0,85, rules.yaml pide una segunda opinión o agrega una marca de auditoría. Eso depende de la confianza del modelo en cada corrida, así que no cuenta como error de enrutamiento; se refleja en la tasa de revisión humana.
 
@@ -325,12 +342,13 @@ El reparto documento por documento, con la respuesta esperada de cada uno, está
 
 El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Los resultados se publican aquí en cada iteración.
 
-| Métrica                   | Valor     |
-| -------------------------- | --------- |
+| Métrica | Valor |
+|---|---|
 | Accuracy de clasificación | pendiente |
-| Recall de urgencias        | pendiente |
-| Tasa de revisión humana   | pendiente |
-| Latencia p50 / p95         | pendiente |
+| Recall de urgencias | pendiente |
+| Tasa de revisión humana | pendiente |
+| Latencia p50 / p95 | pendiente |
+
 
 ## Prioridades de entrega
 
