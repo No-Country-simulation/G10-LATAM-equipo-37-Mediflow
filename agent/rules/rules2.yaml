@@ -1,0 +1,164 @@
+# Reglas de triaje de MediFlow · v0.1 · 21 de septiembre de 2026
+# Fuente de verdad hasta que exista la tabla rules en SQLite (sprint 3). El grafo las lee en cada ejecución.
+# Se edita por PR junto con docs/api-contract.md. Cualquier cambio de umbral obliga a correr el golden set.
+# Las coincidencias de texto son por substring en minúsculas; por eso las entradas con tilde aparecen dos veces.
+
+version: "0.1"
+
+umbrales:
+  automatico: 0.85 # score >= automatico: enrutamiento sin revisión
+  segunda_opinion: 0.60 # entre segunda_opinion y automatico: segundo modelo si está activo, si no, marca de auditoría
+  legibilidad_minima: 0.40 # debajo: mejora de imagen y un reintento; si sigue debajo, revisión humana sin llamar al modelo
+
+legibilidad:
+  # Interpretación del score de legibilidad (0 a 1). Se calibra con las imágenes degradadas del sprint 2.
+  leve: 0.70 # >= 0.70: procesamiento normal
+  media: 0.40 # entre 0.40 y 0.70: se extrae lo posible, campos dudosos en null, revisión humana con AMB-4
+  reintento_con_mejora: true
+
+tipos_documento:
+  - Receta Medica
+  - Informe de Estudio por Imagenes
+  - Informe de Laboratorio
+  - Orden de Solicitud de Procedimiento
+  - Epicrisis
+  - Certificado Medico
+  - Otro
+
+# Campos obligatorios por tipo. Si falta uno, el caso es AMB-1 y va a revisión humana.
+campos_obligatorios:
+  Receta Medica:
+    [
+      paciente.nombre,
+      medico_solicitante.nombre,
+      medico_solicitante.matricula,
+      medicamentos,
+    ]
+  Informe de Estudio por Imagenes:
+    [paciente.nombre, estudio_realizado, conclusion]
+  Informe de Laboratorio: [paciente.nombre, estudio_realizado]
+  Orden de Solicitud de Procedimiento:
+    [
+      paciente.nombre,
+      medico_solicitante.nombre,
+      medico_solicitante.matricula,
+      procedimiento_solicitado,
+    ]
+  Epicrisis: [paciente.nombre, diagnostico_egreso]
+  Certificado Medico:
+    [
+      paciente.nombre,
+      medico_solicitante.nombre,
+      medico_solicitante.matricula,
+      fecha,
+    ]
+  Otro: []
+
+destinos:
+  urgencia: Cola_Emergencia_Medica
+  revision: Cola_Revision_Humana
+  rechazado: Rechazado
+  por_tipo:
+    Receta Medica: Farmacia_Hospitalaria
+    Informe de Estudio por Imagenes: Historia_Clinica_Electronica
+    Informe de Laboratorio: Historia_Clinica_Electronica
+    Orden de Solicitud de Procedimiento: Auditoria_Autorizaciones
+    Epicrisis: Historia_Clinica_Electronica
+    Certificado Medico: Historia_Clinica_Electronica
+    Otro: Cola_Revision_Humana
+
+# Orden de decisión: gana la primera regla que aplica.
+# 1 ilegible -> revision (motivo: solicitar nueva captura)
+# 2 urgencia -> Cola_Emergencia_Medica; con ambigüedad o score bajo, además requiere_auditoria_humana = true
+# 3 ambigüedad (AMB-1 a AMB-5) o score < segunda_opinion -> revision
+# 4 destino por tipo; score entre segunda_opinion y automatico, o alto riesgo farmacológico -> requiere_auditoria_humana = true
+
+# Fuente 1 de urgencia: hallazgos críticos. Basta con que uno aparezca en el texto.
+hallazgos_criticos:
+  - tromboembolismo pulmonar
+  - tep agudo
+  - embolia pulmonar
+  - infarto agudo de miocardio
+  - elevacion del st
+  - elevación del st
+  - sindrome coronario agudo
+  - síndrome coronario agudo
+  - accidente cerebrovascular
+  - acv isquemico
+  - acv isquémico
+  - infarto cerebral
+  - sepsis
+  - shock septico
+  - shock séptico
+  - neumotorax a tension
+  - neumotórax a tensión
+  - hemorragia activa
+  - hemorragia digestiva
+  - sangrado activo
+  - hiperpotasemia severa
+  - peritonitis
+  - perforacion
+  - perforación
+  - paro cardiorrespiratorio
+  - riesgo vital
+
+# Fuente 2 de urgencia: palabras clave.
+palabras_urgencia:
+  - urgente
+  - inmediato
+  - critico
+  - crítico
+  - emergencia
+  - de urgencia
+  - activacion de hemodinamia
+  - activación de hemodinamia
+
+# Fuente 3 de urgencia: nivel_prioridad = Urgente devuelto por el modelo, con justificación.
+
+# Fuente 4 (para AI-03, sprint 2): valores críticos de laboratorio. Disparan urgencia aunque el texto no lo diga.
+# Valores habituales de listas de "valores críticos" hospitalarias; ajustar con el equipo.
+valores_criticos_laboratorio:
+  - { analito: potasio, operador: ">=", valor: 6.5, unidad: mmol/L }
+  - { analito: potasio, operador: "<=", valor: 2.5, unidad: mmol/L }
+  - { analito: sodio, operador: "<=", valor: 120, unidad: mmol/L }
+  - { analito: sodio, operador: ">=", valor: 160, unidad: mmol/L }
+  - { analito: glucemia, operador: "<=", valor: 50, unidad: mg/dL }
+  - { analito: glucemia, operador: ">=", valor: 500, unidad: mg/dL }
+  - { analito: hemoglobina, operador: "<=", valor: 7, unidad: g/dL }
+  - { analito: plaquetas, operador: "<=", valor: 20000, unidad: /mm3 }
+  - { analito: lactato, operador: ">=", valor: 4, unidad: mmol/L }
+  - { analito: inr, operador: ">=", valor: 5, unidad: "" }
+  - { analito: troponina, operador: "texto", valor: elevada, unidad: "" }
+
+# Señales de prioridad Prioritario (seguimiento pronto, sin riesgo vital). Solo si no hay urgencia.
+palabras_prioritario:
+  - sospechoso
+  - ampliar estudio
+  - completar estudio
+  - control en 24
+  - control en 48
+  - control en 72
+  - descompensad
+
+# Alto riesgo farmacológico: la receta va a Farmacia con requiere_auditoria_humana = true.
+# Solo aplica a recetas. Grupos de medicamentos de alto riesgo de la OMS, iniciativa Medication Without
+# Harm (informe técnico Medication Safety in High-risk Situations, 2019), resumidos como A PINCH:
+# antiinfecciosos, potasio y otros electrolitos, insulinas, narcóticos y sedantes, quimioterápicos
+# e inmunosupresores, heparina y anticoagulantes.
+# La coincidencia es por inclusión: "insulina" detecta "insulina glargina".
+# Cada medicamento de esta lista tiene su fila en medicamentos.csv con el rango de dosis, para que una
+# dosis absurda en un fármaco de alto riesgo se frene en revisión antes de llegar a Farmacia.
+medicamentos_alto_riesgo:
+  - insulina
+  - warfarina
+  - acenocumarol
+  - enoxaparina
+  - heparina
+  - morfina
+  - tramadol
+  - fentanilo
+  - cloruro de potasio
+  - potasio intravenoso
+  - kcl
+  - metotrexato
+  - alteplasa
