@@ -83,7 +83,7 @@ Un agente que trata cada documento como un caso de triaje:
 2. **Clasificación** en seis tipos: Receta Médica, Informe de Estudio por Imágenes, Informe de Laboratorio, Orden de Solicitud de Procedimiento, Epicrisis y Certificado Médico.
 3. **Extracción estructurada** con un LLM multimodal y validación con esquemas Pydantic. Cada dato extraído cita el fragmento del documento que lo sustenta. Lo que no está en el documento queda en `null`; nunca se inventa.
 4. **Score de confianza** compuesto por legibilidad, validación de consistencia, confianza declarada por el modelo y acuerdo entre modelos.
-5. **Detección de urgencia** desde fuentes independientes: hallazgos críticos, palabras clave, valores críticos de laboratorio y juicio del modelo. Basta con que una dispare.
+5. **Detección de urgencia** desde fuentes independientes: hallazgos críticos, palabras clave, valores críticos de laboratorio y juicio del modelo. Basta con que una dispare. Las tres listas automáticas se aplican solo a informes de estudio, informes de laboratorio y órdenes; en recetas, epicrisis y certificados decide el modelo, que lee el contexto.
 6. **Enrutamiento** a uno de cinco destinos: Cola de Emergencia Médica, Farmacia Hospitalaria, Auditoría de Autorizaciones, Historia Clínica Electrónica o Cola de Revisión Humana.
 7. **Persistencia** en OCI Object Storage, segregada por estado, y alertas en tiempo real para los casos urgentes.
 
@@ -160,7 +160,7 @@ flowchart TD
     D --> E["Extraer con esquema Pydantic por tipo"]
     E --> F["Validar: obligatorios, CIE-10, dosis, matrícula, consistencia"]
     F --> G["Score de confianza compuesto"]
-    G --> U{"Urgencia clínica?"}
+    G --> U{"Urgencia clínica?<br/>listas: informes y órdenes · modelo: todos"}
     U -- "Sí" --> UA{"Además hay ambigüedad o score bajo?"}
     UA -- "Sí" --> Q1A["Cola de Emergencia Médica, alerta y marca de auditoría"]
     UA -- "No" --> Q1["Cola de Emergencia Médica y alerta"]
@@ -225,6 +225,8 @@ En ambos casos el documento se persiste con su marca, porque el registro debe ex
 **Score de confianza.** Un número entre 0 y 1 que el sistema calcula para cada documento a partir de cuatro señales: legibilidad, validaciones superadas, seguridad declarada por el modelo y acuerdo con un segundo modelo. Por encima de 0,85 se enruta solo; entre 0,60 y 0,85 se enruta marcado para revisión; por debajo de 0,60 va a la Cola de Revisión Humana. Los umbrales son configurables.
 
 **Categorías de ambigüedad.** Cuando un documento va a revisión humana se indica por qué, con una sola categoría: AMB-1 falta un campo obligatorio, AMB-2 contradicción interna, AMB-3 dosis fuera de rango o medicamento no identificable, AMB-4 texto truncado o parcialmente ilegible, AMB-5 dos documentos en un mismo archivo.
+
+**Urgencia por tipo de documento (regla A).** Las listas automáticas de `rules.yaml` (`hallazgos_criticos`, `palabras_urgencia` y `valores_criticos_laboratorio`) se aplican solo a los tipos de `deteccion_automatica_urgencia.aplica_a`: informes de estudio por imágenes, informes de laboratorio y órdenes de procedimiento, que son los documentos que comunican un hallazgo nuevo o piden atención. En recetas, epicrisis y certificados la urgencia la decide el modelo con justificación, porque ahí las frases de alarma suelen ser instrucciones de alta ("acudir de urgencia si...") o diagnósticos ya tratados: una epicrisis de un paciente dado de alta tras un tromboembolismo no es una urgencia. Volver a aplicar las listas a todos los tipos es agregar tres líneas a esa lista.
 
 **Alto riesgo farmacológico.** Una receta con anticoagulantes, opioides, insulina, potasio intravenoso o metotrexato. No dispara Emergencia, porque no hay una urgencia clínica: va a Farmacia Hospitalaria como cualquier receta, pero con auditoría obligatoria. La lista de medicamentos está en `agent/rules/rules.yaml` y se edita sin tocar el código.
 
