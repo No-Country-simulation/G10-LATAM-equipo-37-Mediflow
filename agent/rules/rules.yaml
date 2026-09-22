@@ -1,10 +1,4 @@
-# Reglas de triaje de MediFlow · v0.1 · 21 de septiembre de 2026
-# Fuente de verdad hasta que exista la tabla rules en SQLite (sprint 3). El grafo las lee en cada ejecución.
-# Se edita por PR junto con docs/api-contract.md. Cualquier cambio de umbral obliga a correr el golden set.
-# Las coincidencias de texto son por substring en minúsculas; por eso las entradas con tilde aparecen dos veces.
-
-version: "0.1"
-
+# Reglas de triaje. En el sprint 3 se leen desde la tabla rules de ADB y se editan desde la UI.
 umbrales:
   automatico: 0.85 # score >= automatico: enrutamiento sin revisión
   segunda_opinion: 0.60 # entre segunda_opinion y automatico: segundo modelo si está activo, si no, marca de auditoría
@@ -57,7 +51,6 @@ campos_obligatorios:
 destinos:
   urgencia: Cola_Emergencia_Medica
   revision: Cola_Revision_Humana
-  rechazado: Rechazado
   por_tipo:
     Receta Medica: Farmacia_Hospitalaria
     Informe de Estudio por Imagenes: Historia_Clinica_Electronica
@@ -67,13 +60,6 @@ destinos:
     Certificado Medico: Historia_Clinica_Electronica
     Otro: Cola_Revision_Humana
 
-# Orden de decisión: gana la primera regla que aplica.
-# 1 ilegible -> revision (motivo: solicitar nueva captura)
-# 2 urgencia -> Cola_Emergencia_Medica; con ambigüedad o score bajo, además requiere_auditoria_humana = true
-# 3 ambigüedad (AMB-1 a AMB-5) o score < segunda_opinion -> revision
-# 4 destino por tipo; score entre segunda_opinion y automatico, o alto riesgo farmacológico -> requiere_auditoria_humana = true
-
-# Fuente 1 de urgencia: hallazgos críticos. Basta con que uno aparezca en el texto.
 hallazgos_criticos:
   - tromboembolismo pulmonar
   - tep agudo
@@ -161,4 +147,3 @@ medicamentos_alto_riesgo:
   - potasio intravenoso
   - kcl
   - metotrexato
-  - alteplasa
