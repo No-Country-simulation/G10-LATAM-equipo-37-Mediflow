@@ -1,10 +1,9 @@
 """API de MediFlow."""
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
 from agent.rules.loader import load_rules
 from agent.schemas.contrato import TriageRequest, TriageResponse
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 app = FastAPI(title="MediFlow", version="0.1.0")
 
@@ -53,25 +52,34 @@ async def triage_upload(
     finally:
         await archivo.close()
 
-    resultado = run_triage(documento_id, documento.tipo_archivo, documento.texto, canal_origen)
-    if documento.requiere_revision:
-        resultado["legibilidad"] = documento.legibilidad
-        resultado["error"] = documento.motivo_revision
+    # TODO N1-01: guardar el original en recibidos/ con agent.storage y pasar la ruta como
+    # ruta_original, para que persistir.py enlace el documento con su resultado.
+    resultado = run_triage(
+        documento_id,
+        documento.tipo_archivo,
+        documento.texto,
+        canal_origen,
+        imagenes=documento.imagenes,
+        legibilidad=documento.legibilidad,
+    )
     return _a_respuesta(resultado)
 
 
 @app.get("/triage/{documento_id}")
 def obtener_triage(documento_id: str):
+    # TODO sprint 2: leer de ADB o del bucket.
     raise HTTPException(status_code=404, detail="pendiente de implementar")
 
 
 @app.get("/queue/human")
 def cola_humana():
+    # TODO sprint 3: listar auditoria_humana/ desde ADB.
     return {"items": []}
 
 
 @app.post("/audit/{documento_id}")
 def auditar(documento_id: str, decision: dict):
+    # TODO sprint 3: guardar la decisión del auditor y reencaminar.
     return {"documento_id": documento_id, "recibido": decision}
 
 
@@ -82,9 +90,11 @@ def reglas():
 
 @app.put("/rules")
 def actualizar_reglas(nuevas: dict):
+    # TODO sprint 3: persistir en la tabla rules de ADB y limpiar la caché.
     return {"actualizado": False, "detalle": "pendiente de implementar"}
 
 
 @app.get("/metrics")
 def metricas():
+    # TODO sprint 3: KPIs desde ADB para el dashboard y el reporte diario.
     return {"documentos_hoy": 0, "urgencias_hoy": 0, "en_revision": 0, "confianza_media": None}
