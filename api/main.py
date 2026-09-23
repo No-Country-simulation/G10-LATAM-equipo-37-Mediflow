@@ -1,9 +1,9 @@
 """API de MediFlow."""
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-
 from agent.graph import run_triage
+from agent.ingestion import IngestionError, ingest_document
 from agent.rules.loader import load_rules
 from agent.schemas.contrato import TriageRequest, TriageResponse
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 app = FastAPI(title="MediFlow", version="0.1.0")
 
@@ -43,11 +43,25 @@ def triage(req: TriageRequest):
 async def triage_upload(
     documento_id: str = Form(...), canal_origen: str = Form("web"), archivo: UploadFile = File(...)
 ):
-    # TODO sprint 2: guardar en recibidos/, detectar PDF o imagen, renderizar y pasar imágenes al grafo.
-    contenido = await archivo.read()
-    tipo = "PDF" if archivo.filename.lower().endswith(".pdf") else "IMAGEN"
-    texto = contenido.decode("utf-8", errors="ignore") if archivo.filename.lower().endswith(".txt") else ""
-    resultado = run_triage(documento_id, "TEXTO" if texto else tipo, texto, canal_origen)
+    try:
+        contenido = await archivo.read()
+        documento = ingest_document(contenido, filename=archivo.filename, content_type=archivo.content_type)
+    except IngestionError as exc:
+        # Mensaje controlado: no devolver bytes, rutas internas ni contenido clínico.
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        await archivo.close()
+
+    # TODO N1-01: guardar el original en recibidos/ con agent.storage y pasar la ruta como
+    # ruta_original, para que persistir.py enlace el documento con su resultado.
+    resultado = run_triage(
+        documento_id,
+        documento.tipo_archivo,
+        documento.texto,
+        canal_origen,
+        imagenes=documento.imagenes,
+        legibilidad=documento.legibilidad,
+    )
     return _a_respuesta(resultado)
 
 
