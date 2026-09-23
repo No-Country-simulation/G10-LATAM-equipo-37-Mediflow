@@ -2,6 +2,7 @@
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from agent.graph import run_triage
+from agent.ingestion import IngestionError, ingest_document
 from agent.rules.loader import load_rules
 from agent.schemas.contrato import TriageRequest, TriageResponse
 
@@ -43,29 +44,34 @@ def triage(req: TriageRequest):
 async def triage_upload(
     documento_id: str = Form(...), canal_origen: str = Form("web"), archivo: UploadFile = File(...)
 ):
-    # TODO sprint 2: guardar en recibidos/, detectar PDF o imagen, renderizar y pasar imágenes al grafo.
-    contenido = await archivo.read()
-    tipo = "PDF" if archivo.filename.lower().endswith(".pdf") else "IMAGEN"
-    texto = contenido.decode("utf-8", errors="ignore") if archivo.filename.lower().endswith(".txt") else ""
-    resultado = run_triage(documento_id, "TEXTO" if texto else tipo, texto, canal_origen)
+    try:
+        contenido = await archivo.read()
+        documento = ingest_document(contenido, filename=archivo.filename, content_type=archivo.content_type)
+    except IngestionError as exc:
+        # Mensaje controlado: no devolver bytes, rutas internas ni contenido clínico.
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        await archivo.close()
+
+    resultado = run_triage(documento_id, documento.tipo_archivo, documento.texto, canal_origen)
+    if documento.requiere_revision:
+        resultado["legibilidad"] = documento.legibilidad
+        resultado["error"] = documento.motivo_revision
     return _a_respuesta(resultado)
 
 
 @app.get("/triage/{documento_id}")
 def obtener_triage(documento_id: str):
-    # TODO sprint 2: leer de ADB o del bucket.
     raise HTTPException(status_code=404, detail="pendiente de implementar")
 
 
 @app.get("/queue/human")
 def cola_humana():
-    # TODO sprint 3: listar auditoria_humana/ desde ADB.
     return {"items": []}
 
 
 @app.post("/audit/{documento_id}")
 def auditar(documento_id: str, decision: dict):
-    # TODO sprint 3: guardar la decisión del auditor y reencaminar.
     return {"documento_id": documento_id, "recibido": decision}
 
 
@@ -76,11 +82,9 @@ def reglas():
 
 @app.put("/rules")
 def actualizar_reglas(nuevas: dict):
-    # TODO sprint 3: persistir en la tabla rules de ADB y limpiar la caché.
     return {"actualizado": False, "detalle": "pendiente de implementar"}
 
 
 @app.get("/metrics")
 def metricas():
-    # TODO sprint 3: KPIs desde ADB para el dashboard y el reporte diario.
     return {"documentos_hoy": 0, "urgencias_hoy": 0, "en_revision": 0, "confianza_media": None}
