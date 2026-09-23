@@ -6,9 +6,10 @@ normalizar → (legible?) → clasificar → extraer → validar → puntuar →
   → score medio: segunda_opinion → puntuar de nuevo → enrutar
   → score bajo: enrutar (revisión humana)
 enrutar → persistir → notificar → FIN
-"""
-from langgraph.graph import END, StateGraph
 
+El auditor tiene tres salidas y no son equivalentes: aprobar o corregir devuelve el documento al
+enrutamiento por tipo; rechazar termina en rechazados/ y nunca continúa hacia un destino operativo.
+"""
 from agent.nodes.clasificar import clasificar
 from agent.nodes.enrutar import enrutar
 from agent.nodes.extraer import extraer
@@ -21,6 +22,7 @@ from agent.nodes.urgencia import detectar_urgencia
 from agent.nodes.validar import validar
 from agent.rules.loader import load_rules
 from agent.state import TriageState
+from langgraph.graph import END, StateGraph
 
 
 def _tras_normalizar(state: TriageState) -> str:
@@ -72,7 +74,18 @@ def build_graph():
     return g.compile()
 
 
-def run_triage(documento_id: str, tipo_archivo: str, texto: str | None, canal_origen: str | None) -> dict:
+def run_triage(
+    documento_id: str,
+    tipo_archivo: str,
+    texto: str | None,
+    canal_origen: str | None,
+    *,
+    imagenes: list[str] | None = None,
+    legibilidad: float | None = None,
+    ruta_original: str | None = None,
+) -> dict:
+    """Corre el grafo. `imagenes` y `legibilidad` los llena la ingesta cuando el documento entra
+    por archivo; si no vienen, los resuelve `normalizar`."""
     grafo = build_graph()
     estado_inicial: TriageState = {
         "documento_id": documento_id,
@@ -81,4 +94,10 @@ def run_triage(documento_id: str, tipo_archivo: str, texto: str | None, canal_or
         "canal_origen": canal_origen or "",
         "trace": [],
     }
+    if imagenes:
+        estado_inicial["imagenes"] = imagenes
+    if legibilidad is not None:
+        estado_inicial["legibilidad"] = legibilidad
+    if ruta_original:
+        estado_inicial["ruta_original"] = ruta_original
     return grafo.invoke(estado_inicial)
