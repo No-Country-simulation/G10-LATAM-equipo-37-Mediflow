@@ -1,9 +1,10 @@
 """API de MediFlow."""
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
 from agent.rules.loader import load_rules
 from agent.schemas.contrato import TriageRequest, TriageResponse
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 app = FastAPI(title="MediFlow", version="0.1.0")
 
