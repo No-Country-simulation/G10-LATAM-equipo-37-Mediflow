@@ -5,9 +5,9 @@ from agent.state import TriageState
 
 
 def _nombre_paciente(state: TriageState) -> str:
-    """Acepta nombre y el campo legado nome durante la migración del contrato."""
+    """Usa exclusivamente el campo nombre acordado por el equipo."""
     paciente = state.get("datos_extraidos", {}).get("paciente", {}) or {}
-    return paciente.get("nombre") or paciente.get("nome") or "paciente sin identificar"
+    return paciente.get("nombre") or "paciente sin identificar"
 
 
 def enrutar(state: TriageState) -> dict:
@@ -27,7 +27,17 @@ def enrutar(state: TriageState) -> dict:
     )
     notificacion = None
 
-    if state.get("legibilidad", 0.0) < umbrales["legibilidad_minima"]:
+    # AMB-6 es un límite del sistema: no debe forzar un destino clínico,
+    # incluso si otro nodo dejó una marca de urgencia en ese documento.
+    if validacion.get("categoria_amb") == "AMB-6":
+        destino, auditoria = revision, True
+        motivo = validacion.get("motivo_fuera_de_alcance")
+        motivos = reglas.get("fuera_de_alcance", {}).get("motivos", {})
+        descripcion = motivos.get(motivo, motivo) if isinstance(motivo, str) else None
+        descripcion = (descripcion or "Motivo no especificado; requiere revisión del alcance").strip()
+        justificacion = f"AMB-6 — Fuera del alcance del agente: {descripcion}. Requiere revisión humana."
+
+    elif state.get("legibilidad", 0.0) < umbrales["legibilidad_minima"]:
         destino, auditoria = revision, True
         justificacion = "Documento ilegible o sin texto. Solicitar nueva captura."
 

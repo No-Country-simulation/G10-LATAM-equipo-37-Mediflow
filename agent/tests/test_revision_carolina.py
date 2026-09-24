@@ -2,7 +2,6 @@
 import pytest
 
 from agent.nodes.enrutar import enrutar
-from agent.nodes.extraer import extraer
 from agent.nodes.urgencia import detectar_urgencia
 
 
@@ -29,9 +28,8 @@ def test_ambiguedad_con_score_alto_requiere_auditoria(validacion, urgente):
     assert (d["notificacion_generada"] is not None) is urgente
 
 
-def test_nombre_extraido_por_version_actual_llega_a_alerta():
-    s = estado(texto="Paciente: Ana Perez, 30 años.", urgencia={"detectada": True})
-    s.update(extraer(s))
+def test_nombre_llega_a_alerta():
+    s = estado(datos_extraidos={"paciente": {"nombre": "Ana Perez"}}, urgencia={"detectada": True})
     assert "Ana Perez" in enrutar(s)["decision"]["notificacion_generada"]["mensaje"]
 
 
@@ -53,3 +51,36 @@ def test_negacion_no_anula_prioridad_urgente_del_modelo():
         "tipo_documento": "Informe de Laboratorio", "nivel_prioridad": "Urgente",
     })
     assert detectar_urgencia(s)["urgencia"]["detectada"] is True
+
+
+def test_campo_nome_no_se_acepta_en_alertas():
+    s = estado(datos_extraidos={"paciente": {"nome": "Ana Perez"}}, urgencia={"detectada": True})
+    mensaje = enrutar(s)["decision"]["notificacion_generada"]["mensaje"]
+    assert "Ana Perez" not in mensaje
+    assert "paciente sin identificar" in mensaje
+
+
+@pytest.mark.parametrize("motivo, descripcion", [
+    ("no_clinico", "Documento administrativo"),
+    ("tipo_no_soportado", "Documento clínico que no es ninguno"),
+    ("paciente_no_humano", "El paciente no es una persona"),
+    ("idioma_no_soportado", "Documento en un idioma"),
+    ("pide_diagnostico", "Pide interpretar o diagnosticar"),
+])
+@pytest.mark.parametrize("urgente", [False, True])
+def test_amb6_conserva_motivo_y_no_fuerza_destino_clinico(motivo, descripcion, urgente):
+    s = estado(validacion={"categoria_amb": "AMB-6", "motivo_fuera_de_alcance": motivo},
+               urgencia={"detectada": urgente})
+    d = enrutar(s)["decision"]
+    assert d["destino_principal"] == "Cola_Revision_Humana"
+    assert d["requiere_auditoria_humana"] is True
+    assert d["notificacion_generada"] is None
+    assert descripcion in d["justificacion_enrutamiento"]
+    assert "AMB-6" in d["justificacion_enrutamiento"]
+
+
+@pytest.mark.parametrize("motivo", [None, "Informe en inglés no soportado"])
+def test_amb6_sin_codigo_conocido_explicita_motivo(motivo):
+    s = estado(validacion={"categoria_amb": "AMB-6", "motivo_fuera_de_alcance": motivo})
+    d = enrutar(s)["decision"]
+    assert (motivo or "Motivo no especificado") in d["justificacion_enrutamiento"]
