@@ -18,6 +18,10 @@ wallet/
 .streamlit/secrets.toml
 
 # Datos locales y salidas
+data/*
+!data/raw/
+data/raw/*
+!data/raw/*.csv
 evals/output/
 evals/cache/
 *.log
@@ -32,4 +36,4 @@ tmp/
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
 
-data/
+
