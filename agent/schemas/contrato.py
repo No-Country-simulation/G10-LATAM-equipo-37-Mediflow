@@ -95,8 +95,8 @@ class TriageRequest(BaseModel):
 
 
 class Paciente(BaseModel):
-    """Datos del paciente. El brief usa `nome`; se respeta el contrato."""
-    nome: Optional[str] = None
+    """Datos del paciente. El brief usa `nombre`; se respeta el contrato."""
+    nombre: Optional[str] = None
     edad: Optional[int] = Field(default=None, ge=0, le=130)
 
 

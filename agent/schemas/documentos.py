@@ -139,32 +139,32 @@ def obtener_esquema(tipo: str) -> type[BaseDocumento]:
 
 CAMPOS_OBLIGATORIOS: dict[str, list[str]] = {
     "Receta Medica": [
-        "paciente.nome",
+        "paciente.nombre",
         "medico_solicitante.nombre",
         "medico_solicitante.matricula",
         "medicamentos",
     ],
     "Informe de Estudio por Imagenes": [
-        "paciente.nome",
+        "paciente.nombre",
         "estudio_realizado",
         "conclusion",
     ],
     "Informe de Laboratorio": [
-        "paciente.nome",
+        "paciente.nombre",
         "estudio_realizado",
     ],
     "Orden de Solicitud de Procedimiento": [
-        "paciente.nome",
+        "paciente.nombre",
         "medico_solicitante.nombre",
         "medico_solicitante.matricula",
         "procedimiento_solicitado",
     ],
     "Epicrisis": [
-        "paciente.nome",
+        "paciente.nombre",
         "diagnostico_egreso",
     ],
     "Certificado Medico": [
-        "paciente.nome",
+        "paciente.nombre",
         "medico_solicitante.nombre",
         "medico_solicitante.matricula",
         "fecha",
@@ -206,7 +206,7 @@ def obtener_destino_por_tipo(tipo: str) -> str:
 def campo_esta_presente(datos_extraidos: dict, campo: str) -> bool:
     """
     Verifica si un campo (con notación de punto) tiene valor no nulo.
-    Soporta rutas anidadas: 'paciente.nome' navega el dict.
+    Soporta rutas anidadas: 'paciente.nombre' navega el dict.
     Las listas vacías cuentan como ausentes.
     """
     partes = campo.split(".")

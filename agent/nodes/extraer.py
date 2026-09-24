@@ -46,7 +46,7 @@ def _extraer_por_regex(texto: str) -> dict:
     conclusion = _buscar(r"CONCLUSION:\s*([^\.\n]+)", texto)
 
     return {
-        "paciente": {"nome": paciente, "edad": int(edad) if edad else None},
+        "paciente": {"nombre": paciente, "edad": int(edad) if edad else None},
         "medico_solicitante": {"nombre": medico, "matricula": matricula},
         "estudio_realizado": estudio,
         "diagnostico_principal": conclusion,
@@ -135,7 +135,7 @@ def _normalizar_datos(datos: dict) -> dict:
     ]
 
     return {
-        "paciente": datos.get("paciente") or {"nome": None, "edad": None},
+        "paciente": datos.get("paciente") or {"nombre": None, "edad": None},
         "medico_solicitante": datos.get("medico_solicitante")
         or {"nombre": None, "matricula": None},
         "estudio_realizado": datos.get("estudio_realizado"),
@@ -157,8 +157,8 @@ def _extraer_evidencias(payload: dict) -> list[dict]:
 
     El LLM devuelve los datos con un campo adicional por cada campo extraído:
         "paciente": {
-            "nome": "Carlos Eduardo Mendes",
-            "evidencia_nome": "Paciente: Carlos Eduardo Mendes, 52 anos."
+            "nombre": "Carlos Eduardo Mendes",
+            "evidencia_nombre": "Paciente: Carlos Eduardo Mendes, 52 anos."
         }
 
     Esta función recorre el payload y arma la lista de evidencias.

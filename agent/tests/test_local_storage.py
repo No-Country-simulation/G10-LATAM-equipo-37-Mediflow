@@ -114,7 +114,7 @@ def test_persistir_escribe_en_local():
         "tipo_archivo": "TEXTO",
         "canal_origen": "test",
         "clasificacion": {"tipo_documento": "Receta Medica"},
-        "datos_extraidos": {"paciente": {"nome": "Test"}},
+        "datos_extraidos": {"paciente": {"nombre": "Test"}},
         "decision": {"destino_principal": "Farmacia_Hospitalaria"},
         "score": 0.95,
         "modelo_utilizado": "stub",

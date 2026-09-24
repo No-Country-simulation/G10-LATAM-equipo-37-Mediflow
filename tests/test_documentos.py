@@ -50,14 +50,14 @@ def test_instancias_no_comparten_paciente():
     """
     r1 = RecetaMedica()
     r2 = RecetaMedica()
-    r1.paciente.nome = "Juan"
-    assert r2.paciente.nome is None  # No se contagia
+    r1.paciente.nombre = "Juan"
+    assert r2.paciente.nombre is None  # No se contagia
 
 
 def test_campos_obligatorios_receta():
     """Una receta tiene 4 campos obligatorios."""
     campos = obtener_campos_obligatorios("Receta Medica")
-    assert "paciente.nome" in campos
+    assert "paciente.nombre" in campos
     assert "medicamentos" in campos
     assert len(campos) == 4
 
@@ -65,14 +65,14 @@ def test_campos_obligatorios_receta():
 def test_detectar_campos_faltantes_informe():
     """Detecta correctamente los campos obligatorios ausentes."""
     datos = {
-        "paciente": {"nome": None, "edad": 52},
+        "paciente": {"nombre": None, "edad": 52},
         "estudio_realizado": "TAC de tórax",
         "conclusion": None,
     }
     faltantes = detectar_campos_faltantes(
         "Informe de Estudio por Imagenes", datos
     )
-    assert "paciente.nome" in faltantes
+    assert "paciente.nombre" in faltantes
     assert "conclusion" in faltantes
     assert "estudio_realizado" not in faltantes
 

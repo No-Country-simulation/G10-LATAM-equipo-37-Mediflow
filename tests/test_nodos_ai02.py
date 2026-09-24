@@ -72,7 +72,7 @@ def mock_complete_extraer():
     def _fake_complete(prompt, images=None, json_mode=True, timeout=60):
         respuesta = {
             "datos_extraidos": {
-                "paciente": {"nome": "Carlos Eduardo Mendes", "edad": 52},
+                "paciente": {"nombre": "Carlos Eduardo Mendes", "edad": 52},
                 "medico_solicitante": {
                     "nombre": "Dra. Renata Silveira",
                     "matricula": "145892",
@@ -85,7 +85,7 @@ def mock_complete_extraer():
             },
             "evidencias": [
                 {
-                    "campo": "paciente.nome",
+                    "campo": "paciente.nombre",
                     "fragmento": "Paciente: Carlos Eduardo Mendes, 52 anos.",
                     "valor_extraido": "Carlos Eduardo Mendes",
                 }
@@ -236,7 +236,7 @@ def test_clasificar_con_llm_falla_cae_al_fallback(monkeypatch):
 def test_extraer_por_regex_caso_brief():
     """El fallback de regex extrae los datos del brief."""
     resultado = _extraer_por_regex(TEXTO_BRIEF)
-    assert resultado["paciente"]["nome"] == "Carlos Eduardo Mendes"
+    assert resultado["paciente"]["nombre"] == "Carlos Eduardo Mendes"
     assert resultado["paciente"]["edad"] == 52
     assert resultado["medico_solicitante"]["nombre"] == "Dra. Renata Silveira"
     assert resultado["medico_solicitante"]["matricula"] == "145892"
@@ -246,7 +246,7 @@ def test_extraer_por_regex_caso_brief():
 def test_extraer_por_regex_documento_sin_datos():
     """Un texto sin datos devuelve nulls, no inventa."""
     resultado = _extraer_por_regex("texto sin estructura clínica")
-    assert resultado["paciente"]["nome"] is None
+    assert resultado["paciente"]["nombre"] is None
     assert resultado["paciente"]["edad"] is None
     assert resultado["medico_solicitante"]["nombre"] is None
 
@@ -254,7 +254,7 @@ def test_extraer_por_regex_documento_sin_datos():
 def test_extraer_por_regex_documento_vacio():
     """Un texto vacío no rompe, devuelve nulls."""
     resultado = _extraer_por_regex("")
-    assert resultado["paciente"]["nome"] is None
+    assert resultado["paciente"]["nombre"] is None
 
 
 # =============================================================================
@@ -331,7 +331,7 @@ def test_extraer_con_llm_usa_el_adapter(mock_complete_extraer, monkeypatch):
     resultado = extraer(state)
 
     assert resultado["modelo_utilizado"] == "mock/deepseek-chat"
-    assert resultado["datos_extraidos"]["paciente"]["nome"] == "Carlos Eduardo Mendes"
+    assert resultado["datos_extraidos"]["paciente"]["nombre"] == "Carlos Eduardo Mendes"
     assert resultado["datos_extraidos"]["cie10_sugerido"] == "I26.9"
 
 
@@ -366,7 +366,7 @@ def test_extraer_con_llm_falla_cae_al_fallback(monkeypatch):
         resultado = extraer(state)
 
     assert resultado["modelo_utilizado"] == "stub"
-    assert resultado["datos_extraidos"]["paciente"]["nome"] == "Carlos Eduardo Mendes"
+    assert resultado["datos_extraidos"]["paciente"]["nombre"] == "Carlos Eduardo Mendes"
 
 
 # =============================================================================

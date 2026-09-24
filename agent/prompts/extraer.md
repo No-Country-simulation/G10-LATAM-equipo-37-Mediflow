@@ -8,8 +8,8 @@ El JSON debe tener esta estructura exacta:
 
 {
   "paciente": {
-    "nome": "nombre completo del paciente o null",
-    "evidencia_nome": "fragmento del documento o null",
+    "nombre": "nombre completo del paciente o null",
+    "evidencia_nombre": "fragmento del documento o null",
     "edad": 0,
     "evidencia_edad": "fragmento del documento o null"
   },
@@ -49,8 +49,8 @@ HOSPITAL SANTA LUCIA - INFORME DE ESTUDIO RADIOLOGICO. Paciente: Carlos Eduardo 
 Salida esperada:
 {
   "paciente": {
-    "nome": "Carlos Eduardo Mendes",
-    "evidencia_nome": "Paciente: Carlos Eduardo Mendes, 52 anos.",
+    "nombre": "Carlos Eduardo Mendes",
+    "evidencia_nombre": "Paciente: Carlos Eduardo Mendes, 52 anos.",
     "edad": 52,
     "evidencia_edad": "Paciente: Carlos Eduardo Mendes, 52 anos."
   },
