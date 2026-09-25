@@ -1,8 +1,8 @@
 # Contrato de MediFlow
 
-Versión 1.0 · 22 de septiembre de 2026 · Incorpora la regla A de urgencia (ADR-002), los valores críticos de laboratorio como cuarta fuente de urgencia y el alto riesgo solo en recetas. El nombre del campo del paciente queda como estaba hasta que la instructora responda.
+Versión 1.0 · Incorpora la regla A de urgencia (ADR-002), el campo del paciente como `nombre` en todo el proyecto (ADR-003), los valores críticos de laboratorio como cuarta fuente de urgencia, el alto riesgo solo en recetas, la categoría AMB-6 de fuera de alcance y la distinción entre medicamentos que se validan por rango y los que se dosifican por protocolo (ADR-007).
 
-Fuente del borrador: `agent/schemas/contrato.py`, `agent/schemas/documentos.py` y `agent/rules/rules.yaml` del esqueleto, más el ejemplo de entrada y salida del brief. Los nombres de campo siguen al brief, con una excepción acordada por el equipo: `paciente.nombre` en lugar de `nome`, para que todo el contrato esté en español.
+Fuente: `agent/schemas/contrato.py`, `agent/schemas/documentos.py` y `agent/rules/rules.yaml` del esqueleto, más el ejemplo de entrada y salida del brief. Los nombres de campo siguen al brief, con una excepción decidida por el equipo y registrada en el ADR-003: `paciente.nombre` en lugar de `nome`, para que todo el contrato esté en un solo idioma.
 
 ---
 
@@ -28,7 +28,9 @@ Fuente del borrador: `agent/schemas/contrato.py`, `agent/schemas/documentos.py` 
 
 ### 1.2 Archivo (PDF o imagen)
 
-`POST /triage/upload` multipart con `documento_id`, `canal_origen` y `archivo`. Formatos: `pdf`, `png`, `jpg`, `jpeg`, `txt`. Tamaño máximo 25 MB. Formato no soportado: error 415. Tamaño excedido: error 413.
+`POST /triage/upload` multipart con `documento_id`, `canal_origen` y `archivo`. Formatos: `pdf`, `txt`, `json`, `png`, `jpg`, `jpeg`, `tiff`, `webp`. Tamaño máximo 20 MB y 50 páginas por PDF, configurables con `MEDIFLOW_MAX_UPLOAD_BYTES` y `MEDIFLOW_MAX_PDF_PAGES`.
+
+La ingesta detecta el formato por la firma del archivo, no por la extensión ni por el tipo que declara el cliente: si no coinciden, el archivo se rechaza. Cualquier entrada inválida, sea por formato, tamaño, archivo vacío o codificación, responde 422 con un mensaje controlado que nunca devuelve contenido clínico ni rutas internas.
 
 El archivo original se guarda en `recibidos/{documento_id}.{ext}` antes de llamar a cualquier modelo.
 
@@ -70,7 +72,7 @@ Significado de `status`:
 
 ## 3. Tipos de documento y campos por tipo
 
-Seis valores posibles para `tipo_documento`. El asterisco marca campo obligatorio: si falta, el caso es ambiguo por "campo obligatorio faltante" y va a revisión humana.
+Seis tipos clínicos más `Otro`, que es el valor que toma cualquier documento fuera de alcance. El asterisco marca campo obligatorio: si falta, el caso es ambiguo por "campo obligatorio faltante" y va a revisión humana.
 
 | Tipo | Campos |
 |---|---|
@@ -182,49 +184,19 @@ Definiciones para etiquetar. Cada caso pertenece a uno solo.
 
 Escenario extra para la demo, dentro de Rutina: receta con medicamento de alto riesgo, etiqueta `Farmacia_Hospitalaria` con `requiere_auditoria_humana = true`.
 
-Reparto de v0, 40 casos en español: 20 rutina (4 por tipo, incluida una receta de alto riesgo), 8 urgencia (3 informes de imágenes, 2 epicrisis, 2 órdenes, 1 laboratorio), 8 ambigüedad (mínimo uno por categoría AMB), 4 urgencia con ambigüedad.
+El conjunto vive en `evals/golden/plan_golden.csv`: 45 elementos, 30 documentos de los seis tipos, 7 casos fuera de alcance, 8 recetas manuscritas y 12 imágenes degradadas derivadas de los documentos. El reparto por escenario y por persona está en esa tabla, con una fila por elemento.
 
 ---
 
 ## 8. Formato de la etiqueta en el golden set
 
-Una línea JSONL por caso en `evals/golden/golden_v0.jsonl`:
+El conjunto de prueba vive en `evals/golden/plan_golden.csv`: una fila por elemento, con la etiqueta esperada y las dos columnas de revisión. `evals/run.py` lee esa tabla, busca en `evals/golden/files/` todas las variantes que existan de cada elemento (texto, JSON, PDF e imagen degradada) y evalúa cada una por separado.
 
-```json
-{
-  "documento_id": "SYN-0007",
-  "tipo_archivo": "TEXTO",
-  "idioma": "es",
-  "escenario": "urgencia_ambiguedad",
-  "categoria_ambiguedad": "AMB-1",
-  "fuente": "generador",
-  "documento_texto": "...",
-  "esperado": {
-    "tipo_documento": "Informe de Estudio por Imagenes",
-    "nivel_prioridad": "Urgente",
-    "destino_principal": "Cola_Emergencia_Medica",
-    "requiere_auditoria_humana": true,
-    "datos_extraidos": {
-      "paciente": {"nombre": null, "edad": 64},
-      "medico_solicitante": {"nombre": "Dr. Julián Restrepo", "matricula": "88213"},
-      "estudio_realizado": "Angiotomografía de tórax",
-      "diagnostico_principal": "Tromboembolismo pulmonar agudo",
-      "cie10_sugerido": "I26.9",
-      "medicamentos": [],
-      "estudios_solicitados": []
-    }
-  },
-  "revisado_por": []
-}
-```
-
-`escenario` toma `rutina`, `urgencia`, `ambiguedad`, `urgencia_ambiguedad`. `categoria_ambiguedad` es null salvo en los dos últimos. Sin dos nombres en `revisado_por`, el caso no cuenta para las métricas.
-
----
+La etiqueta de la fila describe el documento legible. De una imagen degradada se espera otra cosa, porque manda el umbral de legibilidad: en nivel medio, revisión humana con AMB-4; en nivel severo, revisión humana sin comparar el tipo, porque el grafo no llega a clasificar. Está explicado en `evals/golden/README.md`.
 
 ## 9. Almacenamiento
 
-Un solo bucket privado, `mediflow-documentos-clinicos`, con prefijos por estado. Sin Autonomous AI Database en el MVP: la cola de revisión y el estado de la API viven en SQLite en un volumen de la VM, y el JSON en el bucket es la fuente de verdad.
+Un bucket privado con prefijos por estado: `mediflow-dev` en desarrollo, con una carpeta por persona, y el de producción, que solo acepta escrituras desde la VM. Hasta el despliegue del sprint 3 el mismo layout se escribe en `./data/` con `STORAGE_BACKEND=local`. Sin Autonomous AI Database en el MVP: la cola de revisión y el estado de la API viven en SQLite en un volumen de la VM, y el JSON en el bucket es la fuente de verdad.
 
 ```
 recibidos/{documento_id}.{ext}                  original, antes de procesar
@@ -240,11 +212,14 @@ rechazados/{documento_id}.json
 
 ---
 
-## 10. Decisiones que EQU-01 debe cerrar hoy
+## 10. Decisiones cerradas
 
-1. ¿Se aceptan los seis tipos y los campos obligatorios de la sección 3?
-2. ¿`Informe de Laboratorio` es un tipo aparte o se funde con `Informe de Estudio por Imagenes` como "Informe de Estudio"?
-3. ¿Se aceptan las cinco categorías de ambigüedad y la regla "la urgencia nunca se pierde por una ambigüedad"?
-4. ¿Umbrales iniciales 0,85 / 0,60 / 0,40?
-5. ¿SQLite en la VM para cola y estado, con el bucket como fuente de verdad?
-6. Cualquier cambio de nombre de campo se hace en `contrato.py` y en este documento en el mismo PR. El test `test_ejemplo_del_brief` sigue pasando o el PR no se mergea.
+Las preguntas que abrió este contrato ya están resueltas y registradas en `docs/decisions.md`, cada
+una con su motivo y la alternativa descartada: los seis tipos y sus campos obligatorios, el informe
+de laboratorio como tipo propio, las seis categorías de ambigüedad, la regla de que la urgencia
+nunca se pierde por una ambigüedad, los umbrales 0,85 / 0,60 / 0,40, y SQLite en la VM con el bucket
+como fuente de verdad.
+
+Sigue vigente una regla de trabajo: cualquier cambio de nombre de campo se hace en `contrato.py` y
+en este documento en el mismo PR, y el test `test_ejemplo_del_brief` tiene que seguir pasando.
+
