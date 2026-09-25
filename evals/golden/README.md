@@ -14,15 +14,27 @@
 
 El nivel de legibilidad de cada imagen (leve, media, severa) está en `plan_golden.csv`, no en el nombre del archivo.
 
-## `golden_v0.jsonl`
+## Cómo lo lee `evals/run.py`
 
-Un caso por línea, generado a partir de `plan_golden.csv` y de `files/`. Lo lee `evals/run.py`:
-
-```json
-{"documento_id": "GS-06", "tipo_archivo": "TEXTO", "archivo": "evals/golden/files/GS-06.txt",
- "esperado": {"tipo_documento": "Receta Medica", "resultado": "ambiguedad", "destino_principal": "Cola_Revision_Humana",
-              "requiere_auditoria_humana": true, "categoria_amb": "AMB-3", "nivel_prioridad": "Rutina"},
- "revisado_por": ["CO", "CC"]}
-```
+El harness no necesita un archivo intermedio: lee `plan_golden.csv`, busca en `files/` todas las
+variantes que existan de cada elemento y evalúa cada una por separado. Un elemento sin archivo
+escrito no cuenta como error, aparece como pendiente.
 
 Regla: nadie ajusta prompts mirando estos archivos. Para eso está `evals/dev/`.
+
+## La etiqueta de la fila describe el documento legible
+
+Cada fila lleva la respuesta correcta del documento tal como se escribió. Una imagen degradada del
+mismo documento **no espera lo mismo**: manda el umbral de legibilidad, no el contenido. `run.py`
+evalúa cada variante por separado y deriva lo que espera de la imagen:
+
+| Nivel | Qué se espera de la imagen |
+|---|---|
+| leve | lo mismo que el documento legible: la imagen se lee bien |
+| media | revisión humana con AMB-4 y marca de auditoría. Si el documento es una urgencia, va a Emergencia y además queda marcado |
+| severa | revisión humana con marca de auditoría, sin comparar el tipo: por debajo de 0,40 el grafo no llega a clasificar |
+
+Por eso, por ejemplo, GS-12 dice Historia Clínica Electrónica en su fila y su imagen severa debe
+terminar en la Cola de Revisión Humana. Las dos cosas son correctas y se miden por separado: las
+métricas de clasificación y destino salen de los documentos legibles, y las imágenes media y severa
+alimentan la métrica de la puerta de legibilidad.
