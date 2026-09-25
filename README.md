@@ -272,6 +272,7 @@ mediflow/
 ├── ui/             Streamlit multipágina
 ├── worker/         Procesa recibidos/, cola con reintentos, reporte diario
 ├── evals/          Golden set, generador de datos sintéticos y harness de evaluación
+│                   Las tablas de referencia (banco clínico, medicamentos, CIE-10) viven en evals/generator/data/
 ├── infra/          Docker Compose de producción, Nginx, políticas OCI, script de la VM
 ├── docs/           Arquitectura, contrato, decisiones (ADR), ejemplos y plan
 └── .github/        CI, despliegue, CODEOWNERS y plantillas
@@ -334,11 +335,14 @@ Cada fuente resuelve una tarea distinta y conviene no mezclarlas:
 | Documentos de texto | 30 | Los seis tipos: receta médica, informe de estudio por imágenes, informe de laboratorio, orden de solicitud de procedimiento, epicrisis y certificado médico | Se define al generarlos: sabemos qué pusimos en cada uno |
 | Imágenes degradadas | 12 | Sobre todo informes de estudio y certificados, que son los que en la vida real llegan escaneados o fotografiados. Salen de 12 de los 30 documentos | Heredan el contenido del documento; la decisión esperada cambia con el nivel de legibilidad |
 | Fotos de recetas manuscritas | 8, una por persona | Todas son Receta Médica, que es lo que se escribe a mano | La escribe quien redacta la receta |
-| **Total** | **50** | | |
+| Casos fuera de alcance | 6 | Factura de farmacia, consentimiento informado, carnet de obra social, informe en inglés, pedido de interpretar una radiografía y uno con una instrucción incrustada en el texto | Se define al escribirlos |
+| **Total** | **56** | | |
 
 Los 30 documentos cubren los cinco resultados posibles para un documento legible: rutina, alto riesgo farmacológico, urgencia, urgencia con ambigüedad y ambigüedad. Las 20 imágenes agregan el sexto, ilegible, y se reparten en tres niveles de legibilidad, leve, media y severa, para ajustar los umbrales de 0,40 y 0,70 de rules.yaml. Hay un camino que no se etiqueta de antemano: cuando el score del modelo queda entre 0,60 y 0,85, rules.yaml pide una segunda opinión o agrega una marca de auditoría. Eso depende de la confianza del modelo en cada corrida, así que no cuenta como error de enrutamiento; se refleja en la tasa de revisión humana.
 
-**Por qué 30.** Es el mínimo que cubre los seis tipos de documento, los cinco resultados y las cinco categorías de ambigüedad. Es una prueba de funcionamiento, no una medición estadística: si el agente acierta el 90 %, con 30 casos el acierto real puede estar entre el 79 % y el 100 %, con un 95 % de confianza (margen = 1,96 × √(0,90 × 0,10 ÷ 30) ≈ 0,11, es decir, 11 puntos). Alcanza para saber si el sistema funciona o está roto. Medir con un margen de 5 puntos exigiría unos 140 documentos (1,96² × 0,90 × 0,10 ÷ 0,05² ≈ 138), y el conjunto crece en las siguientes versiones.
+Los seis casos fuera de alcance se miden aparte, porque responden otra pregunta: no si el agente acierta, sino si sabe cuándo no le corresponde decidir. Cinco deben terminar en revisión humana con AMB-6; el de la instrucción incrustada debe enrutarse por lo que el documento realmente es, ignorando la orden.
+
+**Por qué 30.** Es el mínimo que cubre los seis tipos de documento, los cinco resultados y las categorías de ambigüedad. Es una prueba de funcionamiento, no una medición estadística: si el agente acierta el 90 %, con 30 casos el acierto real puede estar entre el 79 % y el 100 %, con un 95 % de confianza (margen = 1,96 × √(0,90 × 0,10 ÷ 30) ≈ 0,11, es decir, 11 puntos). Alcanza para saber si el sistema funciona o está roto. Medir con un margen de 5 puntos exigiría unos 140 documentos (1,96² × 0,90 × 0,10 ÷ 0,05² ≈ 138), y el conjunto crece en las siguientes versiones.
 
 Para que los números no estén contaminados, los ejemplos incrustados en los prompts nunca son documentos del conjunto, y los prompts no se ajustan mirando los fallos del conjunto de prueba: se prueban con otros documentos.
 
@@ -392,11 +396,11 @@ El golden set se corre con `evals/run.py` y mide accuracy de clasificación, pre
 Una tarea, una rama, un PR.
 
 1. Toma una tarea del tablero y asígnatela.
-2. Crea una rama desde `main` con el formato `feat/<area>-<tema>` o `fix/<area>-<tema>`, por ejemplo `feat/agent-clasificar`.
+2. Crea una rama desde `develop` con el formato `feat/<area>-<tema>`, `fix/<area>-<tema>` o `docs/<tema>`, por ejemplo `feat/agent-clasificar`.
 3. Haz commits pequeños con mensajes claros.
 4. Abre un Pull Request con la plantilla. El CI corre lint y tests automáticamente.
 5. Una persona del equipo dueño de la carpeta revisa y aprueba.
-6. Se hace squash merge a `main`, que despliega solo. Nadie hace push directo a `main`.
+6. Se hace squash merge a `develop`. Cuando el conjunto funciona de punta a punta, `develop` sube a `main` en un solo PR, y ese es el que despliega. Nadie hace push directo a `main` ni a `develop`.
 
 Las decisiones de diseño se registran en [`docs/decisions.md`](docs/decisions.md). Nunca se suben claves, wallets ni datos de pacientes: `.env` y `wallet/` están en `.gitignore`.
 
@@ -418,3 +422,4 @@ Proyecto desarrollado en el marco del Hackathon ONE G10, programa Oracle Next Ed
 ## Licencia
 
 MIT. Ver [`LICENSE`](LICENSE).
+
