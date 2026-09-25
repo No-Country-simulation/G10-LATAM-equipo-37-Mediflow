@@ -1,0 +1,65 @@
+{
+  "name": "MediFlow Dev Container (Codespaces)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableOnDataRoot": true
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": [
+          "agent/tests",
+          "api/tests"
+        ],
+        "[python]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+          }
+        }
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml",
+        "bierner.markdown-mermaid",
+        "GitHub.vscode-pull-request-github"
+      ]
+    }
+  },
+  "forwardPorts": [8000, 8501],
+  "portsAttributes": {
+    "8000": {
+      "label": "MediFlow FastAPI",
+      "onAutoForward": "notify"
+    },
+    "8501": {
+      "label": "MediFlow Streamlit UI",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "containerEnv": {
+    "PYTHONPATH": "/workspaces/mediflow",
+    "MEDIFLOW_OCR_LANG": "spa+por+eng",
+    "STORAGE_BACKEND": "local",
+    "ENV": "dev"
+  },
+  "postCreateCommand": "test -f .env || cp .env.example .env && pip install --upgrade pip && pip install -r requirements-dev.txt",
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb"
+  }
+}
