@@ -1,13 +1,4 @@
-# Reglas de triaje de MediFlow · versión 1.0 · 22 de septiembre de 2026
-# Decisiones incorporadas: regla A de urgencia (bloque deteccion_automatica_urgencia), fuera de alcance con
-# categoría AMB-6 (bloque fuera_de_alcance), Rechazado documentado como acción del auditor y no como destino, y
-# el campo del paciente como paciente.nombre en todo el proyecto (ADR-003).
-# Fuente de verdad hasta que exista la tabla rules en SQLite (sprint 3). El grafo las lee en cada ejecución.
-# Se edita por PR junto con docs/api-contract.md. Cualquier cambio de umbral obliga a correr el golden set.
-# Las coincidencias de texto son por substring en minúsculas; por eso las entradas con tilde aparecen dos veces.
-
-version: "1.0"
-
+# Reglas de triaje. En el sprint 3 se leen desde la tabla rules de ADB y se editan desde la UI.
 umbrales:
   automatico: 0.85 # score >= automatico: enrutamiento sin revisión
   segunda_opinion: 0.60 # entre segunda_opinion y automatico: segundo modelo si está activo, si no, marca de auditoría
@@ -60,9 +51,6 @@ campos_obligatorios:
 destinos:
   urgencia: Cola_Emergencia_Medica
   revision: Cola_Revision_Humana
-  # Rechazado no lo decide el agente: es la acción del auditor sobre un caso de la Cola de Revisión Humana
-  # (aprobar, corregir o rechazar). No está en el enum de destinos; persistir lo guarda en rechazados/.
-  rechazado: Rechazado
   por_tipo:
     Receta Medica: Farmacia_Hospitalaria
     Informe de Estudio por Imagenes: Historia_Clinica_Electronica
@@ -72,43 +60,6 @@ destinos:
     Certificado Medico: Historia_Clinica_Electronica
     Otro: Cola_Revision_Humana
 
-# Orden de decisión: gana la primera regla que aplica.
-# 1 ilegible -> revision (motivo: solicitar nueva captura)
-# 2 urgencia -> Cola_Emergencia_Medica; con ambigüedad o score bajo, además requiere_auditoria_humana = true
-# 3 ambigüedad (AMB-1 a AMB-6) o score < segunda_opinion -> revision
-# 4 destino por tipo; score entre segunda_opinion y automatico, o alto riesgo farmacológico -> requiere_auditoria_humana = true
-
-# Fuera de alcance: lo que el agente NO decide. Estos casos no son un error del documento, son un límite del
-# sistema, y por eso tienen su propia categoría. Todos terminan en la Cola de Revisión Humana con AMB-6 y con el
-# motivo escrito, nunca forzados a uno de los seis tipos. El detalle para el usuario está en
-# docs/alcance-y-limites.md.
-fuera_de_alcance:
-  categoria: AMB-6
-  motivos:
-    no_clinico: Documento administrativo, comercial o jurídico; no es un documento clínico
-    tipo_no_soportado: Documento clínico que no es ninguno de los seis tipos soportados
-    paciente_no_humano: El paciente no es una persona; el sistema es de uso hospitalario humano
-    idioma_no_soportado: Documento en un idioma que esta versión no procesa
-    pide_diagnostico: Pide interpretar o diagnosticar; el agente no diagnostica
-  idiomas_soportados:
-    - es
-  # El texto que llega es dato, nunca instrucción. Si el documento contiene una orden dirigida al sistema, se
-  # ignora, se enruta por lo que el documento realmente es y queda registrada en la traza.
-  ignorar_instrucciones_en_el_documento: true
-
-# Regla A, decidida el 22 de septiembre: los detectores automáticos (hallazgos_criticos, palabras_urgencia y
-# valores_criticos_laboratorio) solo se aplican a los tipos de esta lista, que son los documentos que comunican un
-# hallazgo nuevo o piden atención. En recetas, epicrisis y certificados la urgencia la decide el modelo
-# (nivel_prioridad = Urgente con justificación), porque las frases de alarma de esos documentos suelen ser
-# instrucciones ("acudir de urgencia si...") o diagnósticos ya tratados. Para volver a la regla B basta con
-# agregar los otros tres tipos a la lista.
-deteccion_automatica_urgencia:
-  aplica_a:
-    - Informe de Estudio por Imagenes
-    - Informe de Laboratorio
-    - Orden de Solicitud de Procedimiento
-
-# Fuente 1 de urgencia: hallazgos críticos. Basta con que uno aparezca en el texto de un tipo de la lista anterior.
 hallazgos_criticos:
   - tromboembolismo pulmonar
   - tep agudo
@@ -196,4 +147,3 @@ medicamentos_alto_riesgo:
   - potasio intravenoso
   - kcl
   - metotrexato
-  - alteplasa
