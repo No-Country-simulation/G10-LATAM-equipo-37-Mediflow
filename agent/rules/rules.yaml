@@ -1,8 +1,7 @@
 # Reglas de triaje de MediFlow · versión 1.0 · 22 de septiembre de 2026
 # Decisiones incorporadas: regla A de urgencia (bloque deteccion_automatica_urgencia), fuera de alcance con
-# categoría AMB-6 (bloque fuera_de_alcance) y Rechazado documentado
-# como acción del auditor, no como destino del agente. El nombre del campo del paciente queda como estaba hasta que
-# la instructora responda si el nome del brief es un error.
+# categoría AMB-6 (bloque fuera_de_alcance), Rechazado documentado como acción del auditor y no como destino, y
+# el campo del paciente como paciente.nombre en todo el proyecto (ADR-003).
 # Fuente de verdad hasta que exista la tabla rules en SQLite (sprint 3). El grafo las lee en cada ejecución.
 # Se edita por PR junto con docs/api-contract.md. Cualquier cambio de umbral obliga a correr el golden set.
 # Las coincidencias de texto son por substring en minúsculas; por eso las entradas con tilde aparecen dos veces.
@@ -198,4 +197,3 @@ medicamentos_alto_riesgo:
   - kcl
   - metotrexato
   - alteplasa
-
