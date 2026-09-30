@@ -3,3 +3,11 @@ pytest>=8.2
 ruff>=0.5
 reportlab>=4.2
 augraphy>=8.2
+
+# Review de PR y calidad (agregados 24/09/2026, ver docs/review-pr-3-carolina-triaje.md)
+pytest-cov>=5.0   # cobertura: qué ramas del grafo quedan sin testear
+bandit>=1.7       # seguridad local; el repo ya lo usa vía Codacy (baseline Bandit_B*)
+pip-audit>=1.9    # vulnerabilidades en requirements.txt
+pre-commit>=3.7   # hooks locales para que ruff corra antes del commit
+mypy>=1.11        # el código ya está tipado (TriageState, str | None) y nadie lo verifica
+
