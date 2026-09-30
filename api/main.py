@@ -4,8 +4,22 @@ from agent.ingestion import IngestionError, ingest_document
 from agent.rules.loader import load_rules
 from agent.schemas.contrato import TriageRequest, TriageResponse
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from typing import Literal, Optional
+from pydantic import BaseModel
+from agent.storage import local_audit
+from agent.storage.local_audit import (
+    AccionInvalida,
+    DocumentoNoEncontrado,
+    ResolucionYaExiste,
+)
 
 app = FastAPI(title="MediFlow", version="0.1.0")
+
+class DecisionAuditor(BaseModel):
+    accion: Literal["aprobar", "corregir", "rechazar"]  # ADR-004
+    revisor: str
+    motivo: str
+    correcciones: Optional[dict] = None
 
 
 def _a_respuesta(resultado: dict) -> TriageResponse:
@@ -70,18 +84,40 @@ def obtener_triage(documento_id: str):
     # TODO sprint 2: leer de ADB o del bucket.
     raise HTTPException(status_code=404, detail="pendiente de implementar")
 
-
 @app.get("/queue/human")
 def cola_humana():
-    # TODO sprint 3: listar auditoria_humana/ desde ADB.
-    return {"items": []}
+    items = local_audit.listar_cola_humana(base=local_audit.DATA_DIR)
+    return {"items": items}
 
 
 @app.post("/audit/{documento_id}")
-def auditar(documento_id: str, decision: dict):
-    # TODO sprint 3: guardar la decisión del auditor y reencaminar.
-    return {"documento_id": documento_id, "recibido": decision}
+def auditar(documento_id: str, decision: DecisionAuditor):
+    try:
+        resolucion = local_audit.guardar_resolucion(
+            documento_id,
+            decision.accion,
+            revisor=decision.revisor,
+            motivo=decision.motivo,
+            correcciones=decision.correcciones,
+            base=local_audit.DATA_DIR,
+        )
+    except DocumentoNoEncontrado as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ResolucionYaExiste as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except AccionInvalida as exc:
+        # No debería llegar acá nunca: el Literal del schema ya rechaza acciones
+        # inválidas con 422 antes de que FastAPI llame a esta función. Se deja
+        # como defensa adicional por si guardar_resolucion se llama desde otro lado.
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+    # TODO: cuando exista revision_humana.py (Carolina) y enrutar.py lea la resolución,
+    # esto también debería disparar la reanudación del grafo:
+    #   - aprobar/corregir -> vuelve a enrutar()
+    #   - rechazar -> termina en rechazados/ (persistir.py, Carlos)
+    # Por ahora este endpoint solo persiste la resolución; no reanuda el grafo.
+
+    return {"documento_id": documento_id, "resolucion": resolucion}
 
 @app.get("/rules")
 def reglas():
