@@ -1,40 +1,52 @@
-import os
+"""Document upload and triage page."""
+from __future__ import annotations
 
-import httpx
+import uuid
+
 import streamlit as st
 
-API_URL = os.getenv("API_URL", "http://localhost:8000")
-st.title("Carga de documentos")
+from ui.lib import api_request, remember_document, render_result, show_api_error
 
-with st.form("carga"):
-    documento_id = st.text_input("documento_id", "DOC-CLIN-2026-0001")
-    canal = st.text_input("canal_origen", "web")
-    texto = st.text_area("Texto del documento (o sube un archivo abajo)", height=200)
-    archivo = st.file_uploader("PDF o imagen", type=["pdf", "png", "jpg", "jpeg", "txt"])
-    enviado = st.form_submit_button("Procesar")
+st.title("📄 Carga de documento")
+st.caption("El original se conserva en la sesión para que pueda ser revisado si el grafo solicita auditoría humana.")
 
-if enviado:
-    with st.spinner("Procesando..."):
-        if archivo is not None:
-            r = httpx.post(
-                f"{API_URL}/triage/upload",
-                data={"documento_id": documento_id, "canal_origen": canal},
-                files={"archivo": (archivo.name, archivo.getvalue())},
-                timeout=120,
-            )
-        else:
-            r = httpx.post(
-                f"{API_URL}/triage",
-                json={
-                    "documento_id": documento_id,
-                    "tipo_archivo": "TEXTO",
-                    "documento_texto": texto,
-                    "canal_origen": canal,
-                },
-                timeout=120,
-            )
-    if r.status_code == 200:
-        st.success("Procesado")
-        st.json(r.json())
+with st.form("triage_upload"):
+    uploaded = st.file_uploader(
+        "Selecciona un PDF, imagen, texto o JSON",
+        type=["pdf", "png", "jpg", "jpeg", "tif", "tiff", "webp", "txt", "json"],
+    )
+    document_id = st.text_input("ID del documento", value=f"DOC-UI-{uuid.uuid4().hex[:8].upper()}")
+    channel = st.text_input("Canal de origen", value="streamlit")
+    submitted = st.form_submit_button("Procesar documento", type="primary")
+
+if submitted:
+    if uploaded is None:
+        st.error("Selecciona un archivo antes de procesar.")
+    elif not document_id.strip():
+        st.error("El ID del documento es obligatorio.")
     else:
-        st.error(f"Error {r.status_code}: {r.text}")
+        remember_document(uploaded)
+        with st.spinner("Ejecutando ingesta y grafo de triaje..."):
+            try:
+                response = api_request(
+                    "POST",
+                    "/triage/upload",
+                    data={"documento_id": document_id.strip(), "canal_origen": channel.strip() or "streamlit"},
+                    files={"archivo": (uploaded.name, uploaded.getvalue(), uploaded.type or "application/octet-stream")},
+                )
+                if response.is_success:
+                    st.session_state["last_triage_result"] = response.json()
+                else:
+                    show_api_error(response)
+            except RuntimeError as exc:
+                st.error(str(exc))
+
+result = st.session_state.get("last_triage_result")
+if result:
+    st.divider()
+    render_result(result)
+    if result.get("status") == "revision_humana" or result.get("decision_enrutamiento", {}).get("requiere_auditoria_humana"):
+        with st.expander("Abrir documento para auditoría", expanded=True):
+            from ui.lib import show_document_preview
+
+            show_document_preview()
