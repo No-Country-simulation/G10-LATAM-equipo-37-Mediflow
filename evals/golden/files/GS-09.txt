@@ -1,8 +1,8 @@
 HOSPITAL CENTRAL · INFORME DE ESTUDIO POR IMÁGENES
 
-Paciente: Lucía Benítez, 42 años
+Paciente: Paciente Ficticio 002, 42 años
 Fecha: 23/09/2026
-Solicitante: Dr. Andrés Salas, MP 41023
+Solicitante: Dr. Ficticio 002, MP 94ebef1c07bbef698148c098e5bb79efc472a9041c4c529403415a22544b9f92
 Estudio: Radiografía de tórax anteroposterior
 
 Hallazgos:

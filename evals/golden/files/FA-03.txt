@@ -1,9 +1,9 @@
 OBRA SOCIAL SANTA LUCÍA
 Credencial de afiliación
 
-Afiliado: María Fernanda López
-DNI: 32.456.789
-Número de afiliado: 45-2891-03
+Afiliado: Paciente Ficticio 005
+DNI: 4975d9d9fdfd76ed9f95bf8f4a5652098aefdf457373602dba976123fdd2be88
+Número de afiliado: beadf224f37427a86f333aad59b255a1962b754d6fc4f62b4a06083ad950e048
 Plan: 2100
 Grupo familiar: 03
 Vigencia: 01/03/2026 al 28/02/2027

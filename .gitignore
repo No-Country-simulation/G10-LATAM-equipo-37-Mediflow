@@ -41,3 +41,7 @@ tmp/
 # Temporales del generador
 augraphy_cache/
 fonts/
+
+# Backups de anonimizacion (no subir)
+evals/golden/files/*.original.txt
+evals/golden/files/*.anonimizado.txt

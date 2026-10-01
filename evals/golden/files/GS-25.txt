@@ -1,9 +1,9 @@
 HOSPITAL UNIVERSITARIO · EPICRISIS
 
-Paciente: Marcos Aguirre, 58 años
+Paciente: Paciente Ficticio 004, 58 años
 Fecha de ingreso: 18/09/2026
 Fecha de egreso: 23/09/2026
-Solicitante: Dra. Silvia Romero, MP 42156
+Solicitante: Dra. Ficticia 004, MP 6c7a0883c9d1f232282bba92c09bcefae8e31f219e3100003c9f9b9eb5d8104b
 
 Motivo de ingreso:
 Disnea súbita y dolor torácico pleurítico. Taquicardia 118, saturación 88 %. Dímero D elevado.
