@@ -1,0 +1,19 @@
+CENTRO MÉDICO DEL NORTE · RECETA MÉDICA
+
+Paciente: Paciente Ficticio 001, 61 años
+Fecha: 23/09/2026
+Diagnóstico: Hipertensión arterial esencial en control (I10)
+
+Rp/
+
+1. Losartán 50 mg — vía oral — cada 24 horas — tratamiento prolongado
+2. Amlodipino 5 mg — vía oral — cada 24 horas — tratamiento prolongado
+
+Indicaciones:
+- Continuar con el tratamiento actual.
+- Control de presión arterial en 3 meses.
+- Acudir de urgencia si la presión supera 180/110.
+
+Dra. Ficticia 001
+MP 791517dd367eac1efa83b6435cb543b41c35bd0112a7acdbd38e95f8b3fe48ad
+Cardiología

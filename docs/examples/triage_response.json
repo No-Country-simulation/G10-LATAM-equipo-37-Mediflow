@@ -9,7 +9,7 @@
   },
   "datos_extraidos": {
     "paciente": {
-      "nome": "Carlos Eduardo Mendes",
+      "nombre": "Carlos Eduardo Mendes",
       "edad": 52
     },
     "medico_solicitante": {

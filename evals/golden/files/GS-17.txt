@@ -1,0 +1,18 @@
+LABORATORIO CLÍNICO SAN MARTÍN · INFORME DE LABORATORIO
+
+Paciente: Paciente Ficticio 003
+Fecha de nacimiento: 15/03/1961
+Edad: 38 años
+Fecha del estudio: 23/09/2026
+Solicitante: Dr. Ficticio 003, MP 777f57616faa0ee2f489f671e69f58bb079a2b1d4edfcc7dc45274161ddc8fa5
+
+Estudio: Hemograma y perfil de hierro
+
+Resultados:
+- Hemoglobina: 9,2 g/dL (referencia 12,0 - 16,0)
+- VCM: 71 fL (referencia 80 - 100)
+- Ferritina: 8 ng/mL (referencia 15 - 150)
+- Saturación de transferrina: 9 % (referencia 20 - 50)
+
+Conclusión:
+Anemia microcítica hipocrómica por déficit de hierro, de grado moderado (D50.9). Iniciar hierro oral y estudiar la causa.
