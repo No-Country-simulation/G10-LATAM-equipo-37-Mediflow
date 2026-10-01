@@ -9,4 +9,4 @@ Hallazgos:
 Colapso completo del pulmón derecho con desviación mediastínica contralateral y descenso del hemidiafragma derecho. Ausencia de murmullo vesicular derecho. Sin derrame pleural asociado.
 
 Conclusión:
-Neumotórax a tensión derecho. Requiere descompresión inmediata.
+Neumotórax a tensión derecho (J93.0). Requiere descompresión inmediata.

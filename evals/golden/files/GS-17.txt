@@ -15,4 +15,4 @@ Resultados:
 - Saturación de transferrina: 9 % (referencia 20 - 50)
 
 Conclusión:
-Anemia microcítica hipocrómica por déficit de hierro, de grado moderado. Iniciar hierro oral y estudiar la causa.
+Anemia microcítica hipocrómica por déficit de hierro, de grado moderado (D50.9). Iniciar hierro oral y estudiar la causa.

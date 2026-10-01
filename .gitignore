@@ -37,3 +37,7 @@ tmp/
 .github\instructions\codacy.instructions.md
 
 
+
+# Temporales del generador
+augraphy_cache/
+fonts/
