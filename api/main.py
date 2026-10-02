@@ -19,7 +19,7 @@ app = FastAPI(title="MediFlow", version="0.1.0")
 
 
 class DecisionAuditor(BaseModel):
-    accion: Literal["aprobar", "corregir", "rechazar"]  # ADR-004
+    accion: Literal["aprobar", "corregir", "rechazar"]
     revisor: str
     motivo: str
     correcciones: Optional[dict] = None
