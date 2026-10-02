@@ -36,6 +36,7 @@ hay que resolverlas antes de que esto sea definitivo):
 
 import csv
 import re
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -101,37 +102,53 @@ def _get(datos: dict, ruta: str) -> Any:
 def _vacio(valor: Any) -> bool:
     return valor is None or valor == "" or valor == [] or valor == {}
 
+_FACTOR_MG = {"mg": 1.0, "g": 1000.0, "mcg": 0.001, "µg": 0.001, "ug": 0.001}
+
 
 def _a_numero(texto: Any) -> float | None:
-    """Convierte '0,4' o '5' o '1000 mg' (extrae el primer número) a float."""
+    """Extrae el primer número. '1.000' se lee como miles; '0,4' y '0.25' como decimales."""
     if texto is None:
         return None
-    match = re.search(r"\d+(?:[.,]\d+)?", str(texto))
-    if not match:
+    m = re.search(r"\d{1,3}(?:\.\d{3})+(?!\d)|\d+(?:[.,]\d+)?", str(texto))
+    if not m:
         return None
-    try:
-        return float(match.group(0).replace(",", "."))
-    except ValueError:
+    s = m.group(0)
+    if re.fullmatch(r"[1-9]\d{0,2}(?:\.\d{3})+", s):
+        s = s.replace(".", "")
+    else:
+        s = s.replace(",", ".")
+    return float(s)
+
+
+def _dosis_en_unidad_catalogo(texto: Any, unidad_catalogo: str) -> float | None:
+    """Convierte la dosis del documento a la unidad del catálogo. None si no se puede."""
+    valor = _a_numero(texto)
+    if valor is None:
         return None
+    m = re.search(r"\d\s*(mg|g|mcg|µg|ug)\b", str(texto).lower())
+    if not m:
+        return valor  # sin unidad: se asume la del catálogo
+    if unidad_catalogo.lower() == "mg":
+        return valor * _FACTOR_MG[m.group(1)]
+    return valor if m.group(1) == unidad_catalogo.lower() else None
+
+def _norm(s: str) -> str:
+    s = unicodedata.normalize("NFD", s.lower().strip())
+    return "".join(c for c in s if unicodedata.category(c) != "Mn")
 
 
 def _buscar_medicamento(nombre: str | None, catalogo: list[dict]) -> dict | None:
-    """Busca el medicamento por nombre genérico o por sinónimo (ADR-006: en el documento
-    clínico aparece el nombre/sinónimo, no el código ATC)."""
+    """Busca por nombre genérico o sinónimo (ADR-006), sin tildes y por palabra completa."""
     if not nombre:
         return None
-    objetivo = nombre.strip().lower()
+    objetivo = _norm(str(nombre))
     for fila in catalogo:
-        candidatos = [fila.get("nombre", "")] + [
-            s.strip() for s in fila.get("sinonimos", "").split(";") if s.strip()
-        ]
-        for candidato in candidatos:
-            candidato_low = candidato.lower()
-            if candidato_low and (candidato_low in objetivo or objetivo in candidato_low):
+        candidatos = [fila.get("nombre", "")] + (fila.get("sinonimos") or "").split(";")
+        for c in candidatos:
+            c = _norm(c)
+            if c and re.search(rf"\b{re.escape(c)}\b", objetivo):
                 return fila
     return None
-
-
 # ---------------------------------------------------------------------------
 # Validaciones individuales
 # ---------------------------------------------------------------------------
@@ -141,10 +158,11 @@ def validar_campos_obligatorios(datos: dict, tipo_documento: str, rules: dict) -
     obligatorios = rules.get("campos_obligatorios", {}).get(tipo_documento, [])
     faltantes = [campo for campo in obligatorios if _vacio(_get(datos, campo))]
 
-    # Extensión sobre lo que dice rules.yaml: el contrato (sección 3) también obliga
-    # nombre* y dosis* DENTRO de cada medicamento de una receta, no solo la lista en sí.
+    # El contrato (sección 3) también obliga nombre y dosis dentro de cada medicamento.
     if tipo_documento == "Receta Medica":
         for i, med in enumerate(datos.get("medicamentos") or []):
+            if not isinstance(med, dict):
+                continue  # el formato inválido lo reporta validar_dosis_medicamentos
             if _vacio(med.get("nombre")):
                 faltantes.append(f"medicamentos[{i}].nombre")
             if _vacio(med.get("dosis")):
@@ -155,23 +173,27 @@ def validar_campos_obligatorios(datos: dict, tipo_documento: str, rules: dict) -
 
 def validar_dosis_medicamentos(datos: dict, medicamentos_catalogo: list[dict]) -> list[str]:
     """AMB-3: dosis fuera de rango o medicamento no identificable.
-    ADR-007: solo se compara si el medicamento tiene validar_dosis == 'si'; los que van
-    por peso/protocolo (enoxaparina, alteplasa, heparina, insulina, potasio IV, fentanilo,
-    morfina) no generan AMB-3 aunque sean de alto riesgo.
+    ADR-007: solo se compara si validar_dosis == 'si'; los que van por peso/protocolo
+    (enoxaparina, alteplasa, heparina, insulina, potasio IV, fentanilo, morfina)
+    no generan AMB-3 aunque sean de alto riesgo.
     """
     conflictos: list[str] = []
     for med in datos.get("medicamentos") or []:
+        if not isinstance(med, dict):
+            conflictos.append(f"Medicamento con formato inválido: {med!r}")
+            continue
         nombre = med.get("nombre")
         if not nombre:
-            continue  # ya se marcó como campo faltante arriba
+            continue  # ya se marcó como campo faltante
         fila = _buscar_medicamento(nombre, medicamentos_catalogo)
         if fila is None:
             conflictos.append(f"Medicamento no identificable en el catálogo: {nombre!r}")
             continue
         if (fila.get("validar_dosis") or "no").strip().lower() != "si":
-            continue  # se dosifica por protocolo/peso (ADR-007): no genera AMB-3
+            continue  # ADR-007
 
-        dosis_valor = _a_numero(med.get("dosis"))
+        unidad = fila.get("unidad") or "mg"
+        dosis_valor = _dosis_en_unidad_catalogo(med.get("dosis"), unidad)
         dosis_min = _a_numero(fila.get("dosis_min_toma"))
         dosis_max = _a_numero(fila.get("dosis_max_toma"))
 
@@ -179,7 +201,7 @@ def validar_dosis_medicamentos(datos: dict, medicamentos_catalogo: list[dict]) -
             conflictos.append(f"Dosis no interpretable para {nombre}: {med.get('dosis')!r}")
         elif dosis_min is not None and dosis_max is not None and not (dosis_min <= dosis_valor <= dosis_max):
             conflictos.append(
-                f"Dosis fuera de rango para {nombre}: {dosis_valor} {fila.get('unidad', '')} "
+                f"Dosis fuera de rango para {nombre}: {dosis_valor} {unidad} "
                 f"(rango válido {dosis_min}-{dosis_max})"
             )
     return conflictos
@@ -197,18 +219,17 @@ def validar_cie10(datos: dict, cie10_catalogo: list[dict]) -> list[str]:
 
 
 def validar_contradiccion_interna(datos: dict) -> list[str]:
-    """AMB-2: contradicción interna. TODO: solo cubre edad implausible por ahora;
-    falta la regla de diagnóstico vs. tipo de estudio (ej. fractura en una ecografía
-    abdominal) que menciona el contrato como ejemplo.
+    """AMB-2: contradicción interna. TODO: falta edad vs. fecha de nacimiento y
+    diagnóstico vs. tipo de estudio (ej. fractura en una ecografía abdominal).
     """
     conflictos: list[str] = []
     edad = _get(datos, "paciente.edad")
     if edad is not None:
-        try:
-            if not (0 <= int(edad) <= 120):
-                conflictos.append(f"Edad fuera de rango plausible: {edad}")
-        except (TypeError, ValueError):
+        n = _a_numero(edad)
+        if n is None:
             conflictos.append(f"Edad no numérica: {edad!r}")
+        elif not (0 <= n <= 120):
+            conflictos.append(f"Edad fuera de rango plausible: {edad}")
     return conflictos
 
 

@@ -283,3 +283,30 @@ def test_validar_receta_sin_paciente_da_amb1():
     resultado = validar(state)
     assert resultado["validacion"]["categoria_amb"] == "AMB-1"
     assert "paciente.nombre" in resultado["validacion"]["campos_faltantes"]
+def test_dosis_en_gramos_se_convierte(medicamentos_catalogo):
+    datos = {"medicamentos": [{"nombre": "amoxicilina", "dosis": "1 g"}]}
+    assert validar_dosis_medicamentos(datos, medicamentos_catalogo) == []
+
+
+def test_dosis_con_separador_de_miles(medicamentos_catalogo):
+    datos = {"medicamentos": [{"nombre": "amoxicilina", "dosis": "1.000 mg"}]}
+    assert validar_dosis_medicamentos(datos, medicamentos_catalogo) == []
+
+
+def test_medicamento_sin_tildes(medicamentos_catalogo):
+    datos = {"medicamentos": [{"nombre": "acido folico", "dosis": "1 mg"}]}
+    assert validar_dosis_medicamentos(datos, medicamentos_catalogo) == []
+
+
+def test_medicamento_parcial_no_coincide(medicamentos_catalogo):
+    datos = {"medicamentos": [{"nombre": "ácido", "dosis": "1 mg"}]}
+    assert "no identificable" in validar_dosis_medicamentos(datos, medicamentos_catalogo)[0]
+
+
+def test_medicamento_no_dict_no_tumba_el_nodo(medicamentos_catalogo):
+    datos = {"medicamentos": ["amoxicilina 500"]}
+    assert len(validar_dosis_medicamentos(datos, medicamentos_catalogo)) == 1
+
+
+def test_edad_con_texto():
+    assert validar_contradiccion_interna({"paciente": {"edad": "45 años"}}) == []
