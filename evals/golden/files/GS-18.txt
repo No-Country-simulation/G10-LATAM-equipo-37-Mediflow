@@ -1,0 +1,26 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE EMERGENCIAS
+
+ORDEN DE SOLICITUD DE PROCEDIMIENTO
+
+Paciente: ACOSTA, Raúl Domingo
+DNI: 18.632.754
+Edad: 59 años          Sexo: Masculino
+HC N°: 341.926
+Fecha: 20/09/2026      Hora: 19:42 h
+Médico solicitante: Dr. Matías Gabriel Ferrero, Mat. 140.558
+
+PROCEDIMIENTO SOLICITADO: Cateterismo cardíaco de urgencia
+
+DIAGNÓSTICO: Infarto agudo de miocardio de cara inferior con elevación del ST
+CIE-10: I21.9 Infarto agudo del miocardio, sin otra especificación
+
+DATOS CLÍNICOS: Dolor precordial opresivo con sudoración, irradiado a brazo izquierdo, inicio hace 40 minutos.
+ECG: supradesnivel del segmento ST de 3 mm en DII, DIII y aVF.
+Troponina I: 4,8 ng/mL (referencia menor a 0,04).
+
+INDICACIÓN: Activación inmediata de hemodinamia.
+
+Dr. Matías Gabriel Ferrero
+Médico de Guardia, Servicio de Emergencias
+Matrícula 140.558
