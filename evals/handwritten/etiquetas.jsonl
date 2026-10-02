@@ -1,1 +1,2 @@
 {"id": "M1", "paciente": "Roberto Fernández", "edad": 61, "medicamento": "Losartán", "dosis": "50 mg", "frecuencia": "cada 24 horas", "duracion": null, "resultado_esperado": "rutina"}
+{"id": "M3", "paciente": "Adriana Molina Ficticia", "medicamento": "Metotrexato", "dosis": "15 mg", "frecuencia": "diario", "duracion": null, "resultado_esperado": "ambiguedad", "edad": 45}

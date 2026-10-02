@@ -1,0 +1,15 @@
+RECETA MÉDICA
+Centro Asistencial Horizonte de Prueba - Endocrinología
+Fecha: 28/09/2026
+Paciente: Matías Beltrán Ficticio
+Edad: 54 años
+Historia clínica: SIM-GS03
+
+Diagnóstico: diabetes mellitus tipo 2 sin complicaciones. CIE-10: E11.9.
+Rp/ Metformina 850 mg, vía oral, cada 12 horas.
+Insulina glargina 12 UI, vía subcutánea, por la noche.
+
+Dra. Lucía Montiel Ficticia
+Matrícula de simulación: SIM-MP-0303
+Firma: Lucía Montiel Ficticia
+Documento sintético para pruebas de MediFlow. Sin validez asistencial.
