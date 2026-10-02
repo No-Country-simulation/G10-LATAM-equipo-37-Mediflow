@@ -1,12 +1,16 @@
-import os
-
-import httpx
+"""Rules page."""
 import streamlit as st
 
-API_URL = os.getenv("API_URL", "http://localhost:8000")
-st.title("Reglas de triaje")
-st.caption("Umbrales, destinos, hallazgos críticos y medicamentos de alto riesgo. Editables sin tocar el código.")
+from ui.lib import api_request, show_api_error
+
+st.title("⚙️ Reglas")
 try:
-    st.json(httpx.get(f"{API_URL}/rules", timeout=30).json())
-except Exception as e:  # noqa: BLE001
-    st.error(f"No se pudo leer /rules: {e}")
+    response = api_request("GET", "/rules")
+    if response.is_success:
+        st.json(response.json())
+    else:
+        show_api_error(response)
+except RuntimeError as exc:
+    st.error(str(exc))
+
+st.caption("La edición queda deshabilitada hasta que la API implemente la persistencia de reglas.")
