@@ -257,18 +257,19 @@ def asignar_categoria_amb(
     es_ilegible_medio: bool,
     es_multiples_documentos: bool,
     clasificacion: dict,
+    conflictos_cie10: list[str] | None = None,
 ) -> str | None:
     """Devuelve la categoría principal, o None si el documento no es ambiguo.
     Orden: se elige la más específica que aplique; el contrato exige UNA sola categoría
-    principal por caso.
+    principal por caso. Un CIE-10 inexistente se trata como contradicción interna (AMB-2).
     """
     if es_multiples_documentos:
         return "AMB-5"
     if clasificacion.get("tipo_documento") == "Otro":
-        return "AMB-6"  # el motivo se copia aparte, ver TODO en el docstring del módulo
+        return "AMB-6"  # el motivo se copia aparte
     if campos_faltantes:
         return "AMB-1"
-    if conflictos_contradiccion:
+    if conflictos_contradiccion or conflictos_cie10:
         return "AMB-2"
     if conflictos_dosis:
         return "AMB-3"
@@ -305,6 +306,7 @@ def validar(state: TriageState) -> dict:
         es_ilegible_medio,
         es_multiples_documentos,
         clasificacion,
+        conflictos_cie10,
     )
 
     validacion: dict[str, Any] = {

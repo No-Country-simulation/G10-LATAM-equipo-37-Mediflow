@@ -377,3 +377,34 @@ def test_validar_amb6_sin_motivo_no_inventa_uno():
     v = validar(state)["validacion"]
     assert v["categoria_amb"] == "AMB-6"
     assert "motivo_fuera_de_alcance" not in v
+
+
+
+def test_cie10_inexistente_da_amb2():
+    """Un código CIE-10 que no existe en la lista OPS/OMS va a revisión como AMB-2."""
+    state = _estado_gs06()
+    state["datos_extraidos"]["medicamentos"] = [{"nombre": "amoxicilina", "dosis": "500 mg"}]
+    state["datos_extraidos"]["cie10_sugerido"] = "K35.2"
+    v = validar(state)["validacion"]
+    assert v["categoria_amb"] == "AMB-2"
+    assert any("CIE-10" in c for c in v["conflictos"])
+
+
+def test_cie10_valido_no_genera_categoria():
+    state = _estado_gs06()
+    state["datos_extraidos"]["medicamentos"] = [{"nombre": "amoxicilina", "dosis": "500 mg"}]
+    v = validar(state)["validacion"]
+    assert "categoria_amb" not in v
+
+
+def test_asignar_categoria_cie10_solo():
+    categoria = asignar_categoria_amb(
+        campos_faltantes=[],
+        conflictos_dosis=[],
+        conflictos_contradiccion=[],
+        es_ilegible_medio=False,
+        es_multiples_documentos=False,
+        clasificacion={"tipo_documento": "Receta Medica"},
+        conflictos_cie10=["Código CIE-10 no encontrado en la lista OPS/OMS: K35.2"],
+    )
+    assert categoria == "AMB-2"
