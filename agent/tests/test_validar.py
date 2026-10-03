@@ -429,3 +429,23 @@ def test_prefiere_la_coincidencia_mas_larga():
 def test_amoxicilina_sola_sigue_siendo_med_03():
     cat = _cargar_catalogo_real()
     assert _buscar_medicamento("amoxicilina 500 mg", cat)["id"] == "MED-03"
+
+
+def test_dosis_en_el_limite_del_rango_es_valida():
+    """Bordes inclusivos del catálogo verificado. GS-24: 875 mg es el máximo
+    de amoxicilina-clavulánico (MED-04) y 1 g = 1000 mg es el mínimo de ceftriaxona (MED-06)."""
+    cat = _cargar_catalogo_real()
+    datos = {"medicamentos": [
+        {"nombre": "amoxicilina-clavulánico", "dosis": "875 mg"},
+        {"nombre": "ceftriaxona", "dosis": "1 g"},
+    ]}
+    assert validar_dosis_medicamentos(datos, cat) == []
+
+
+def test_dosis_apenas_fuera_del_limite_es_conflicto():
+    """Un miligramo por encima del máximo de MED-04 (875 mg) debe marcarse."""
+    cat = _cargar_catalogo_real()
+    datos = {"medicamentos": [{"nombre": "amoxicilina-clavulánico", "dosis": "876 mg"}]}
+    conflictos = validar_dosis_medicamentos(datos, cat)
+    assert len(conflictos) == 1
+    assert "fuera de rango" in conflictos[0]
