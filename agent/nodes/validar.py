@@ -18,8 +18,10 @@ Cambios respecto a la versión anterior de este archivo en `develop`:
 
 TODO / decisiones pendientes de coordinar con el equipo (no bloquean el esqueleto, pero
 hay que resolverlas antes de que esto sea definitivo):
-  - AMB-2 (contradicción interna): solo cubre edad fuera de rango plausible. Falta la regla
-    de "diagnóstico no coincide con el tipo de estudio" que menciona el contrato.
+  - AMB-2 (contradicción interna): cubre edad fuera de rango plausible y un CIE-10 que no
+    existe en el catálogo (AMB-2 tiene prioridad sobre AMB-3). Falta la regla de
+    "diagnóstico no coincide con el tipo de estudio" que menciona el contrato, y la de
+    edad contra fecha de nacimiento (requiere ese campo en el contrato).
   - AMB-5 (dos documentos en un archivo): este nodo asume que llega marcado en
     `datos_extraidos["_multiples_documentos"]`, pero no sé todavía qué nodo (¿normalizar?
     ¿clasificar?) es el que realmente detecta y escribe esa marca. Confirmar con Kevin/Carlos.
