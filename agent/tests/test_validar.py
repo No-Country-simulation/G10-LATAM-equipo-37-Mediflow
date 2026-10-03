@@ -6,6 +6,8 @@ habíamos supuesto antes de leer el contrato). Usa fixtures en memoria para
 rules.yaml y los catálogos, así no depende de rutas de archivo durante el test
 (mismo patrón que B-05: "test sin credenciales").
 """
+import csv
+from pathlib import Path
 
 import pytest
 
@@ -79,6 +81,7 @@ def cie10_catalogo() -> list[dict]:
     return [
         {"codigo": "I26.9", "descripcion": "Embolia pulmonar sin mención de corazón pulmonar agudo"},
         {"codigo": "A41.9", "descripcion": "Septicemia, no especificada"},
+        {"codigo": "J03.9", "descripcion": "Amigdalitis aguda, no especificada"},
     ]
 
 
@@ -310,3 +313,67 @@ def test_medicamento_no_dict_no_tumba_el_nodo(medicamentos_catalogo):
 
 def test_edad_con_texto():
     assert validar_contradiccion_interna({"paciente": {"edad": "45 años"}}) == []
+
+
+PLAN_GOLDEN = Path(__file__).resolve().parents[2] / "evals" / "golden" / "plan_golden.csv"
+
+
+def _estado_gs06() -> dict:
+    """Salida esperada del extractor para GS-06 (plan_golden.csv, fila GS-06).
+    TODO: reemplazar por el archivo real cuando llegue a develop."""
+    return {
+        "clasificacion": {"tipo_documento": "Receta Medica"},
+        "datos_extraidos": {
+            "paciente": {"nombre": "Paciente de Prueba", "edad": 8},
+            "medico_solicitante": {"nombre": "Dr. Prueba", "matricula": "12345"},
+            "medicamentos": [{"nombre": "Amoxicilina", "dosis": "5000 mg cada 8 horas"}],
+            "cie10_sugerido": "J03.9",
+        },
+        "legibilidad": 0.90,
+        "trace": [],
+    }
+
+
+def test_gs06_sale_con_amb3():
+    v = validar(_estado_gs06())["validacion"]
+    assert v["categoria_amb"] == "AMB-3"
+    assert v["campos_faltantes"] == []
+    assert any("fuera de rango" in c for c in v["conflictos"])
+
+
+def test_gs06_coincide_con_plan_golden():
+    """Si alguien cambia la etiqueta de GS-06 en el plan, este test avisa."""
+    with open(PLAN_GOLDEN, encoding="utf-8") as f:
+        fila = next(r for r in csv.DictReader(f) if "GS-06" in r.values())
+    assert "AMB-3" in fila.values()
+
+
+def test_validar_amb5_dos_documentos_en_un_archivo():
+    state = _estado_gs06()
+    state["datos_extraidos"]["medicamentos"] = [{"nombre": "amoxicilina", "dosis": "500 mg"}]
+    state["datos_extraidos"]["_multiples_documentos"] = True
+    assert validar(state)["validacion"]["categoria_amb"] == "AMB-5"
+
+
+def test_validar_amb6_fuera_de_alcance_con_motivo():
+    state = {
+        "clasificacion": {"tipo_documento": "Otro", "motivo_fuera_de_alcance": "no clínico"},
+        "datos_extraidos": {},
+        "legibilidad": 0.90,
+        "trace": [],
+    }
+    v = validar(state)["validacion"]
+    assert v["categoria_amb"] == "AMB-6"
+    assert v["motivo_fuera_de_alcance"] == "no clínico"
+
+
+def test_validar_amb6_sin_motivo_no_inventa_uno():
+    state = {
+        "clasificacion": {"tipo_documento": "Otro"},
+        "datos_extraidos": {},
+        "legibilidad": 0.90,
+        "trace": [],
+    }
+    v = validar(state)["validacion"]
+    assert v["categoria_amb"] == "AMB-6"
+    assert "motivo_fuera_de_alcance" not in v
