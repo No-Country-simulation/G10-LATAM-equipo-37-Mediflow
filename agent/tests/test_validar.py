@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from agent.nodes.validar import (
+    _buscar_medicamento,
     asignar_categoria_amb,
     evaluar_legibilidad,
     validar,
@@ -408,3 +409,23 @@ def test_asignar_categoria_cie10_solo():
         conflictos_cie10=["Código CIE-10 no encontrado en la lista OPS/OMS: K35.2"],
     )
     assert categoria == "AMB-2"
+
+
+# --- Búsqueda de medicamentos: la coincidencia más larga gana ---------------
+
+_CATALOGO_REAL = Path(__file__).resolve().parents[2] / "evals" / "generator" / "data" / "medicamentos.csv"
+
+
+def _cargar_catalogo_real():
+    with open(_CATALOGO_REAL, encoding="utf-8-sig", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def test_prefiere_la_coincidencia_mas_larga():
+    cat = _cargar_catalogo_real()
+    assert _buscar_medicamento("amoxicilina-clavulánico 875 mg", cat)["id"] == "MED-04"
+
+
+def test_amoxicilina_sola_sigue_siendo_med_03():
+    cat = _cargar_catalogo_real()
+    assert _buscar_medicamento("amoxicilina 500 mg", cat)["id"] == "MED-03"

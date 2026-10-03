@@ -138,17 +138,21 @@ def _norm(s: str) -> str:
 
 
 def _buscar_medicamento(nombre: str | None, catalogo: list[dict]) -> dict | None:
-    """Busca por nombre genérico o sinónimo (ADR-006), sin tildes y por palabra completa."""
+    """Busca por nombre genérico o sinónimo (ADR-006), sin tildes y por palabra completa.
+    Ante varias coincidencias gana la más larga (p. ej. 'amoxicilina-clavulánico' sobre 'amoxicilina')."""
     if not nombre:
         return None
     objetivo = _norm(str(nombre))
+    mejor, mejor_len = None, 0
     for fila in catalogo:
         candidatos = [fila.get("nombre", "")] + (fila.get("sinonimos") or "").split(";")
         for c in candidatos:
             c = _norm(c)
-            if c and re.search(rf"\b{re.escape(c)}\b", objetivo):
-                return fila
-    return None
+            if c and len(c) > mejor_len and re.search(rf"\b{re.escape(c)}\b", objetivo):
+                mejor, mejor_len = fila, len(c)
+    return mejor
+
+
 # ---------------------------------------------------------------------------
 # Validaciones individuales
 # ---------------------------------------------------------------------------
