@@ -3,16 +3,16 @@
 Cambios respecto a la versión anterior de este archivo en `develop`:
 
 1. BUG corregido: se leía `paciente.nome` (portugués). ADR-003 (23/9) decidió que el campo
-   es `paciente.nombre` en todo el proyecto. OJO: `agent/nodes/extraer.py` (dueño: Carlos)
-   TODAVÍA escribe `nome` en su stub actual. Este archivo ya sigue la decisión (ADR-003),
-   así que hasta que Carlos actualice `extraer.py`, la detección de "paciente sin nombre"
-   (AMB-1) va a marcar falso positivo en documentos reales. Avisar y coordinar el mismo PR
-   o el mismo día, tal como pide la consecuencia de ADR-003.
+   es `paciente.nombre` en todo el proyecto. `extraer.py` y `contrato.py` (PR #1) y
+   `enrutar.py` (PR #3) adoptan `nombre` en sus propios PR. Los tres PR (#1, #3 y este)
+   deben fusionarse el mismo día: si este entrara antes, todo documento real saldría
+   con AMB-1 falso.
 2. `campos_obligatorios` ya NO está hardcodeado acá: se lee de `agent/rules/rules.yaml`,
    que es la fuente de verdad (así lo dice el propio rules.yaml).
 3. Catálogos: se usan `evals/generator/data/medicamentos.csv` y
-   `evals/generator/data/cie10.csv` (las versiones con ATC/validar_dosis y con
-   fuente OPS/OMS), NO `data/raw/*.csv`, que parece una copia desactualizada.
+   `evals/generator/data/cie10.csv`, verificados contra ANMAT y OPS/OMS (con ATC y
+   validar_dosis). `data/raw/*.csv` es una versión anterior, con estado_verificacion
+   "pendiente", y este módulo no la usa.
 4. `categoria_amb` ahora sigue las 6 categorías reales del contrato (sección 6), no las
    5 genéricas que habíamos supuesto antes de leer el contrato real.
 
