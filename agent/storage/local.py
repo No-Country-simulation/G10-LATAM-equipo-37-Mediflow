@@ -14,8 +14,8 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent.parent
 
 # Carpeta base del almacenamiento local
-DATA_DIR = RAIZ / "data"
-
+# Se puede sobreescribir con MEDIFLOW_DATA_DIR (útil para tests)
+DATA_DIR = Path(os.getenv("MEDIFLOW_DATA_DIR", RAIZ / "data"))
 
 def _ruta_absoluta(bucket: str, ruta: str) -> Path:
     """Devuelve la ruta absoluta del archivo dentro de ./data/."""

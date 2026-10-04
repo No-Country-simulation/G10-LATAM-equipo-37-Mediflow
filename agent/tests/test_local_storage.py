@@ -2,12 +2,11 @@
 
 Verifica que con STORAGE_BACKEND=local:
 - Nada llega a OCI.
-- Los archivos se escriben en ./data/.
+- Los archivos se escriben en una carpeta temporal (no en ./data/).
 - La suite pasa sin credenciales.
 """
 import json
 import os
-from pathlib import Path
 
 import pytest
 
@@ -16,19 +15,15 @@ os.environ["STORAGE_BACKEND"] = "local"
 
 from agent.storage import local  # noqa: E402
 
-RAIZ = Path(__file__).resolve().parent.parent.parent
-DATA_DIR = RAIZ / "data"
-
 
 @pytest.fixture(autouse=True)
-def limpiar_data():
-    """Antes y después de cada test, borra la carpeta ./data/."""
-    import shutil
-    if DATA_DIR.exists():
-        shutil.rmtree(DATA_DIR)
+def usar_data_temporal(tmp_path, monkeypatch):
+    """Parchea local.DATA_DIR para que use una carpeta temporal.
+
+    Esto evita que los tests borren o modifiquen ./data/ del proyecto.
+    """
+    monkeypatch.setattr(local, "DATA_DIR", tmp_path)
     yield
-    if DATA_DIR.exists():
-        shutil.rmtree(DATA_DIR)
 
 
 def test_namespace_devuelve_valor():
@@ -59,7 +54,7 @@ def test_upload_crea_carpetas():
     data = {"documento_id": "DOC-001"}
 
     local.upload_json(bucket, ruta, data)
-    archivo = DATA_DIR / bucket / ruta
+    archivo = local.DATA_DIR / bucket / ruta
 
     assert archivo.exists()
     assert archivo.is_file()
@@ -106,7 +101,7 @@ def test_borrar():
 
 
 def test_persistir_escribe_en_local():
-    """persistir() escribe el JSON en ./data/ cuando el backend es local."""
+    """persistir() escribe el JSON en la carpeta temporal cuando el backend es local."""
     from agent.nodes.persistir import persistir
 
     state = {
@@ -126,8 +121,8 @@ def test_persistir_escribe_en_local():
     ruta = resultado["almacenamiento"]["ruta_objeto"]
     assert ruta == "procesados/farmacia/TEST-LOCAL-001.json"
 
-    # Verificar que el archivo existe en ./data/
-    archivo = DATA_DIR / "mediflow-documentos-clinicos" / ruta
+    # Verificar que el archivo existe en la carpeta temporal (no en ./data/)
+    archivo = local.DATA_DIR / "mediflow-documentos-clinicos" / ruta
     assert archivo.exists()
 
     # Verificar el contenido
