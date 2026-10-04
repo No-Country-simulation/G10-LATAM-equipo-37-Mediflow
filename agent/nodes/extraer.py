@@ -46,7 +46,7 @@ def _extraer_por_regex(texto: str) -> dict:
     conclusion = _buscar(r"CONCLUSION:\s*([^\.\n]+)", texto)
 
     return {
-        "paciente": {"nombre": paciente, "edad": int(edad) if edad else None},
+        "paciente": {"nombre": paciente, "edad": int(edad) if edad else None, "fecha_nacimiento": None},
         "medico_solicitante": {"nombre": medico, "matricula": matricula},
         "estudio_realizado": estudio,
         "diagnostico_principal": conclusion,
@@ -135,7 +135,7 @@ def _normalizar_datos(datos: dict) -> dict:
     ]
 
     return {
-        "paciente": datos.get("paciente") or {"nombre": None, "edad": None},
+        "paciente": datos.get("paciente") or {"nombre": None, "edad": None, "fecha_nacimiento": None},        
         "medico_solicitante": datos.get("medico_solicitante")
         or {"nombre": None, "matricula": None},
         "estudio_realizado": datos.get("estudio_realizado"),

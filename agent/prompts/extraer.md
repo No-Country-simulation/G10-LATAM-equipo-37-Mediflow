@@ -24,6 +24,8 @@ El JSON debe tener esta estructura exacta:
     "evidencia_nombre": "fragmento del documento o null",
     "edad": 0,
     "evidencia_edad": "fragmento del documento o null"
+    "fecha_nacimiento": "AAAA-MM-DD o null",
+    "evidencia_fecha_nacimiento": "fragmento del documento o null"
   },
   "medico_solicitante": {
     "nombre": "nombre del medico o null",

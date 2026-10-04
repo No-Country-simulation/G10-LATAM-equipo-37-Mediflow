@@ -94,10 +94,12 @@ class TriageRequest(BaseModel):
 # =============================================================================
 
 
+
 class Paciente(BaseModel):
     """Datos del paciente. El brief usa `nombre`; se respeta el contrato."""
     nombre: Optional[str] = None
     edad: Optional[int] = Field(default=None, ge=0, le=130)
+    fecha_nacimiento: Optional[str] = None  # Formato AAAA-MM-DD
 
 
 class MedicoSolicitante(BaseModel):
