@@ -39,6 +39,7 @@ hay que resolverlas antes de que esto sea definitivo):
 import csv
 import re
 import unicodedata
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -224,18 +225,46 @@ def validar_cie10(datos: dict, cie10_catalogo: list[dict]) -> list[str]:
     return [f"Código CIE-10 no encontrado en la lista OPS/OMS: {codigo}"]
 
 
+RUTAS_FECHA_DOCUMENTO = ("fecha", "fecha_egreso", "fecha_ingreso")  # docs/api-contract.md
+
+
+def _a_fecha(valor: Any) -> date | None:
+    """Lee AAAA-MM-DD. None si falta o no se puede interpretar."""
+    try:
+        return date.fromisoformat(str(valor).strip()[:10])
+    except ValueError:
+        return None
+
+
 def validar_contradiccion_interna(datos: dict) -> list[str]:
-    """AMB-2: contradicción interna. TODO: falta edad vs. fecha de nacimiento y
-    diagnóstico vs. tipo de estudio (ej. fractura en una ecografía abdominal).
+    """AMB-2: contradicción interna. TODO: falta diagnóstico vs. tipo de estudio
+    (ej. fractura en una ecografía abdominal).
     """
     conflictos: list[str] = []
     edad = _get(datos, "paciente.edad")
+    n = None
     if edad is not None:
         n = _a_numero(edad)
         if n is None:
             conflictos.append(f"Edad no numérica: {edad!r}")
         elif not (0 <= n <= 120):
             conflictos.append(f"Edad fuera de rango plausible: {edad}")
+
+    # Edad vs. fecha de nacimiento (GS-17): solo se compara si el contrato trae ambas fechas.
+    nacimiento = _a_fecha(_get(datos, "paciente.fecha_nacimiento"))
+    referencia = next(
+        (f for f in (_a_fecha(_get(datos, ruta)) for ruta in RUTAS_FECHA_DOCUMENTO) if f),
+        date.today(),  # sin fecha en el documento (p. ej. informe de laboratorio): se usa hoy
+    )
+    if n is not None and nacimiento and referencia:
+        calculada = referencia.year - nacimiento.year - (
+            (referencia.month, referencia.day) < (nacimiento.month, nacimiento.day)
+        )
+        if abs(calculada - n) > 1:
+            conflictos.append(
+                f"Edad {edad} no coincide con fecha de nacimiento {nacimiento} "
+                f"(corresponde a {calculada} años al {referencia})"
+            )
     return conflictos
 
 
@@ -268,11 +297,13 @@ def asignar_categoria_amb(
     """Devuelve la categoría principal, o None si el documento no es ambiguo.
     Orden: se elige la más específica que aplique; el contrato exige UNA sola categoría
     principal por caso. Un CIE-10 inexistente se trata como contradicción interna (AMB-2).
+    Fuera de alcance (AMB-6) va antes que múltiples documentos (AMB-5): un documento no
+    clínico debe ir a revisión humana con su motivo aunque venga con varios archivos.
     """
-    if es_multiples_documentos:
-        return "AMB-5"
     if clasificacion.get("tipo_documento") == "Otro":
         return "AMB-6"  # el motivo se copia aparte
+    if es_multiples_documentos:
+        return "AMB-5"
     if campos_faltantes:
         return "AMB-1"
     if conflictos_contradiccion or conflictos_cie10:

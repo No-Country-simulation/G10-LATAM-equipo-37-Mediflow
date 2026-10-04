@@ -448,3 +448,56 @@ def test_dosis_apenas_fuera_del_limite_es_conflicto():
     conflictos = validar_dosis_medicamentos(datos, cat)
     assert len(conflictos) == 1
     assert "fuera de rango" in conflictos[0]
+
+
+def test_edad_contradice_fecha_de_nacimiento_gs17():
+    from agent.nodes.validar import validar_contradiccion_interna
+
+    datos = {"paciente": {"edad": 38, "fecha_nacimiento": "1961-03-15"}, "fecha": "2026-09-23"}
+    assert any("fecha de nacimiento" in c for c in validar_contradiccion_interna(datos))
+
+
+def test_edad_coherente_con_fecha_de_nacimiento_no_genera_conflicto():
+    from agent.nodes.validar import validar_contradiccion_interna
+
+    datos = {"paciente": {"edad": 65, "fecha_nacimiento": "1961-03-15"}, "fecha": "2026-09-23"}
+    assert validar_contradiccion_interna(datos) == []
+
+
+def test_sin_fecha_de_nacimiento_no_se_compara():
+    from agent.nodes.validar import validar_contradiccion_interna
+
+    datos = {"paciente": {"edad": 38}, "fecha": "2026-09-23"}
+    assert validar_contradiccion_interna(datos) == []
+
+
+def test_fuera_de_alcance_con_multiples_documentos_conserva_amb6_y_motivo():
+    from agent.nodes.validar import validar
+
+    for motivo in ("paciente_no_humano", "no_clinico"):
+        state = {
+            "datos_extraidos": {"_multiples_documentos": True},
+            "clasificacion": {"tipo_documento": "Otro", "motivo_fuera_de_alcance": motivo},
+            "trace": [],
+        }
+        validacion = validar(state)["validacion"]
+        assert validacion["categoria_amb"] == "AMB-6"
+        assert validacion["motivo_fuera_de_alcance"] == motivo
+
+
+def test_multiples_documentos_en_tipo_clinico_sigue_siendo_amb5():
+    from agent.nodes.validar import validar
+
+    state = {
+        "datos_extraidos": {"_multiples_documentos": True},
+        "clasificacion": {"tipo_documento": "Receta Medica"},
+        "trace": [],
+    }
+    assert validar(state)["validacion"]["categoria_amb"] == "AMB-5"
+
+
+def test_gs17_sin_fecha_del_documento_usa_la_fecha_de_hoy():
+    from agent.nodes.validar import validar_contradiccion_interna
+
+    datos = {"paciente": {"edad": 38, "fecha_nacimiento": "1961-03-15"}}
+    assert any("fecha de nacimiento" in c for c in validar_contradiccion_interna(datos))
