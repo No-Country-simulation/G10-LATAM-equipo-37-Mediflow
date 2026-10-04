@@ -22,7 +22,6 @@ from agent.nodes.validar import (
     validar_dosis_medicamentos,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures: versión mínima de rules.yaml y los catálogos reales
 # ---------------------------------------------------------------------------
