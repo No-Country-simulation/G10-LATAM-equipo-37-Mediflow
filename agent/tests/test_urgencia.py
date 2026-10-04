@@ -108,3 +108,48 @@ def test_respeta_la_marca_que_trae_el_extractor():
         datos_extraidos={"medicamentos": [{"nombre": "Medicamento X", "alto_riesgo": True}]},
     )
     assert u["alto_riesgo_farmacologico"] == ["Medicamento X"]
+
+
+def test_hallazgo_critico_en_receta_no_dispara_urgencia():
+    """Patrón de GS-01/GS-04/GS-25: en receta las listas automáticas no aplican."""
+    u = _urgencia(
+        "Antecedente de sepsis hace 3 meses, actualmente en tratamiento de mantenimiento.",
+        tipo="Receta Medica",
+    )
+    assert u["detectada"] is False
+
+
+def test_palabra_urgencia_en_orden_procedimiento_si_dispara():
+    """La Orden de Solicitud de Procedimiento sí está en aplica_a."""
+    u = _urgencia(
+        "Solicito estudio de forma urgente por sospecha clínica.",
+        tipo="Orden de Solicitud de Procedimiento",
+    )
+    assert u["detectada"] is True
+
+
+def test_modelo_no_urgente_no_dispara_por_si_solo():
+    u = _urgencia(
+        "",
+        tipo="Receta Medica",
+        clasificacion={"tipo_documento": "Receta Medica", "nivel_prioridad": "Rutina"},
+    )
+    assert u["detectada"] is False
+
+
+def test_alto_riesgo_no_confunde_con_emergencia():
+    """Alto riesgo va a Farmacia con auditoría, no a Emergencia (contrato, sección 4)."""
+    u = _urgencia(
+        "",
+        tipo="Receta Medica",
+        datos_extraidos={"medicamentos": [{"nombre": "morfina", "dosis": "10 mg"}]},
+    )
+    assert u["detectada"] is False
+    assert "morfina" in u["alto_riesgo_farmacologico"]
+
+
+def test_traza_registra_el_nodo():
+    # _urgencia devuelve solo el dict "urgencia", así que aquí se llama al nodo directo.
+    estado = {"texto": "", "clasificacion": {"tipo_documento": "Receta Medica"}, "trace": []}
+    resultado = detectar_urgencia(estado)
+    assert resultado["trace"][-1]["nodo"] == "detectar_urgencia"
