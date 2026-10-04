@@ -1,0 +1,27 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE REUMATOLOGÍA
+Consultorio Externo
+
+RECETA MÉDICA
+
+Fecha: 02/10/2026
+Paciente: Claudia Verónica Paredes Ficticia
+DNI: 29.144.872
+Edad: 47 años
+Historia clínica: SIM-GS05
+
+Diagnóstico: artritis reumatoide seropositiva en tratamiento de fondo. CIE-10: M06.9.
+
+Rp/
+
+1) Metotrexato 5 mg, comprimidos: tomar 3 comprimidos (15 mg) por vía oral, una vez por semana, siempre el mismo día.
+2) Ácido fólico 5 mg, comprimidos: tomar 1 comprimido por vía oral, una vez por semana, 24 horas después del metotrexato.
+
+Indicaciones:
+- Mantener los controles de laboratorio periódicos (hemograma, hepatograma y función renal).
+- No duplicar ni suspender dosis sin indicación del médico tratante. Evitar el consumo de alcohol.
+- Concurrir a la guardia ante fiebre persistente, aftas bucales o dificultad para respirar.
+
+Dra. Marisol Etchegoyen Ficticia
+Médica especialista en Reumatología
+Matrícula de simulación: SIM-MP-0505
