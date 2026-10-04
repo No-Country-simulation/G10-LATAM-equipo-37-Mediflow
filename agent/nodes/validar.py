@@ -275,7 +275,7 @@ def validar_contradiccion_interna(datos: dict) -> list[str]:
     nacimiento = _a_fecha(_get(datos, "paciente.fecha_nacimiento"))
     referencia = next(
         (f for f in (_a_fecha(_get(datos, ruta)) for ruta in RUTAS_FECHA_DOCUMENTO) if f),
-        date.today(),  # sin fecha en el documento (p. ej. informe de laboratorio): se usa hoy
+        None,  # sin fecha documental válida no se compara: evita falsas contradicciones
     )
     if n is not None and nacimiento and referencia:
         calculada = referencia.year - nacimiento.year - (

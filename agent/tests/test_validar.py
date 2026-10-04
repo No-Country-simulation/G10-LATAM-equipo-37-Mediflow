@@ -496,11 +496,24 @@ def test_multiples_documentos_en_tipo_clinico_sigue_siendo_amb5():
     assert validar(state)["validacion"]["categoria_amb"] == "AMB-5"
 
 
-def test_gs17_sin_fecha_del_documento_usa_la_fecha_de_hoy():
+def test_gs17_sin_fecha_del_documento_no_compara_edad():
+    # Sin fecha documental válida no hay referencia confiable: no se inventa una
+    # contradicción contra la fecha de hoy.
     from agent.nodes.validar import validar_contradiccion_interna
 
     datos = {"paciente": {"edad": 38, "fecha_nacimiento": "1961-03-15"}}
-    assert any("fecha de nacimiento" in c for c in validar_contradiccion_interna(datos))
+    assert validar_contradiccion_interna(datos) == []
+
+
+def test_gs17_fecha_del_documento_ilegible_no_compara_edad():
+    # Formato DD/MM/AAAA no se interpreta: se omite la regla en vez de usar hoy.
+    from agent.nodes.validar import validar_contradiccion_interna
+
+    datos = {
+        "paciente": {"edad": 59, "fecha_nacimiento": "1961-03-15"},
+        "fecha": "23/09/2020",
+    }
+    assert validar_contradiccion_interna(datos) == []
 
 
 _CATALOGO_PERIODICIDAD = [
