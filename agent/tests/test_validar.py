@@ -501,3 +501,39 @@ def test_gs17_sin_fecha_del_documento_usa_la_fecha_de_hoy():
 
     datos = {"paciente": {"edad": 38, "fecha_nacimiento": "1961-03-15"}}
     assert any("fecha de nacimiento" in c for c in validar_contradiccion_interna(datos))
+
+
+_CATALOGO_PERIODICIDAD = [
+    {
+        "nombre": "metotrexato", "sinonimos": "mtx", "validar_dosis": "si", "unidad": "mg",
+        "dosis_min_toma": "7,5", "dosis_max_toma": "30", "periodicidad_especial": "semanal",
+    },
+    {
+        "nombre": "amoxicilina", "sinonimos": "", "validar_dosis": "si", "unidad": "mg",
+        "dosis_min_toma": "250", "dosis_max_toma": "1000", "periodicidad_especial": "",
+    },
+]
+
+
+def test_metotrexato_diario_genera_conflicto_por_periodicidad_semanal():
+    from agent.nodes.validar import validar_dosis_medicamentos
+
+    for frecuencia in ("diario", "cada 24 horas", "1 vez al día"):
+        datos = {"medicamentos": [{"nombre": "Metotrexato", "dosis": "15 mg", "frecuencia": frecuencia}]}
+        conflictos = validar_dosis_medicamentos(datos, _CATALOGO_PERIODICIDAD)
+        assert any("Frecuencia incompatible" in c for c in conflictos), frecuencia
+
+
+def test_metotrexato_semanal_no_genera_conflicto():
+    from agent.nodes.validar import validar_dosis_medicamentos
+
+    for frecuencia in ("semanal", "1 vez por semana", "cada 7 días"):
+        datos = {"medicamentos": [{"nombre": "Metotrexato", "dosis": "15 mg", "frecuencia": frecuencia}]}
+        assert validar_dosis_medicamentos(datos, _CATALOGO_PERIODICIDAD) == [], frecuencia
+
+
+def test_medicamento_sin_periodicidad_especial_puede_ser_diario():
+    from agent.nodes.validar import validar_dosis_medicamentos
+
+    datos = {"medicamentos": [{"nombre": "Amoxicilina", "dosis": "500 mg", "frecuencia": "diario"}]}
+    assert validar_dosis_medicamentos(datos, _CATALOGO_PERIODICIDAD) == []

@@ -178,6 +178,18 @@ def validar_campos_obligatorios(datos: dict, tipo_documento: str, rules: dict) -
     return faltantes
 
 
+def _frecuencia_diaria_o_mayor(frecuencia: Any) -> bool:
+    """True si el texto indica una toma diaria o más frecuente (diario, cada 24 h, c/12 h, QD...).
+    Mejor esfuerzo sobre texto libre: lo semanal ('semanal', 'cada 7 días') nunca cuenta."""
+    f = _norm(str(frecuencia or ""))
+    if not f or re.search(r"semana|\bsem\b|7 dias", f):
+        return False
+    return bool(re.search(
+        r"diari|\bdia\b|cada\s*\d{1,2}\s*(?:h|hs|horas)\b|c/\s*\d{1,2}\s*(?:h|hs)\b|\bqd\b|\bbid\b|\btid\b",
+        f,
+    ))
+
+
 def validar_dosis_medicamentos(datos: dict, medicamentos_catalogo: list[dict]) -> list[str]:
     """AMB-3: dosis fuera de rango o medicamento no identificable.
     ADR-007: solo se compara si validar_dosis == 'si'; los que van por peso/protocolo
@@ -203,6 +215,15 @@ def validar_dosis_medicamentos(datos: dict, medicamentos_catalogo: list[dict]) -
         dosis_valor = _dosis_en_unidad_catalogo(med.get("dosis"), unidad)
         dosis_min = _a_numero(fila.get("dosis_min_toma"))
         dosis_max = _a_numero(fila.get("dosis_max_toma"))
+
+        # Periodicidad especial del catálogo (p. ej. metotrexato semanal). Solo se compara
+        # cuando el catálogo la declara; no se generaliza a otros protocolos.
+        periodicidad = _norm(str(fila.get("periodicidad_especial") or ""))
+        if periodicidad == "semanal" and _frecuencia_diaria_o_mayor(med.get("frecuencia")):
+            conflictos.append(
+                f"Frecuencia incompatible para {nombre}: el catálogo indica toma semanal y el "
+                f"documento indica {med.get('frecuencia')!r}"
+            )
 
         if dosis_valor is None:
             conflictos.append(f"Dosis no interpretable para {nombre}: {med.get('dosis')!r}")
