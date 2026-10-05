@@ -1,10 +1,10 @@
 LABORATORIO CLÍNICO SAN MARTÍN · INFORME DE LABORATORIO
 
-Paciente: Paciente Ficticio 003
+Paciente: Elena Ríos
 Fecha de nacimiento: 15/03/1961
 Edad: 38 años
 Fecha del estudio: 23/09/2026
-Solicitante: Dr. Ficticio 003, MP 777f57616faa0ee2f489f671e69f58bb079a2b1d4edfcc7dc45274161ddc8fa5
+Solicitante: Dr. Pablo Herrera, MP 39876
 
 Estudio: Hemograma y perfil de hierro
 
