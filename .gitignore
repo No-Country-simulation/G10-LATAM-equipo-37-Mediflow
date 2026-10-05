@@ -31,3 +31,8 @@ tmp/
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
+
+# Carpetas temporales y locales (no subir)
+data/
+fonts/
+augraphy_cache/
