@@ -123,12 +123,20 @@ costar un paciente.
 
 ## 6. Datos y privacidad
 
-Todo el conjunto de prueba es sintético, escrito por el equipo. Los documentos que procesa el
-sistema se guardan en un bucket privado de OCI Object Storage, segregados por estado, y los
-registros de ejecución no contienen contenido clínico ni nombres de pacientes.
+Todo el conjunto de prueba es sintético, escrito por el equipo: en ninguna etapa del proyecto se
+usaron datos de personas reales. Los documentos que procesa el sistema se guardan en un bucket
+privado de OCI Object Storage, segregados por estado. El dato completo del paciente va solo a su
+destino y al auditor; los registros, las trazas y las métricas se diseñan para llevar códigos en
+lugar de nombres y documentos de identidad.
 
-Este sistema es un prototipo de hackathon. No está validado para uso clínico real y no debe
-utilizarse con documentos de pacientes.
+**No suba documentos de pacientes reales.** Durante el hackathon el agente usa el plan gratuito de
+un proveedor de modelos de lenguaje, cuyos términos no admiten datos personales. Con datos reales,
+MediFlow necesitaría un proveedor con acuerdo de tratamiento de datos o un modelo propio alojado en
+la institución.
+
+Este sistema es un prototipo de hackathon, diseñado según los principios de las normas de
+protección de datos de salud, pero no validado para uso clínico real. El detalle está en
+`docs/privacidad.md`.
 
 ---
 

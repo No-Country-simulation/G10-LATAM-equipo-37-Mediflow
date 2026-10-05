@@ -27,7 +27,7 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 
 ## ADR-005 · Datos 100 % sintéticos
 - Fecha: 22 de septiembre de 2026
-- Decisión: ningún documento real de ningún paciente. Conjunto de prueba escrito por el equipo: 30 documentos, 12 imágenes degradadas y 8 fotos de recetas manuscritas. Consulta de validación enviada a la instructora.
+- Decisión: ningún documento real de ningún paciente. Conjunto de prueba escrito por el equipo: 37 documentos, de los cuales 7 son casos fuera de alcance, 12 imágenes degradadas derivadas de esos documentos y 8 fotos de recetas manuscritas. Consulta de validación enviada a la instructora.
 
 ## ADR-006 · La tabla de medicamentos se identifica por ATC y DCI, no por el código nacional
 - Fecha: 25 de septiembre de 2026
@@ -50,4 +50,18 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 - Hallazgo que motivó el cambio: `K35.2` no existe en esa clasificación. El código de apendicitis aguda con peritonitis generalizada es `K35.0`; `K35.2` aparece solo en revisiones posteriores y en la CIE-10-CM. Se corrigió en `cie10.csv`, en el cuadro CC-08 del banco clínico y en los casos GS-10 y FA-02 del conjunto de prueba.
 - Otras siete correcciones de redacción: `I26.9` corazón pulmonar agudo y no cor pulmonale, `I21.9` infarto agudo del miocardio, `A41.9` septicemia y no sepsis en esta edición, `J93.0` neumotórax espontáneo a presión y no a tensión, `Z34.9` sin coma, `K21.0` enfermedad del reflujo y no por reflujo, y `E11.9` con la subdivisión de cuarto carácter completa.
 - Consecuencia: `validar.py` compara el código y la descripción contra esta tabla, así que un documento que traiga `K35.2` ahora se marca como código inexistente, que es lo correcto.
+
+## ADR-009 · El paciente tiene fecha de nacimiento en el contrato
+- Fecha: 3 de octubre de 2026
+- Contexto: en la prueba de extremo a extremo del grafo, GS-17 no dio la contradicción AMB-2 que espera su etiqueta, una edad de 38 años con fecha de nacimiento de 1961. La causa no era la validación: el contrato solo tenía `paciente.nombre` y `paciente.edad`, así que la fecha de nacimiento se perdía en la extracción y la comparación era imposible por diseño, aunque el propio contrato ponía ese caso como ejemplo de AMB-2. Lo encontró Alessandro.
+- Decisión: se agrega `paciente.fecha_nacimiento`, opcional, en formato ISO `AAAA-MM-DD`. La extracción la toma solo si está escrita en el documento. `validar.py` compara la edad declarada con la calculada a la fecha del documento, con un año de tolerancia, y marca AMB-2 si no coinciden.
+- Alternativa descartada: calcular la fecha de nacimiento a partir de la edad cuando falta. Inventa un dato y, en el caso justo que importa, hace desaparecer la contradicción.
+- Consecuencia: el cambio va en un solo PR con `contrato.py`, `extraer.py`, el esquema de `extraer.md` y este contrato, como pide la regla de cambios de campo. La comparación vive en `validar.py`.
+
+## ADR-010 · Datos sintéticos en todo el hackathon y límite del proveedor del modelo
+- Fecha: 5 de octubre de 2026
+- Contexto: el agente usa el plan gratuito de Gemini, como pide la regla de que todo sea gratuito. Según los términos de la API de Gemini, en los servicios gratuitos Google usa el contenido enviado para mejorar sus productos, revisores humanos pueden leerlo, y los términos piden no enviar información sensible ni personal. En el plan pago el contenido no se usa para mejorar productos y se trata bajo un anexo de tratamiento de datos. Los datos de salud son la categoría más protegida en todas las legislaciones de referencia.
+- Decisión: en el desarrollo, la evaluación y la demo se usan solo documentos sintéticos. La interfaz avisa que no se deben subir documentos de pacientes reales. Para operar con datos reales, MediFlow necesita un proveedor con acuerdo de tratamiento de datos, como el plan pago de Gemini o Vertex AI, o un modelo propio alojado en la institución; Qwen y Mistral, los respaldos actuales, son modelos abiertos que lo permiten.
+- Alternativa descartada: usar documentos reales anonimizados para evaluar. Anonimizar bien un documento clínico es difícil, el riesgo de reidentificación es real, y el plan gratuito no admite datos personales.
+- Consecuencia: la privacidad del producto se diseña desde ahora, en `docs/privacidad.md`: el dato completo va solo a su destino y al auditor, y los registros, trazas y métricas se seudonimizan con una clave secreta. MediFlow está diseñado según los principios de las normas de referencia, sin afirmar que las cumple, porque eso exige auditorías que un prototipo no tiene.
 
