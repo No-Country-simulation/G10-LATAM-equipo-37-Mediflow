@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import unicodedata
 from pathlib import Path
 
 from agent.llm import adapter
@@ -36,6 +37,20 @@ logger = logging.getLogger(__name__)
 USE_LLM = os.getenv("USE_LLM", "false").lower() in ("true", "1", "yes")
 
 PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "clasificar.md"
+
+
+# --- Helpers de normalización ---
+
+def _sin_tildes(s: str) -> str:
+    """Normaliza un string: sin tildes, en minúsculas, sin espacios extra."""
+    return "".join(
+        c for c in unicodedata.normalize("NFD", s)
+        if unicodedata.category(c) != "Mn"
+    ).lower().strip()
+
+
+_TIPOS = {_sin_tildes(t.value): t.value for t in TipoDocumento}
+_PRIORIDADES = {_sin_tildes(p.value): p.value for p in NivelPrioridad}
 
 
 # --- Fallback por reglas ---
@@ -60,7 +75,8 @@ def _clasificar_por_reglas(texto: str) -> dict:
         if pista in texto.lower():
             tipo = candidato
             break
-    confianza = 0.9 if tipo != TipoDocumento.OTRO.value else 0.3
+    # Confianza baja: una coincidencia de texto no es confiable.
+    confianza = 0.5 if tipo != TipoDocumento.OTRO.value else 0.2
     return {
         "tipo_documento": tipo,
         "especialidad": None,
@@ -103,22 +119,21 @@ def _normalizar_respuesta(datos: dict) -> dict:
     """
     Mapea la respuesta del LLM (con campos del prompt) al formato que espera
     el estado del grafo (con campos del contrato).
-    """
-    # tipo_documento: validar contra el enum.
-    tipo_raw = datos.get("tipo_documento", "Otro")
-    try:
-        tipo = TipoDocumento(tipo_raw).value
-    except ValueError:
-        logger.warning("Tipo documental inválido '%s', usando Otro.", tipo_raw)
-        tipo = TipoDocumento.OTRO.value
 
-    # nivel_prioridad: validar contra el enum.
+    Acepta tipos con o sin tilde ("Receta Médica" o "Receta Medica").
+    """
+    # tipo_documento: normalizar tildes y validar contra el enum.
+    tipo_raw = datos.get("tipo_documento", "Otro")
+    tipo = _TIPOS.get(_sin_tildes(str(tipo_raw)), TipoDocumento.OTRO.value)
+    if tipo == TipoDocumento.OTRO.value and _sin_tildes(str(tipo_raw)) != _sin_tildes(TipoDocumento.OTRO.value):
+        logger.warning("Tipo documental inválido '%s', usando Otro.", tipo_raw)
+
+    # nivel_prioridad: normalizar tildes y validar contra el enum.
     prioridad_raw = datos.get("nivel_prioridad", "Rutina")
-    try:
-        prioridad = NivelPrioridad(prioridad_raw).value
-    except ValueError:
+    prioridad = _PRIORIDADES.get(_sin_tildes(str(prioridad_raw)), NivelPrioridad.RUTINA.value)
+    es_rutina_por_defecto = _sin_tildes(str(prioridad_raw)) == _sin_tildes(NivelPrioridad.RUTINA.value)
+    if prioridad == NivelPrioridad.RUTINA.value and not es_rutina_por_defecto:
         logger.warning("Prioridad inválida '%s', usando Rutina.", prioridad_raw)
-        prioridad = NivelPrioridad.RUTINA.value
 
     # confianza → score_confianza_clasificacion.
     try:

@@ -208,7 +208,8 @@ def extraer(state: TriageState) -> dict:
 
     # Camino rápido: sin LLM.
     if not USE_LLM:
-        datos = _extraer_por_regex(texto)
+        # Envolver con _normalizar_datos para que devuelva la misma forma que el modelo.
+        datos = _normalizar_datos(_extraer_por_regex(texto))
         return {
             "datos_extraidos": datos,
             "evidencias": [],
