@@ -1,6 +1,6 @@
 # Contrato de MediFlow
 
-Versión 1.0 · Incorpora la regla A de urgencia (ADR-002), el campo del paciente como `nombre` en todo el proyecto (ADR-003), los valores críticos de laboratorio como cuarta fuente de urgencia, el alto riesgo solo en recetas, la categoría AMB-6 de fuera de alcance y la distinción entre medicamentos que se validan por rango y los que se dosifican por protocolo (ADR-007).
+Versión 1.0 · Incorpora la regla A de urgencia (ADR-002), el campo del paciente como `nombre` en todo el proyecto (ADR-003), los valores críticos de laboratorio como cuarta fuente de urgencia, el alto riesgo solo en recetas, la categoría AMB-6 de fuera de alcance, la distinción entre medicamentos que se validan por rango y los que se dosifican por protocolo (ADR-007) y la fecha de nacimiento del paciente (ADR-009).
 
 Fuente: `agent/schemas/contrato.py`, `agent/schemas/documentos.py` y `agent/rules/rules.yaml` del esqueleto, más el ejemplo de entrada y salida del brief. Los nombres de campo siguen al brief, con una excepción decidida por el equipo y registrada en el ADR-003: `paciente.nombre` en lugar de `nome`, para que todo el contrato esté en un solo idioma.
 
@@ -45,7 +45,7 @@ Idéntica al ejemplo del brief, más cuatro campos propios al final.
 | `status` | `procesado`, `revision_humana`, `rechazado`, `pendiente` |
 | `documento_id` | El recibido |
 | `clasificacion` | `tipo_documento`, `especialidad`, `nivel_prioridad`, `score_confianza_clasificacion` (0 a 1) |
-| `datos_extraidos` | `paciente {nombre, edad}`, `medico_solicitante {nombre, matricula}`, `estudio_realizado`, `diagnostico_principal`, `cie10_sugerido`, `medicamentos []`, `estudios_solicitados []` |
+| `datos_extraidos` | `paciente {nombre, edad, fecha_nacimiento}`, `medico_solicitante {nombre, matricula}`, `estudio_realizado`, `diagnostico_principal`, `cie10_sugerido`, `medicamentos []`, `estudios_solicitados []` |
 | `decision_enrutamiento` | `destino_principal`, `requiere_auditoria_humana`, `justificacion_enrutamiento`, `notificacion_generada {canal, mensaje}` o null |
 | `almacenamiento_oci` | `bucket`, `ruta_objeto`, `status_backup` (`exito`, `pendiente`, `error`) |
 | `score_confianza` | Propio. Score compuesto de 0 a 1 |
@@ -82,6 +82,17 @@ Seis tipos clínicos más `Otro`, que es el valor que toma cualquier documento f
 | `Orden de Solicitud de Procedimiento` | paciente.nombre*, paciente.edad, medico.nombre*, medico.matricula*, procedimiento_solicitado*, justificacion, diagnostico, cie10_sugerido, estudios_solicitados[] |
 | `Epicrisis` | paciente.nombre*, paciente.edad, medico.nombre, medico.matricula, fecha_ingreso, fecha_egreso, motivo_ingreso, diagnostico_egreso*, cie10_sugerido, tratamiento, indicaciones_alta |
 | `Certificado Medico` | paciente.nombre*, medico.nombre*, medico.matricula*, fecha*, motivo, dias_reposo, diagnostico (opcional, suele omitirse), cie10_sugerido |
+
+**`paciente.fecha_nacimiento`** es opcional en los seis tipos. Va en formato ISO, `AAAA-MM-DD`, sea
+como sea que la escriba el documento, y es `null` si el documento no la trae. **Nunca se calcula a
+partir de la edad**: eso sería inventar un dato, y además taparía justo la contradicción que el
+campo existe para detectar. Si el documento trae edad y fecha de nacimiento, `validar.py` calcula la
+edad a la fecha del documento, o a la de procesamiento si el documento no tiene fecha, y si difiere
+de la declarada en más de un año marca AMB-2. Si falta cualquiera de las dos, no se compara.
+
+**`cie10_sugerido`** se valida por el código contra `evals/generator/data/cie10.csv`. La descripción
+puede variar según la edición de la clasificación, por ejemplo "Septicemia" o "Sepsis" para A41.9, y
+no genera conflicto: lo que se compara es el código.
 | `Otro` | Cualquier documento que no encaje. Siempre va a revisión humana |
 
 `especialidad` es texto libre sugerido por el modelo (por ejemplo `Radiologia / Neumonologia`). No se valida contra una lista en el MVP.
@@ -222,4 +233,3 @@ como fuente de verdad.
 
 Sigue vigente una regla de trabajo: cualquier cambio de nombre de campo se hace en `contrato.py` y
 en este documento en el mismo PR, y el test `test_ejemplo_del_brief` tiene que seguir pasando.
-
