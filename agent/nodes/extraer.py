@@ -68,6 +68,7 @@ def _parsear_json(texto: str) -> dict:
         limpio = limpio.strip()
     return json.loads(limpio)
 
+
 def _limpiar_evidencias(obj):
     """Remueve recursivamente las claves que empiezan con 'evidencia_'."""
     if isinstance(obj, dict):
@@ -79,6 +80,7 @@ def _limpiar_evidencias(obj):
     if isinstance(obj, list):
         return [_limpiar_evidencias(item) for item in obj]
     return obj
+
 
 def _normalizar_medicamento(med, medicamentos_alto_riesgo: set[str]) -> dict:
     """
@@ -122,6 +124,9 @@ def _normalizar_datos(datos: dict) -> dict:
     """
     Asegura que el dict tenga todas las claves del contrato, limpia las
     evidencias anidadas y normaliza los medicamentos (calcula alto_riesgo).
+
+    Además, garantiza que paciente siempre tenga los campos nombre, edad y
+    fecha_nacimiento, aunque el modelo no los devuelva.
     """
     from agent.rules.loader import load_rules
 
@@ -134,8 +139,13 @@ def _normalizar_datos(datos: dict) -> dict:
         _normalizar_medicamento(m, terminos_alto_riesgo) for m in medicamentos_raw
     ]
 
+    # Asegurar que paciente tenga siempre los 3 campos del contrato.
+    paciente = datos.get("paciente") or {}
+    for campo in ("nombre", "edad", "fecha_nacimiento"):
+        paciente.setdefault(campo, None)
+
     return {
-        "paciente": datos.get("paciente") or {"nombre": None, "edad": None, "fecha_nacimiento": None},        
+        "paciente": paciente,
         "medico_solicitante": datos.get("medico_solicitante")
         or {"nombre": None, "matricula": None},
         "estudio_realizado": datos.get("estudio_realizado"),
@@ -204,7 +214,7 @@ def extraer(state: TriageState) -> dict:
     tipo_documento = state.get("clasificacion", {}).get("tipo_documento", "Otro")
 
     # Inicializar variables antes de cualquier camino.
-    evidencias: list[dict] = []    
+    evidencias: list[dict] = []
 
     # Camino rápido: sin LLM.
     if not USE_LLM:
@@ -225,7 +235,7 @@ def extraer(state: TriageState) -> dict:
     try:
         if not PROMPT_PATH.exists():
             logger.warning("No existe prompts/extraer.md, usando regex.")
-            datos = _extraer_por_regex(texto)
+            datos = _normalizar_datos(_extraer_por_regex(texto))
             evidencias = []
         else:
             prompt = _construir_prompt(texto, tipo_documento)
@@ -239,7 +249,7 @@ def extraer(state: TriageState) -> dict:
             modelo = resultado_llm.model
     except Exception as e:  # noqa: BLE001
         logger.warning("LLM falló en extraer (%s), usando regex.", e)
-        datos = _extraer_por_regex(texto)
+        datos = _normalizar_datos(_extraer_por_regex(texto))
         evidencias = []
 
     salida: dict = {
