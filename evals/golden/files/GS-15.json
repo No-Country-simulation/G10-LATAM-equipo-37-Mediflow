@@ -1,0 +1,7 @@
+{
+  "tipo_documento": "Informe de Laboratorio",
+  "diagnostico": "Hipotiroidismo primario",
+  "TSH": 9.8,
+  "T4_libre": 0.7,
+  "interpretacion": "Compatible con hipotiroidismo primario"
+}
