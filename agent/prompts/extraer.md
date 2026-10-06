@@ -23,7 +23,7 @@ El JSON debe tener esta estructura exacta:
     "nombre": "nombre completo del paciente o null",
     "evidencia_nombre": "fragmento del documento o null",
     "edad": 0,
-    "evidencia_edad": "fragmento del documento o null"
+    "evidencia_edad": "fragmento del documento o null",
     "fecha_nacimiento": "AAAA-MM-DD o null",
     "evidencia_fecha_nacimiento": "fragmento del documento o null"
   },
@@ -33,6 +33,8 @@ El JSON debe tener esta estructura exacta:
     "matricula": "numero de matricula o null",
     "evidencia_matricula": "fragmento del documento o null"
   },
+  "fecha": "AAAA-MM-DD o null",
+  "evidencia_fecha": "fragmento del documento o null",
   "estudio_realizado": "estudio realizado o null",
   "evidencia_estudio_realizado": "fragmento del documento o null",
   "hallazgos": "hallazgos descriptivos o null",
@@ -54,6 +56,7 @@ Reglas adicionales:
 4. Si un campo no esta en el documento, usa null. No lo omitas.
 5. Si no podes extraer nada, devuelve el JSON con todos los campos en null.
 6. cie10_sugerido: si el diagnostico principal es claro, sugiere el codigo CIE-10 mas probable. Si no estas seguro, usa null.
+7. `fecha`: solo se extrae si está escrita explícitamente en el documento. Si no está, va en `null`. No inventar ni usar la fecha de hoy.
 
 Ejemplo:
 

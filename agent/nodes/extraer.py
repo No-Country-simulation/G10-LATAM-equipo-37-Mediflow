@@ -42,12 +42,14 @@ def _extraer_por_regex(texto: str) -> dict:
         r"M[eé]dic[oa] Solicitante:\s*(.+?)(?:\s+MP|\s+Matr|\n|$)", texto
     )
     matricula = _buscar(r"(?:MP|Matr[ií]cula)\s*:?\s*(\d+)", texto)
+    fecha = _buscar(r"Fecha:\s*([^\n]+)", texto)
     estudio = _buscar(r"Estudio:\s*([^\.\n]+)", texto)
     conclusion = _buscar(r"CONCLUSION:\s*([^\.\n]+)", texto)
 
     return {
         "paciente": {"nombre": paciente, "edad": int(edad) if edad else None, "fecha_nacimiento": None},
         "medico_solicitante": {"nombre": medico, "matricula": matricula},
+        "fecha": fecha,
         "estudio_realizado": estudio,
         "diagnostico_principal": conclusion,
         "cie10_sugerido": None,
@@ -148,6 +150,7 @@ def _normalizar_datos(datos: dict) -> dict:
         "paciente": paciente,
         "medico_solicitante": datos.get("medico_solicitante")
         or {"nombre": None, "matricula": None},
+        "fecha": datos.get("fecha"),
         "estudio_realizado": datos.get("estudio_realizado"),
         "procedimiento_solicitado": datos.get("procedimiento_solicitado"),
         "diagnostico_principal": datos.get("diagnostico_principal"),
