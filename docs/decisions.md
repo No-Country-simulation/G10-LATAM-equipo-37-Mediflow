@@ -65,3 +65,10 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 - Alternativa descartada: usar documentos reales anonimizados para evaluar. Anonimizar bien un documento clínico es difícil, el riesgo de reidentificación es real, y el plan gratuito no admite datos personales.
 - Consecuencia: la privacidad del producto se diseña desde ahora, en `docs/privacidad.md`: el dato completo va solo a su destino y al auditor, y los registros, trazas y métricas se seudonimizan con una clave secreta. MediFlow está diseñado según los principios de las normas de referencia, sin afirmar que las cumple, porque eso exige auditorías que un prototipo no tiene.
 
+
+## ADR-011 · Un CIE-10 inexistente es AMB-2, con prioridad sobre AMB-3
+- Fecha: 5 de octubre de 2026
+- Contexto: `validar.py` marcaba conflicto cuando el código CIE-10 del documento no existía en `cie10.csv`, pero no le asignaba categoría. Todo conflicto necesita una categoría para ir a revisión humana con un motivo visible, y `enrutar.py` podía tratar el caso como «sin categoría».
+- Decisión: un código CIE-10 inexistente se clasifica como AMB-2. Si el mismo documento tiene además un conflicto de dosis (AMB-3), AMB-2 tiene prioridad.
+- Alternativa descartada: dejar el conflicto sin categoría, porque el auditor no vería el motivo y el enrutamiento quedaba ambiguo.
+- Consecuencia: `enrutar.py` y `plan_golden.csv` no deben tratarlo como «sin categoría». `test_validar.py` tiene una prueba por categoría AMB.
