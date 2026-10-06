@@ -1,9 +1,9 @@
 INFORME DE ECOGRAFÍA OBSTÉTRICA
-Centro Asistencial Horizonte de Prueba - Diagnóstico por Imágenes
+Centro Asistencial Horizonte - Diagnóstico por Imágenes
 Fecha: 28/09/2026
-Paciente: Clara Valdés Ficticia
+Paciente: Clara Valdés
 Edad: 27 años
-Historia clínica: SIM-GS11
+Historia clínica: 619284
 Estudio: ecografía obstétrica morfológica de 20 semanas.
 
 Feto único vivo. Biometría acorde a 20 semanas de gestación.
@@ -12,7 +12,6 @@ Anatomía fetal sin alteraciones evidentes en el presente estudio.
 
 Conclusión: embarazo de 20 semanas de curso normal. Sin alteraciones ecográficas.
 CIE-10: Z34.9.
-Dra. Julia Arce Ficticia
-Matrícula de simulación: SIM-MP-0311
-Firma: Julia Arce Ficticia
-Documento sintético para pruebas de MediFlow. Sin validez asistencial.
+Dra. Julia Arce
+Matrícula: MP 61945
+Firma: Julia Arce

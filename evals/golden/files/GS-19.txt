@@ -1,9 +1,9 @@
 ORDEN DE SOLICITUD DE PROCEDIMIENTO
-Centro Asistencial Horizonte de Prueba - Guardia de Gastroenterología
+Centro Asistencial Horizonte - Guardia de Gastroenterología
 Fecha: 28/09/2026
-Paciente: Ernesto Luján Ficticio
+Paciente: Ernesto Luján
 Edad: 62 años
-Historia clínica: SIM-GS19
+Historia clínica: 537196
 
 Procedimiento solicitado: endoscopia digestiva alta de urgencia.
 Motivo: hematemesis y melena, con mareo y palidez. Hemoglobina 6,4 g/dL,
@@ -12,7 +12,6 @@ Diagnóstico de solicitud: hemorragia digestiva alta activa. CIE-10: K92.2.
 Justificación: hemorragia activa con anemia aguda severa; requiere evaluación
 endoscópica urgente para localizar y tratar el sangrado.
 
-Médico solicitante: Dr. Tomás Ferreyra Ficticio
-Matrícula de simulación: SIM-MP-0319
-Firma: Tomás Ferreyra Ficticio
-Documento sintético para pruebas de MediFlow. Sin validez asistencial.
+Médico solicitante: Dr. Tomás Ferreyra
+Matrícula: MP 52718
+Firma: Tomás Ferreyra

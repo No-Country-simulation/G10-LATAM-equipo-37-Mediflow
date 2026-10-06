@@ -1,9 +1,9 @@
 INFORME DE LABORATORIO
-Centro Asistencial Horizonte de Prueba - Laboratorio Central
+Centro Asistencial Horizonte - Laboratorio Central
 Fecha: 28/09/2026
-Paciente: Teresa Olmedo Ficticia
+Paciente: Teresa Olmedo
 Edad: 68 años
-Historia clínica: SIM-FA05
+Historia clínica: 583927
 Estudio realizado: ionograma sérico y creatinina.
 Muestra: suero. Extracción: 28/09/2026, 09:10 h.
 
@@ -13,7 +13,6 @@ Creatinina: 4,2 mg/dL.
 
 Conclusión: hiperpotasemia severa. Resultado crítico que requiere atención inmediata.
 CIE-10: E87.5.
-Profesional informante: Dra. Elena Paz Ficticia
-Matrícula de simulación: SIM-MP-0405
-Firma: Elena Paz Ficticia
-Documento sintético para pruebas de MediFlow. Sin validez asistencial.
+Profesional informante: Dra. Elena Paz
+Matrícula: MP 58419
+Firma: Elena Paz
