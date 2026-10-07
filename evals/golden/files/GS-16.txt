@@ -1,0 +1,45 @@
+HOSPITAL GENERAL SAN MARTÍN
+LABORATORIO CENTRAL
+Sección Química Clínica
+
+INFORME DE LABORATORIO
+
+Paciente: SOSA, Ricardo Alberto
+DNI: 22.519.307
+Edad: 54 años          Sexo: Masculino
+HC N°: 377.460
+Procedencia: Consultorio Externo de Medicina Interna
+Médico solicitante: Dra. Gabriela Inés Torres, Mat. 137.215
+Diagnóstico del pedido: E78.5 Hiperlipidemia no especificada
+Datos clínicos: control de rutina. Antecedentes familiares de enfermedad coronaria.
+Protocolo N°: 26-092114
+Fecha de extracción: 21/09/2026      Fecha de informe: 21/09/2026
+Muestra: suero      Ayuno: 12 h
+
+ESTUDIO REALIZADO: PERFIL LIPÍDICO
+
+DETERMINACIÓN               RESULTADO    VALORES DE REFERENCIA (adultos)
+Colesterol total            262 mg/dL    Deseable: menor de 200 mg/dL
+                                         Limítrofe alto: 200 a 239 mg/dL
+                                         Alto: 240 mg/dL o más
+Colesterol HDL               41 mg/dL    Bajo: menor de 40 mg/dL
+                                         Alto: 60 mg/dL o más
+Colesterol LDL (directo)    168 mg/dL    Óptimo: menor de 100 mg/dL
+                                         Cercano al óptimo: 100 a 129 mg/dL
+                                         Limítrofe alto: 130 a 159 mg/dL
+                                         Alto: 160 a 189 mg/dL
+                                         Muy alto: 190 mg/dL o más
+Triglicéridos               210 mg/dL    Normal: menor de 150 mg/dL
+                                         Limítrofe alto: 150 a 199 mg/dL
+                                         Alto: 200 a 499 mg/dL
+                                         Muy alto: 500 mg/dL o más
+
+Métodos: colesterol total y triglicéridos, enzimático colorimétrico. HDL y LDL, homogéneo directo.
+
+COMENTARIO:
+Perfil compatible con dislipidemia mixta: LDL y triglicéridos elevados, HDL en el límite inferior. Se sugiere evaluar inicio de estatina junto con medidas higiénico-dietéticas, según criterio del médico tratante. Control de perfil lipídico en 3 meses.
+
+Validado y firmado electrónicamente por:
+Dra. Marcela Andrea Villalba
+Médica especialista en Patología Clínica
+Matrícula 96.318
