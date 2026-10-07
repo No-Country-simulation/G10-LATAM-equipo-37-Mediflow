@@ -1,13 +1,10 @@
 {
-  "resultado_esperado": "ilegible",
+  "id": "M7",
   "paciente": null,
   "edad": null,
-  "dni": null,
-  "fecha": null,
-  "medicamentos": null,
-  "rp": null,
-  "indicaciones": null,
-  "doctor": null,
-  "sello": null,
-  "firma": null
+  "medicamento": "Omeprazol",
+  "dosis": "20 mg",
+  "frecuencia": "cada 24 horas",
+  "duracion": "8 semanas",
+  "resultado_esperado": "ilegible"
 }
