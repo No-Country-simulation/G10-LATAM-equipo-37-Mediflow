@@ -7,8 +7,8 @@ from typing import Any
 import httpx
 import streamlit as st
 
-API_URL = os.getenv("MEDIFLOW_API_URL", "http://localhost:8000").rstrip("/")
-TIMEOUT = float(os.getenv("MEDIFLOW_API_TIMEOUT", "120"))
+API_URL = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
+TIMEOUT = float(os.getenv("API_TIMEOUT", "120"))
 
 
 def api_request(method: str, path: str, **kwargs: Any) -> httpx.Response:
