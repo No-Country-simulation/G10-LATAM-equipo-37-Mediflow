@@ -9,7 +9,17 @@ enrutar → persistir → notificar → FIN
 
 El auditor tiene tres salidas y no son equivalentes: aprobar o corregir devuelve el documento al
 enrutamiento por tipo; rechazar termina en rechazados/ y nunca continúa hacia un destino operativo.
+
+**Trazas.** Cada nodo se registra envuelto en `_con_tiempo`, así que su registro de traza lleva la
+duración real medida con `perf_counter` además del detalle y el modelo. `run_triage` agrega el
+resumen ya calculado (`traza_resumen`) para que la API y la UI lo muestren sin recalcular nada.
 """
+import logging
+import time
+from collections.abc import Callable
+
+from langgraph.graph import END, StateGraph
+
 from agent.nodes.clasificar import clasificar
 from agent.nodes.enrutar import enrutar
 from agent.nodes.extraer import extraer
@@ -22,7 +32,48 @@ from agent.nodes.urgencia import detectar_urgencia
 from agent.nodes.validar import validar
 from agent.rules.loader import load_rules
 from agent.state import TriageState
-from langgraph.graph import END, StateGraph
+from agent.traza import resumen_traza
+
+logger = logging.getLogger(__name__)
+
+# Los nodos del grafo, en el orden en que se construyen. Se expone para que los tests verifiquen que
+# el grafo sigue teniendo los diez nodos que documenta docs/architecture.md.
+NODOS: tuple[tuple[str, Callable], ...] = (
+    ("normalizar", normalizar),
+    ("clasificar", clasificar),
+    ("extraer", extraer),
+    ("validar", validar),
+    ("puntuar", puntuar),
+    ("detectar_urgencia", detectar_urgencia),
+    ("segunda_opinion", segunda_opinion),
+    ("enrutar", enrutar),
+    ("persistir", persistir),
+    ("notificar", notificar),
+)
+
+
+def _con_tiempo(nombre: str, nodo: Callable) -> Callable:
+    """Envuelve un nodo para medir cuánto tarda y dejarlo en su registro de traza.
+
+    Se mide acá y no dentro de cada nodo por dos razones: hay un solo lugar que mantener y el nodo no
+    necesita saber que lo están cronometrando. El registro que completa es el último que el nodo
+    agregó, que es el que deja `common.step` al final de la lista.
+    """
+
+    def _envuelto(state: TriageState) -> dict:
+        inicio = time.perf_counter()
+        salida = nodo(state)
+        ms = round((time.perf_counter() - inicio) * 1000, 1)
+        traza = salida.get("trace") if isinstance(salida, dict) else None
+        if isinstance(traza, list) and traza:
+            traza[-1]["ms"] = ms
+        else:
+            logger.debug("El nodo %s no devolvió traza: no se pudo registrar su duración.", nombre)
+        return salida
+
+    _envuelto.__name__ = f"{nombre}_cronometrado"
+    return _envuelto
+
 
 
 def _tras_normalizar(state: TriageState) -> str:
@@ -47,16 +98,8 @@ def _tras_urgencia(state: TriageState) -> str:
 
 def build_graph():
     g = StateGraph(TriageState)
-    g.add_node("normalizar", normalizar)
-    g.add_node("clasificar", clasificar)
-    g.add_node("extraer", extraer)
-    g.add_node("validar", validar)
-    g.add_node("puntuar", puntuar)
-    g.add_node("detectar_urgencia", detectar_urgencia)
-    g.add_node("segunda_opinion", segunda_opinion)
-    g.add_node("enrutar", enrutar)
-    g.add_node("persistir", persistir)
-    g.add_node("notificar", notificar)
+    for nombre, nodo in NODOS:
+        g.add_node(nombre, _con_tiempo(nombre, nodo))
 
     g.set_entry_point("normalizar")
     g.add_conditional_edges("normalizar", _tras_normalizar, {"clasificar": "clasificar", "enrutar": "enrutar"})
@@ -100,4 +143,9 @@ def run_triage(
         estado_inicial["legibilidad"] = legibilidad
     if ruta_original:
         estado_inicial["ruta_original"] = ruta_original
-    return grafo.invoke(estado_inicial)
+
+    resultado = grafo.invoke(estado_inicial)
+    # Cada nodo ya dejó su duración medida: acá se resume una sola vez para que la API y la UI no
+    # tengan que recorrer la traza ni recalcular nada.
+    resultado["traza_resumen"] = resumen_traza(resultado.get("trace"))
+    return resultado
