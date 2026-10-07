@@ -33,6 +33,15 @@ def _buscar(patron: str, texto: str) -> str | None:
     m = re.search(patron, texto, flags=re.IGNORECASE)
     return m.group(1).strip() if m else None
 
+def _convertir_a_iso(fecha: str | None) -> str | None:
+    """Convierte DD/MM/AAAA a AAAA-MM-DD (ISO). Devuelve None si no se puede."""
+    if not fecha:
+        return None
+    try:
+        dia, mes, anio = fecha.split("/")
+        return f"{anio}-{mes.zfill(2)}-{dia.zfill(2)}"
+    except (ValueError, AttributeError):
+        return None
 
 def _extraer_por_regex(texto: str) -> dict:
     """Fallback: extracción con expresiones regulares."""
@@ -41,13 +50,16 @@ def _extraer_por_regex(texto: str) -> dict:
     medico = _buscar(
         r"M[eé]dic[oa] Solicitante:\s*(.+?)(?:\s+MP|\s+Matr|\n|$)", texto
     )
+
     matricula = _buscar(r"(?:MP|Matr[ií]cula)\s*:?\s*(\d+)", texto)
-    fecha = _buscar(r"Fecha:\s*([^\n]+)", texto)
+    fecha = _buscar(r"Fecha(?: del estudio| de ingreso| de egreso)?:\s*([^\n]+)", texto)
+    fecha_nacimiento_raw = _buscar(r"Fecha de nacimiento:\s*(\d{2}/\d{2}/\d{4})", texto)
+    fecha_nacimiento = _convertir_a_iso(fecha_nacimiento_raw)
     estudio = _buscar(r"Estudio:\s*([^\.\n]+)", texto)
     conclusion = _buscar(r"CONCLUSION:\s*([^\.\n]+)", texto)
 
     return {
-        "paciente": {"nombre": paciente, "edad": int(edad) if edad else None, "fecha_nacimiento": None},
+        "paciente": {"nombre": paciente, "edad": int(edad) if edad else None, "fecha_nacimiento": fecha_nacimiento},
         "medico_solicitante": {"nombre": medico, "matricula": matricula},
         "fecha": fecha,
         "estudio_realizado": estudio,
