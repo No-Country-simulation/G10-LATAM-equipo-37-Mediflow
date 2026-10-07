@@ -84,7 +84,11 @@ def persistir(state: TriageState) -> dict:
     destino = state.get("decision", {}).get("destino_principal", "Cola_Revision_Humana")
     carpeta = _CARPETAS.get(destino, "auditoria_humana")
     ruta = f"{carpeta}/{state['documento_id']}.json"
-    bucket = os.getenv("OCI_BUCKET", "mediflow-documentos-clinicos")
+    # Elegir bucket según ENV (dev/prod).
+    # OCI_BUCKET (legacy) tiene prioridad si está definido.
+    entorno = os.getenv("ENV", "dev").lower()
+    bucket_por_entorno = f"OCI_BUCKET_{entorno.upper()}"
+    bucket = os.getenv("OCI_BUCKET") or os.getenv(bucket_por_entorno, "mediflow-dev")
 
     payload = {
         "documento_id": state.get("documento_id"),

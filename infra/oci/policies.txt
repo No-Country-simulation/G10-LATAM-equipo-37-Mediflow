@@ -1,11 +1,30 @@
+# MediFlow - Políticas IAM para OCI (N2-02)
+#
+# Objetivo:
+# - Los devs solo pueden escribir en el bucket de desarrollo (mediflow-dev).
+# - La VM (dynamic group) solo puede escribir en el bucket de producción (mediflow-prod).
+# - Ningún dev puede escribir en el bucket de producción.
+
+# Administradores: pueden gestionar todo el compartment
 Allow group mediflow-admins to manage all-resources in compartment mediflow
-Allow group mediflow-devs to manage object-family in compartment mediflow
+
+# Devs: solo pueden gestionar objects en el bucket de desarrollo
+Allow group mediflow-devs to manage object-family in compartment mediflow where target.bucket.name = 'mediflow-dev'
+
+# Devs: pueden leer el bucket de producción (por si necesitan debug)
+Allow group mediflow-devs to read object-family in compartment mediflow where target.bucket.name = 'mediflow-prod'
+
+# Devs: otros permisos (database, secrets, instancias)
 Allow group mediflow-devs to use autonomous-databases in compartment mediflow
 Allow group mediflow-devs to read secret-family in compartment mediflow
 Allow group mediflow-devs to read instances in compartment mediflow
-Allow dynamic-group mediflow-vm to manage objects in compartment mediflow
+
+# VM (dynamic group): solo puede gestionar objects en el bucket de producción
+Allow dynamic-group mediflow-vm to manage objects in compartment mediflow where target.bucket.name = 'mediflow-prod'
+
+# VM: otros permisos
 Allow dynamic-group mediflow-vm to read secret-family in compartment mediflow
 Allow dynamic-group mediflow-vm to use ons-topics in compartment mediflow
 
-Dynamic group mediflow-vm, regla:
-Any {instance.compartment.id = '<OCID del compartment mediflow>'}
+# Dynamic group para la VM (se crea en la consola o con OCI CLI)
+# Regla: Any {instance.compartment.id = '<OCID del compartment mediflow>'}
