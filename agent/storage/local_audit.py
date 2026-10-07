@@ -32,7 +32,7 @@ TODO / coordinar con el equipo:
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 DATA_DIR = Path("data/auditoria_humana")
 
