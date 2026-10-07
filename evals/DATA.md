@@ -4,13 +4,15 @@ Regla que no se negocia: ningún documento real de ningún paciente.
 
 ## Qué es el conjunto de prueba
 
-Documentos cuya respuesta correcta conocemos de antemano. Cada uno lleva su etiqueta: tipo, datos a extraer, prioridad, destino y si requiere auditoría. Se pasan por el agente, se compara la salida con la etiqueta y de ahí salen las métricas. Un documento no entra hasta que dos personas revisan su etiqueta.
+Documentos cuya respuesta correcta conocemos de antemano. Cada uno lleva su etiqueta: tipo, datos a extraer, prioridad, destino y si requiere auditoría. Se pasan por el agente, se compara la salida con la etiqueta y de ahí salen las métricas. Un documento no entra hasta que una persona distinta de quien lo escribió revisa su etiqueta: el `revisor_1` del plan.
+
+Hasta el 5 de octubre pedíamos dos revisiones; desde el 6, por tiempo, alcanza con una (ADR-012). Las segundas revisiones ya hechas, en GS-26 y GS-30, quedan registradas. Para compensar, **cuando la evaluación marca un fallo, antes de contarlo como error del agente se vuelve a mirar la etiqueta**: si la etiqueta estaba mal, se corrige y no cuenta como error. Así la segunda mirada va justo donde agente y etiqueta no coinciden.
 
 ## Cuánto y por qué
 
 | Qué | Cantidad | Quién lo produce |
 |---|---|---|
-| Documentos de texto | 30 | Escritos por el equipo; el generador produce sus otros formatos. Dos personas revisan cada uno |
+| Documentos de texto | 30 | Escritos por el equipo; el generador produce sus otros formatos. Otra persona revisa cada uno |
 | Casos fuera de alcance | 7 | Escritos por el equipo, uno por cada motivo de `fuera_de_alcance` en rules.yaml, más el de la instrucción incrustada: factura de farmacia, consentimiento informado, carnet de obra social, informe en inglés, pedido de diagnóstico, receta veterinaria e ionograma con una orden escondida en el texto |
 | Imágenes degradadas | 12 | Un script sobre los PDF ya generados, así que son de varios tipos. Heredan el contenido, no hay que revisarlas |
 | Fotos de recetas manuscritas | 8, una por persona | Cada integrante escribe y fotografía la suya. Todas son Receta Médica, que es el único tipo que se escribe a mano |
