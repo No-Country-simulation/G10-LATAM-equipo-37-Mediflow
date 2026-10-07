@@ -550,3 +550,16 @@ def test_medicamento_sin_periodicidad_especial_puede_ser_diario():
 
     datos = {"medicamentos": [{"nombre": "Amoxicilina", "dosis": "500 mg", "frecuencia": "diario"}]}
     assert validar_dosis_medicamentos(datos, _CATALOGO_PERIODICIDAD) == []
+
+def test_informe_de_laboratorio_no_valida_farmacos_del_texto():
+    from agent.nodes.validar import validar_dosis_medicamentos
+
+    datos = {"medicamentos": [{"nombre": "hierro oral", "dosis": None, "frecuencia": None}]}
+    assert validar_dosis_medicamentos(datos, _CATALOGO_PERIODICIDAD, "Informe de Laboratorio") == []
+
+
+def test_receta_sigue_marcando_medicamento_desconocido():
+    from agent.nodes.validar import validar_dosis_medicamentos
+
+    datos = {"medicamentos": [{"nombre": "hierro oral", "dosis": None, "frecuencia": None}]}
+    assert validar_dosis_medicamentos(datos, _CATALOGO_PERIODICIDAD, "Receta Medica") != []

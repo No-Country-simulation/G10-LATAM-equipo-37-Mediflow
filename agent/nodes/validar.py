@@ -189,14 +189,20 @@ def _frecuencia_diaria_o_mayor(frecuencia: Any) -> bool:
         f,
     ))
 
+# Tipos de documento que pueden llevar tratamiento (receta; epicrisis con tratamiento al alta).
+# En los demás, un fármaco mencionado en la conclusión no es una prescripción.
+_TIPOS_CON_TRATAMIENTO = {"receta medica", "epicrisis"}
 
-def validar_dosis_medicamentos(datos: dict, medicamentos_catalogo: list[dict]) -> list[str]:
+
+def validar_dosis_medicamentos(datos: dict, medicamentos_catalogo: list[dict], tipo_documento: str = "") -> list[str]:
     """AMB-3: dosis fuera de rango o medicamento no identificable.
     ADR-007: solo se compara si validar_dosis == 'si'; los que van por peso/protocolo
     (enoxaparina, alteplasa, heparina, insulina, potasio IV, fentanilo, morfina)
     no generan AMB-3 aunque sean de alto riesgo.
     """
     conflictos: list[str] = []
+    if tipo_documento and _norm(tipo_documento) not in _TIPOS_CON_TRATAMIENTO:
+        return conflictos
     for med in datos.get("medicamentos") or []:
         if not isinstance(med, dict):
             conflictos.append(f"Medicamento con formato inválido: {med!r}")
@@ -351,7 +357,7 @@ def validar(state: TriageState) -> dict:
     cie10_catalogo = _cargar_cie10()
 
     campos_faltantes = validar_campos_obligatorios(datos, tipo_documento, rules)
-    conflictos_dosis = validar_dosis_medicamentos(datos, medicamentos_catalogo)
+    conflictos_dosis = validar_dosis_medicamentos(datos, medicamentos_catalogo, tipo_documento)
     conflictos_cie10 = validar_cie10(datos, cie10_catalogo)
     conflictos_contradiccion = validar_contradiccion_interna(datos)
     es_ilegible_medio = evaluar_legibilidad(legibilidad, rules)
