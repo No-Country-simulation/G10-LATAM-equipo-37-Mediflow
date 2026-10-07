@@ -102,3 +102,45 @@ def test_documento_resuelto_desaparece_de_la_cola(tmp_path, monkeypatch):
 
     r = client.get("/queue/human")
     assert r.json() == {"items": []}
+
+def test_auditar_rechaza_revisor_vacio(tmp_path, monkeypatch):
+    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
+    local_audit.guardar_extraccion("DOC-010", {"tipo_documento": "Receta Medica"}, base=tmp_path)
+    r = client.post("/audit/DOC-010", json={"accion": "aprobar", "revisor": "", "motivo": "ok"})
+    assert r.status_code == 422
+    assert not (tmp_path / "DOC-010" / "resolucion.json").exists()
+
+
+def test_auditar_rechaza_motivo_solo_espacios(tmp_path, monkeypatch):
+    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
+    local_audit.guardar_extraccion("DOC-011", {"tipo_documento": "Receta Medica"}, base=tmp_path)
+    r = client.post("/audit/DOC-011", json={"accion": "aprobar", "revisor": "Ana", "motivo": "   "})
+    assert r.status_code == 422
+    assert not (tmp_path / "DOC-011" / "resolucion.json").exists()
+
+
+def test_auditar_rechaza_correcciones_si_la_accion_no_es_corregir(tmp_path, monkeypatch):
+    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
+    local_audit.guardar_extraccion("DOC-012", {"tipo_documento": "Receta Medica"}, base=tmp_path)
+    r = client.post(
+        "/audit/DOC-012",
+        json={"accion": "aprobar", "revisor": "Ana", "motivo": "ok", "correcciones": {"paciente.nombre": "X"}},
+    )
+    assert r.status_code == 422
+    assert not (tmp_path / "DOC-012" / "resolucion.json").exists()
+
+
+def test_auditar_corregir_acepta_correcciones(tmp_path, monkeypatch):
+    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
+    local_audit.guardar_extraccion("DOC-013", {"tipo_documento": "Receta Medica"}, base=tmp_path)
+    r = client.post(
+        "/audit/DOC-013",
+        json={
+            "accion": "corregir",
+            "revisor": "Ana",
+            "motivo": "falta matrícula",
+            "correcciones": {"matricula": "123"},
+        },
+    )
+    assert r.status_code == 200
+    assert r.json()["resolucion"]["correcciones"] == {"matricula": "123"}
