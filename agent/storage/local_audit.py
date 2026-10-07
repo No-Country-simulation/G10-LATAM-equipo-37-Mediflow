@@ -61,6 +61,8 @@ class ResolucionYaExiste(ErrorAuditoria):
     """El documento ya tiene una resolución registrada (evita doble auditoría)."""
 
 
+class OriginalNoDisponible(ErrorAuditoria):
+    """El documento está en la cola, pero no tiene el original guardado."""
 def _dir_documento(documento_id: str, base: Path = DATA_DIR) -> Path:
     return base / documento_id
 
@@ -122,3 +124,32 @@ def guardar_resolucion(
     }
     resolucion_path.write_text(json.dumps(resolucion, ensure_ascii=False, indent=2), encoding="utf-8")
     return resolucion
+
+
+def _tipo_de_contenido(contenido: bytes) -> str:
+    """Deduce el tipo por los primeros bytes: persistir.py guarda el original sin extensión."""
+    if contenido.startswith(b"%PDF"):
+        return "application/pdf"
+    if contenido.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if contenido.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    try:
+        contenido.decode("utf-8")
+    except UnicodeDecodeError:
+        return "application/octet-stream"
+    return "text/plain; charset=utf-8"
+
+
+def obtener_original(documento_id: str, base: Path = DATA_DIR) -> tuple[bytes, str]:
+    """Devuelve (bytes, tipo) del documento original, para verlo junto a la extracción."""
+    if documento_id in ("", ".", "..") or "/" in documento_id or "\\" in documento_id:
+        raise DocumentoNoEncontrado(f"Documento no encontrado en la cola de revisión: {documento_id}")
+    d = _dir_documento(documento_id, base)
+    if not (d / "extraccion.json").exists():
+        raise DocumentoNoEncontrado(f"Documento no encontrado en la cola de revisión: {documento_id}")
+    candidatos = sorted(d.glob("original*"))  # "original" (persistir.py) u "original.{ext}" (contrato)
+    if not candidatos:
+        raise OriginalNoDisponible(f"El documento {documento_id} no tiene original guardado")
+    contenido = candidatos[0].read_bytes()
+    return contenido, _tipo_de_contenido(contenido)

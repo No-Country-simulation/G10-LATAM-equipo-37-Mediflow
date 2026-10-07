@@ -1,7 +1,7 @@
 """API de MediFlow."""
 from typing import Literal, Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Response, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from agent.graph import run_triage
@@ -12,6 +12,7 @@ from agent.storage import local_audit
 from agent.storage.local_audit import (
     AccionInvalida,
     DocumentoNoEncontrado,
+    OriginalNoDisponible,
     ResolucionYaExiste,
 )
 
@@ -119,6 +120,13 @@ def auditar(documento_id: str, decision: DecisionAuditor):
     return {"documento_id": documento_id, "resolucion": resolucion}
 
 
+@app.get("/audit/{documento_id}/original")
+def original_auditoria(documento_id: str):
+    try:
+        contenido, tipo = local_audit.obtener_original(documento_id, base=local_audit.DATA_DIR)
+    except (DocumentoNoEncontrado, OriginalNoDisponible) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return Response(content=contenido, media_type=tipo)
 @app.get("/rules")
 def reglas():
     return load_rules()
