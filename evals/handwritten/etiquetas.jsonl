@@ -1,4 +1,0 @@
-{"id": "M1", "paciente": "Roberto Fernández", "edad": 61, "medicamento": "Losartán", "dosis": "50 mg", "frecuencia": "cada 24 horas", "duracion": null, "resultado_esperado": "rutina"}
-{"id": "M3", "paciente": "Adriana Molina Ficticia", "medicamento": "Metotrexato", "dosis": "15 mg", "frecuencia": "diario", "duracion": null, "resultado_esperado": "ambiguedad", "edad": 45}
-{"id": "M8", "paciente": "Martha Elena Rojas", "edad": 42, "medicamento": "Ibuprofeno", "dosis": "400 mg", "frecuencia": "cada 8 horas", "duracion": "5 días", "resultado_esperado": "ilegible"}
-{"id":"M6","paciente":"Laura Isabel Martínez García","edad":null,"medicamento":"Atorvastatina","dosis":"20 mg","frecuencia":"cada 24 horas","duracion":null,"resultado_esperado":"ambiguedad"}
