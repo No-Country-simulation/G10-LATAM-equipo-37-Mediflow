@@ -233,3 +233,42 @@ como fuente de verdad.
 
 Sigue vigente una regla de trabajo: cualquier cambio de nombre de campo se hace en `contrato.py` y
 en este documento en el mismo PR, y el test `test_ejemplo_del_brief` tiene que seguir pasando.
+## 12. Reglas editables
+
+`GET /rules` devuelve las reglas vigentes: las de `agent/rules/rules.yaml`, o las editadas si existen. `PUT /rules` las reemplaza. Valida el objeto completo antes de guardarlo y el cambio rige desde la siguiente decisión, sin reiniciar.
+
+**Headers del PUT (obligatorios)**
+
+| Header | Contenido |
+| --- | --- |
+| `X-Admin-Token` | Clave de administrador. Debe coincidir con la variable de entorno `RULES_ADMIN_TOKEN`, que no va al repo. |
+| `X-Editor` | Nombre de quien hace el cambio. Queda en el registro. |
+
+**Cuerpo:** el objeto completo de reglas, con el mismo formato que devuelve `GET /rules`.
+
+**Respuestas del PUT**
+
+| Código | Cuándo | Cuerpo |
+| --- | --- | --- |
+| 200 | Reglas guardadas | `actualizado`, `cambios`, `umbral_modificado`, `aviso` |
+| 401 | Token ausente o incorrecto | `detail` |
+| 422 | Reglas inválidas | `{"detail": {"errores": [...]}}` con la lista legible; no se guarda nada |
+| 422 | Falta `X-Editor` | `detail` |
+| 503 | `RULES_ADMIN_TOKEN` no está definida | `detail`; la edición queda desactivada |
+
+**Qué se valida:** que estén las claves `version`, `umbrales`, `legibilidad`, `tipos_documento` y `campos_obligatorios`; que los umbrales estén entre 0 y 1 y cumplan `automatico > segunda_opinion > legibilidad_minima`; que `legibilidad.leve > legibilidad.media`; que los tipos de `campos_obligatorios` y de `deteccion_automatica_urgencia.aplica_a` existan en `tipos_documento`; que las listas de palabras sean textos; y que cada valor crítico de laboratorio tenga analito, valor y un operador válido. El bloque de destinos todavía no se valida.
+
+**Registro de cambios:** cada PUT que cambia algo agrega una línea a `data/rules.audit.jsonl` con la fecha (UTC), quién, si tocó un umbral y la lista de campos con su valor antes y después. Un PUT sin cambios no registra nada.
+
+**Aviso al tocar umbrales:** si cambia algo de `umbrales` o `legibilidad`, la respuesta trae `umbral_modificado: true` y el texto «Cambiaste un umbral: corre el golden set antes de dejarlo.». La pantalla debe mostrarlo antes de dar el cambio por bueno. El servidor no corre el golden set.
+
+```json
+{
+  "actualizado": true,
+  "cambios": [
+    {"campo": "umbrales.segunda_opinion", "antes": 0.6, "despues": 0.55}
+  ],
+  "umbral_modificado": true,
+  "aviso": "Cambiaste un umbral: corre el golden set antes de dejarlo."
+}
+```
