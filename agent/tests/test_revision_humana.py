@@ -1,5 +1,7 @@
 """N2-05: SQLite real, reinicio, API, rechazo y reentrada sin LLM/OCI."""
 import json
+import shutil
+import sqlite3
 from copy import deepcopy
 
 import pytest
@@ -59,6 +61,33 @@ def test_pausa_y_reinicio_sqlite(entorno):
     assert (carpeta("N205") / "resolucion.json").exists()
     with pytest.raises(RevisionConflicto):
         reanudar("N205", decision())
+
+
+def test_restaurar_sqlite_y_objetos_en_directorio_nuevo(entorno, monkeypatch):
+    ejecutar(estado())
+    restaurado = entorno / "restaurado"
+    restaurado.mkdir()
+    # Copia consistente de SQLite, no copiar un archivo abierto con transacciones.
+    with sqlite3.connect(entorno / "checkpoints.sqlite3") as origen:
+        with sqlite3.connect(restaurado / "checkpoints.sqlite3") as destino:
+            origen.backup(destino)
+    shutil.copytree(entorno / "pruebas", restaurado / "pruebas")
+    monkeypatch.setattr(local, "DATA_DIR", restaurado)
+    monkeypatch.setenv("MEDIFLOW_CHECKPOINT_DB", str(restaurado / "checkpoints.sqlite3"))
+    with sesion("N205") as (g, config):
+        assert g.get_state(config).next == ("revision_humana",)
+    assert reanudar("N205", decision("rechazar"))["status"] == "rechazado"
+    assert (restaurado / "pruebas/rechazados/N205.json").exists()
+    assert not (entorno / "pruebas/rechazados/N205.json").exists()
+
+
+def test_sqlite_sin_objetos_no_es_respaldo_completo(entorno, monkeypatch):
+    ejecutar(estado())
+    incompleto = entorno / "incompleto"
+    incompleto.mkdir()
+    monkeypatch.setattr(local, "DATA_DIR", incompleto)
+    with pytest.raises(FileNotFoundError):
+        reanudar("N205", decision("rechazar"))
 
 
 def test_rechazo_no_continua(entorno):

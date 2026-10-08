@@ -56,3 +56,14 @@ API, validación, urgencia y enrutamiento se verifican junto con el paquete.
 
 Referencias técnicas: https://docs.langchain.com/oss/python/langgraph/interrupts
 y https://docs.langchain.com/oss/python/langgraph/persistence.
+# Seguimiento del 8/10
+
+La prueba de restauración copia SQLite con su API de backup y copia los objetos
+del bucket local a otro directorio. El grafo restaurado conserva la pausa y puede
+resolverla; copiar solo SQLite falla por falta de los objetos. Esta evidencia es
+local, no acredita el job diario ni los permisos de OCI de N2-10.
+
+Integración pendiente con Carlos y Cristian: PR #29 cambia la elección de bucket
+por entorno. `revision.py`, `checkpoint_payload.py` y `local_audit.py` deben usar
+la misma función `bucket_actual()` que acuerden para persistir y la cola. Hasta
+esa integración esta rama usa OCI_BUCKET; no mezclar configuraciones con #29.
