@@ -4,7 +4,9 @@ Lee agent/rules/rules.yaml. Si existe un archivo de override (lo que escribe PUT
 La caché se invalida sola cuando cambia la fecha de modificación de cualquiera de los dos archivos, así que la
 API y el worker ven el cambio sin reiniciar.
 """
+import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +16,11 @@ RULES_PATH = Path(__file__).with_name("rules.yaml")
 OVERRIDE_PATH = Path(
     os.getenv("RULES_OVERRIDE_PATH", Path(__file__).resolve().parents[2] / "data" / "rules.override.yaml")
 )
+
+AUDIT_PATH = Path(
+    os.getenv("RULES_AUDIT_PATH", Path(__file__).resolve().parents[2] / "data" / "rules.audit.jsonl")
+)
+SECCIONES_DE_UMBRALES = ("umbrales", "legibilidad")
 
 CLAVES_OBLIGATORIAS = ("version", "umbrales", "legibilidad", "tipos_documento", "campos_obligatorios")
 LISTAS_DE_TEXTO = ("hallazgos_criticos", "palabras_urgencia", "palabras_prioritario", "medicamentos_alto_riesgo")
@@ -123,13 +130,56 @@ def validar_reglas(reglas: Any) -> list[str]:
     return errores
 
 
-def guardar_reglas(reglas: dict) -> None:
-    """Valida y escribe el override de forma atómica. Lanza ReglasInvalidas si algo no cuadra."""
+def _aplanar(valor: Any, prefijo: str = "") -> dict[str, Any]:
+    """Convierte un diccionario anidado en {'umbrales.automatico': 0.85, ...}. Las listas cuentan como un valor."""
+    if isinstance(valor, dict):
+        plano: dict[str, Any] = {}
+        for k, v in valor.items():
+            plano.update(_aplanar(v, f"{prefijo}.{k}" if prefijo else str(k)))
+        return plano
+    return {prefijo: valor}
+
+
+def diferencias(antes: dict, despues: dict) -> list[dict[str, Any]]:
+    """Lista de cambios entre dos juegos de reglas: [{'campo', 'antes', 'despues'}]."""
+    a, d = _aplanar(antes), _aplanar(despues)
+    return [
+        {"campo": campo, "antes": a.get(campo), "despues": d.get(campo)}
+        for campo in sorted(set(a) | set(d))
+        if a.get(campo) != d.get(campo)
+    ]
+
+
+def toca_umbrales(cambios: list[dict[str, Any]]) -> bool:
+    return any(c["campo"].split(".")[0] in SECCIONES_DE_UMBRALES for c in cambios)
+
+
+def _registrar(quien: str, cambios: list[dict[str, Any]]) -> None:
+    AUDIT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    linea = {
+        "fecha": datetime.now(timezone.utc).isoformat(),
+        "quien": quien,
+        "umbral_modificado": toca_umbrales(cambios),
+        "cambios": cambios,
+    }
+    with open(AUDIT_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(linea, ensure_ascii=False) + "\n")
+
+
+def guardar_reglas(reglas: dict, quien: str = "desconocido") -> list[dict[str, Any]]:
+    """Valida y escribe el override de forma atómica y deja registro de quién cambió qué.
+
+    Devuelve la lista de cambios. Lanza ReglasInvalidas si algo no cuadra (en ese caso no escribe nada).
+    """
     errores = validar_reglas(reglas)
     if errores:
         raise ReglasInvalidas(errores)
+    cambios = diferencias(load_rules(), reglas)
     OVERRIDE_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp = OVERRIDE_PATH.with_suffix(".tmp")
     tmp.write_text(yaml.safe_dump(reglas, allow_unicode=True, sort_keys=False), encoding="utf-8")
     tmp.replace(OVERRIDE_PATH)
     _cache["marca"] = None
+    if cambios:
+        _registrar(quien, cambios)
+    return cambios
