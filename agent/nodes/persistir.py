@@ -56,7 +56,7 @@ def _persistir_auditoria(state: TriageState, bucket: str) -> None:
     }
     ruta_extraccion = f"auditoria_humana/{documento_id}/extraccion.json"
     storage.upload_json(bucket, ruta_extraccion, extraccion)
-    logger.info("Persistido extraccion.json en %s", ruta_extraccion)
+    logger.info("Persistida extracción para auditoría")
 
     # 2. Copiar el original al lado (si existe ruta_original)
     ruta_original = state.get("ruta_original")
@@ -65,9 +65,9 @@ def _persistir_auditoria(state: TriageState, bucket: str) -> None:
             contenido = storage.download(bucket, ruta_original)
             ruta_destino = f"auditoria_humana/{documento_id}/original"
             storage.upload_bytes(bucket, ruta_destino, contenido)
-            logger.info("Copiado original a %s", ruta_destino)
+            logger.info("Copiado original para auditoría")
         except Exception as e:  # noqa: BLE001
-            logger.warning("No se pudo copiar el original a auditoria_humana: %s", e)
+            logger.warning("No se pudo copiar el original a auditoria_humana: %s", type(e).__name__)
 
 
 def persistir(state: TriageState) -> dict:
@@ -107,10 +107,10 @@ def persistir(state: TriageState) -> dict:
             "status_backup": "exito",
         }
         logger.info(
-            "Persistido en %s: %s/%s", _STORAGE_BACKEND, bucket, ruta
+            "Persistencia completada en %s", _STORAGE_BACKEND
         )
     except Exception as e:  # noqa: BLE001
-        logger.warning("Fallo al persistir en %s (%s): %s", _STORAGE_BACKEND, ruta, e)
+        logger.warning("Fallo al persistir en %s: %s", _STORAGE_BACKEND, type(e).__name__)
         almacenamiento = {
             "bucket": bucket,
             "ruta_objeto": ruta,
@@ -122,7 +122,7 @@ def persistir(state: TriageState) -> dict:
         try:
             _persistir_auditoria(state, bucket)
         except Exception as e:  # noqa: BLE001
-            logger.warning("Fallo al persistir los archivos de auditoría: %s", e)
+            logger.warning("Fallo al persistir los archivos de auditoría: %s", type(e).__name__)
 
     return {
         "almacenamiento": almacenamiento,
