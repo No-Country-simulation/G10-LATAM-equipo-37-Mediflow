@@ -362,7 +362,10 @@ def validar(state: TriageState) -> dict:
     conflictos_cie10 = validar_cie10(datos, cie10_catalogo)
     conflictos_contradiccion = validar_contradiccion_interna(datos)
     es_ilegible_medio = evaluar_legibilidad(legibilidad, rules)
-    es_multiples_documentos = bool(datos.get("_multiples_documentos"))  # TODO: confirmar origen real de esta marca
+    es_multiples_documentos = (
+        clasificacion.get("multiples_documentos") is True
+        or datos.get("_multiples_documentos") is True  # compatibilidad con el contrato anterior
+    )
 
     categoria = asignar_categoria_amb(
         campos_faltantes,
