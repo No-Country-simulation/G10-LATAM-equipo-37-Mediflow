@@ -30,6 +30,7 @@ from pathlib import Path
 
 from agent.llm import adapter
 from agent.nodes.common import step
+from agent.nodes.documentos_multiples import detectar_documentos_multiples
 from agent.schemas.contrato import NivelPrioridad, TipoDocumento
 from agent.state import TriageState
 
@@ -94,6 +95,7 @@ def _clasificar_por_reglas(texto: str) -> dict:
         "idioma": "es",
         "legible": bool(texto.strip()),
         "justificacion": "Clasificación por reglas (fallback).",
+        "multiples_documentos": detectar_documentos_multiples(texto),
         "motivo_fuera_de_alcance": None,
     }
 
@@ -172,6 +174,7 @@ def _normalizar_respuesta(datos: dict) -> dict:
         "idioma": datos.get("idioma", "es"),
         "legible": bool(datos.get("legible", True)),
         "justificacion": datos.get("justificacion"),
+        "multiples_documentos": datos.get("multiples_documentos") is True,
         "motivo_fuera_de_alcance": motivo,
     }
 
@@ -208,6 +211,9 @@ def clasificar(state: TriageState) -> dict:
         logger.warning("LLM falló en clasificar (%s), usando reglas.", e)
         clasificacion = _clasificar_por_reglas(texto)
 
+    clasificacion["multiples_documentos"] = (
+        clasificacion.get("multiples_documentos") is True or detectar_documentos_multiples(texto)
+    )
     return {
         "clasificacion": clasificacion,
         "modelo_utilizado": modelo,
