@@ -7,7 +7,15 @@ Estrategia:
 3. Si sigue fallando, se pasa al siguiente modelo de FALLBACKS.
 4. Si todos los modelos fallan, se levanta RuntimeError con el detalle.
 
-Devuelve el texto y el modelo que respondió, para registrarlo en la traza.
+Devuelve el texto, el modelo que respondió y el uso (tokens/costo), para registrarlo en la traza.
+
+Dos usos y un solo camino de llamada:
+- `complete(prompt)` recorre la cadena en orden. Es lo que usan `clasificar` y `extraer`.
+- `complete(prompt, modelo=...)` pone ese modelo primero y deja el resto de respaldo. Es lo que usa
+  `segunda_opinion`, que necesita la respuesta de OTRO modelo: preguntarle dos veces al mismo no
+  es una segunda opinión, es la misma opinión repetida.
+
+`modelos_disponibles()` expone la cadena configurada para que los nodos no la repitan.
 """
 import base64
 import logging
@@ -33,6 +41,41 @@ class LLMResult:
     model: str
     latency_ms: int
     intentos: int = 1  # cuántos intentos se hicieron en total (incluye reintentos)
+    # Uso y costo son informativos: no todos los proveedores devuelven `usage` y no todos los
+    # modelos tienen tarifa conocida. La traza los muestra cuando están y los ignora cuando no.
+    tokens_entrada: int | None = None
+    tokens_salida: int | None = None
+    costo_usd: float | None = None
+
+
+def modelos_disponibles() -> list[str]:
+    """La cadena configurada, en el orden normal de intento (principal primero)."""
+    return [PRIMARY, *FALLBACKS]
+
+
+def _cadena(modelo: str | None = None) -> list[str]:
+    """Orden de intentos. Con `modelo`, ese va primero y el resto sigue de respaldo."""
+    cadena = [PRIMARY, *FALLBACKS]
+    if not modelo:
+        return cadena
+    return [modelo, *(m for m in cadena if m != modelo)]
+
+
+def _uso(resp) -> dict:
+    """Tokens y costo de una respuesta. Nunca rompe la llamada: si no se pueden leer, van en None."""
+    uso = getattr(resp, "usage", None)
+    datos: dict = {
+        "tokens_entrada": getattr(uso, "prompt_tokens", None),
+        "tokens_salida": getattr(uso, "completion_tokens", None),
+        "costo_usd": None,
+    }
+    try:
+        import litellm
+
+        datos["costo_usd"] = litellm.completion_cost(completion_response=resp)
+    except Exception as e:  # noqa: BLE001 - el costo es informativo y no puede bloquear la llamada
+        logger.debug("No se pudo calcular el costo del modelo: %s", e)
+    return datos
 
 
 def _to_data_url(path: str) -> str:
@@ -75,18 +118,17 @@ def _llamar_modelo(
     content: list[dict],
     json_mode: bool,
     timeout: int,
-) -> str:
-    """Hace UNA llamada al modelo. Devuelve el texto de la respuesta."""
+):
+    """Hace UNA llamada al modelo. Devuelve la respuesta cruda."""
     import litellm  # se importa acá para que los tests sin claves no lo necesiten
 
     kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
-    resp = litellm.completion(
+    return litellm.completion(
         model=model,
         messages=[{"role": "user", "content": content}],
         timeout=timeout,
         **kwargs,
     )
-    return resp.choices[0].message.content
 
 
 def complete(
@@ -94,18 +136,24 @@ def complete(
     images: list[str] | None = None,
     json_mode: bool = True,
     timeout: int = 60,
+    modelo: str | None = None,
 ) -> LLMResult:
     """
     Llama al LLM con cadena de respaldo y reintentos con backoff.
+
+    `modelo` no agrega ni quita nada de la cadena: solo le cambia el orden, poniéndolo primero. El
+    resto sigue disponible como respaldo, así que pedir un modelo puntual nunca es menos resiliente
+    que la llamada normal.
 
     Args:
         prompt: texto del prompt.
         images: lista de rutas a imágenes (opcional).
         json_mode: si True, pide JSON al modelo.
         timeout: timeout en segundos por intento.
+        modelo: si se especifica, se prueba primero (y el resto queda de respaldo).
 
     Returns:
-        LLMResult con texto, modelo, latencia e intentos.
+        LLMResult con texto, modelo, latencia, intentos y uso.
 
     Raises:
         RuntimeError: si todos los modelos fallan tras agotar los reintentos.
@@ -119,17 +167,18 @@ def complete(
     t0_total = time.time()
     intentos_totales = 0
 
-    for model in [PRIMARY, *FALLBACKS]:
+    for model in _cadena(modelo):
         for intento in range(1, REINTENTOS_POR_MODELO + 1):
             intentos_totales += 1
             try:
                 logger.debug("Intento %d/%d con %s", intento, REINTENTOS_POR_MODELO, model)
-                texto = _llamar_modelo(model, content, json_mode, timeout)
+                resp = _llamar_modelo(model, content, json_mode, timeout)
                 return LLMResult(
-                    text=texto,
+                    text=resp.choices[0].message.content,
                     model=model,
                     latency_ms=int((time.time() - t0_total) * 1000),
                     intentos=intentos_totales,
+                    **_uso(resp),
                 )
             except Exception as e:  # noqa: BLE001
                 recuperable = _es_error_recuperable(e)
@@ -154,4 +203,4 @@ def complete(
     )
 
 
-__all__ = ["complete", "LLMResult", "PRIMARY", "FALLBACKS"]
+__all__ = ["complete", "LLMResult", "PRIMARY", "FALLBACKS", "modelos_disponibles"]
