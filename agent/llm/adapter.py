@@ -133,13 +133,13 @@ def complete(
                 )
             except Exception as e:  # noqa: BLE001
                 recuperable = _es_error_recuperable(e)
-                errores.append(f"{model} (intento {intento}): {type(e).__name__}: {e}")
+                errores.append(f"{model} (intento {intento}): {type(e).__name__}")
 
                 if recuperable and intento < REINTENTOS_POR_MODELO:
                     espera = BACKOFF_BASE_S * (2 ** (intento - 1))  # 2, 4, 8
                     logger.warning(
                         "Error recuperable en %s (intento %d). Reintentando en %.1fs: %s",
-                        model, intento, espera, e,
+                        model, intento, espera, type(e).__name__,
                     )
                     time.sleep(espera)
                     continue
