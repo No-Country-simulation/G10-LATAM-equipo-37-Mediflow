@@ -19,11 +19,34 @@ def api_request(method: str, path: str, **kwargs: Any) -> httpx.Response:
         raise RuntimeError(f"No se pudo conectar con la API en {API_URL}: {exc}") from exc
 
 
+def admin_headers(editor: str) -> dict[str, str]:
+    """Headers required by PUT /rules.
+
+    The token is read from the RULES_ADMIN_TOKEN environment variable so it is
+    never typed or displayed in the UI. X-Editor records who made the change.
+    """
+    token = os.getenv("RULES_ADMIN_TOKEN", "")
+    if not token:
+        raise RuntimeError("Falta la variable de entorno RULES_ADMIN_TOKEN en la UI.")
+    return {"X-Admin-Token": token, "X-Editor": editor}
+
+
 def show_api_error(response: httpx.Response) -> None:
     try:
         detail = response.json().get("detail", response.text)
     except ValueError:
         detail = response.text
+    if response.status_code == 422 and isinstance(detail, dict) and detail.get("errores"):
+        st.error("Las reglas no son válidas (no se guardó nada):")
+        for error in detail["errores"]:
+            st.write(f"- {error}")
+        return
+    if response.status_code == 401:
+        st.error("Token de administración inválido (401). Revisá RULES_ADMIN_TOKEN.")
+        return
+    if response.status_code == 503:
+        st.error("El servidor no tiene configurado RULES_ADMIN_TOKEN (503).")
+        return
     st.error(f"La API respondió {response.status_code}: {detail}")
 
 
