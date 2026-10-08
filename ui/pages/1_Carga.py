@@ -5,7 +5,12 @@ import uuid
 
 import streamlit as st
 
-from ui.lib import api_request, remember_document, render_result, show_api_error
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from lib import api_request, remember_document, render_result, show_api_error
 
 st.title("📄 Carga de documento")
 st.caption("El original se conserva en la sesión para que pueda ser revisado si el grafo solicita auditoría humana.")
