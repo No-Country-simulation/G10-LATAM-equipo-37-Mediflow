@@ -50,7 +50,7 @@ def health():
 
 @app.post("/triage", response_model=TriageResponse)
 def triage(req: TriageRequest):
-    if req.tipo_archivo in ("TEXTO", "JSON") and not req.documento_texto:
+    if req.tipo_archivo in ("TEXTO", "JSON") and not (req.documento_texto or "").strip():
         raise HTTPException(status_code=422, detail="documento_texto es obligatorio para TEXTO y JSON")
     resultado = run_triage(req.documento_id, req.tipo_archivo, req.documento_texto, req.canal_origen)
     return _a_respuesta(resultado)
