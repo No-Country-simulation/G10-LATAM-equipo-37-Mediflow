@@ -1,11 +1,11 @@
 """API de MediFlow."""
-from typing import Literal, Optional
-
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from pydantic import BaseModel
+from pydantic import ValidationError
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
+from agent.nodes.revision_humana import DecisionHumana
+from agent.revision_runtime import RevisionConflicto, RevisionNoExiste, reanudar
 from agent.rules.loader import load_rules
 from agent.schemas.contrato import TriageRequest, TriageResponse
 from agent.storage import local_audit
@@ -18,11 +18,7 @@ from agent.storage.local_audit import (
 app = FastAPI(title="MediFlow", version="0.1.0")
 
 
-class DecisionAuditor(BaseModel):
-    accion: Literal["aprobar", "corregir", "rechazar"]  # ADR-004
-    revisor: str
-    motivo: str
-    correcciones: Optional[dict] = None
+DecisionAuditor = DecisionHumana
 
 
 def _a_respuesta(resultado: dict) -> TriageResponse:
@@ -93,22 +89,15 @@ def cola_humana():
 @app.post("/audit/{documento_id}")
 def auditar(documento_id: str, decision: DecisionAuditor):
     try:
-        resolucion = local_audit.guardar_resolucion(
-            documento_id,
-            decision.accion,
-            revisor=decision.revisor,
-            motivo=decision.motivo,
-            correcciones=decision.correcciones,
-            base=local_audit.DATA_DIR,
-        )
-    except DocumentoNoEncontrado as exc:
+        return reanudar(documento_id, decision.model_dump(exclude_none=True))
+    except (DocumentoNoEncontrado, RevisionNoExiste) as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ResolucionYaExiste as exc:
+    except (ResolucionYaExiste, RevisionConflicto) as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
-    except AccionInvalida as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-
-    return {"documento_id": documento_id, "resolucion": resolucion}
+    except (AccionInvalida, ValueError, ValidationError) as exc:
+        raise HTTPException(status_code=422, detail="Decisión o identificador no válido") from exc
+    except OSError as exc:
+        raise HTTPException(status_code=503, detail="No se pudo persistir; reintente la misma decisión") from exc
 
 
 @app.get("/rules")

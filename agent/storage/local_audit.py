@@ -30,11 +30,14 @@ TODO / coordinar con el equipo:
 """
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-DATA_DIR = Path("data/auditoria_humana")
+from agent.storage import local
+
+DATA_DIR = local.DATA_DIR / os.getenv("OCI_BUCKET", "mediflow-documentos-clinicos") / "auditoria_humana"
 
 ACCIONES_VALIDAS = {"aprobar", "corregir", "rechazar"}  # ADR-004: rechazar es acción, no destino
 
