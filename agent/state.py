@@ -24,3 +24,9 @@ class TriageState(TypedDict, total=False):
     evidencias: list[dict[str, Any]]
     hallazgo_critico: Optional[str]
     ambiguedad: Optional[str]
+    revision_version: int
+    resolucion_humana: dict[str, Any]
+    fecha_revision: str
+    decision_digest: str
+    rechazado: bool
+    alerta_emitida: bool
