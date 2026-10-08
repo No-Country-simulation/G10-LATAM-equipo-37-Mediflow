@@ -4,7 +4,7 @@
   "edad": 61,
   "medicamento": "Losartán",
   "dosis": "50 mg",
-  "frecuencia": "c/24 hs.",
+  "frecuencia": "cada 24 horas",
   "duracion": null,
   "resultado_esperado": "rutina"
 }
