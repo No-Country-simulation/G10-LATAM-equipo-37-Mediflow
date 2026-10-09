@@ -7,6 +7,8 @@ Verifica:
 - Excepción clara cuando todos los modelos fallan.
 """
 import os
+import sys
+from types import ModuleType
 from unittest.mock import patch
 
 import pytest
@@ -23,6 +25,18 @@ import agent.llm.adapter as adapter_mod  # noqa: E402
 importlib.reload(adapter_mod)
 
 from agent.llm.adapter import LLMResult, complete  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def proveedor_simulado(monkeypatch):
+    """Estos tests verifican el adaptador, sin inicializar SDKs ni su red/caché."""
+    modulo = ModuleType("litellm")
+
+    def sin_mock(*args, **kwargs):
+        raise AssertionError("El test debe simular completion explícitamente")
+
+    modulo.completion = sin_mock
+    monkeypatch.setitem(sys.modules, "litellm", modulo)
 
 # =============================================================================
 # Helpers: respuestas falsas de litellm
