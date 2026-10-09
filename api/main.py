@@ -1,5 +1,5 @@
 """API de MediFlow."""
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Response, UploadFile
 from pydantic import ValidationError
 
 from agent.graph import run_triage
@@ -12,6 +12,7 @@ from agent.storage import local_audit
 from agent.storage.local_audit import (
     AccionInvalida,
     DocumentoNoEncontrado,
+    OriginalNoDisponible,
     ResolucionYaExiste,
 )
 
@@ -98,6 +99,15 @@ def auditar(documento_id: str, decision: DecisionAuditor):
         raise HTTPException(status_code=422, detail="Decisión o identificador no válido") from exc
     except OSError as exc:
         raise HTTPException(status_code=503, detail="No se pudo persistir; reintente la misma decisión") from exc
+
+
+@app.get("/audit/{documento_id}/original")
+def original_auditoria(documento_id: str):
+    try:
+        contenido, tipo = local_audit.obtener_original(documento_id, base=local_audit.DATA_DIR)
+    except (DocumentoNoEncontrado, OriginalNoDisponible) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return Response(content=contenido, media_type=tipo)
 
 
 @app.get("/rules")
