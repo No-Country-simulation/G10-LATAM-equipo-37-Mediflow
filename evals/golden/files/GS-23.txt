@@ -27,12 +27,12 @@ DATOS DE INTERNACIÓN
 --------------------
 Historia Clínica Nº: 123456
 Internación Nº: 45872/2024
-Fecha de ingreso: 10/05/2024
-Fecha de egreso: 14/05/2024
+Fecha de ingreso: 10/10/2026
+Fecha de egreso: 14/10/2026
 Días de internación: 4
 Médico de cabecera: Dr. Martín Ruiz
 Médico de alta: Dra. Lucía Fernández
-Fecha del informe: 14/05/2024 10:30 hs
+Fecha del informe: 14/10/2026 10:30 hs
 
 MOTIVO DE INTERNACIÓN
 ---------------------
@@ -114,6 +114,3 @@ Tel. (011) 4950-2200
 www.hgsm.gov.ar
 
 Salud pública, siempre.
-==================================================
-FIN DEL DOCUMENTO GS-23
-==================================================
