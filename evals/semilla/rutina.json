@@ -1,0 +1,9 @@
+{
+  "id": "rutina",
+  "descripcion": "Consulta de control, datos completos, sin signos de alarma",
+  "paciente": {"edad": 34, "sexo": "F"},
+  "motivo": "Control anual y renovación de receta de anticonceptivos",
+  "sintomas": [],
+  "signos_vitales": {"fc": 72, "pa_sistolica": 118, "pa_diastolica": 76, "temperatura": 36.6, "spo2": 98},
+  "resultado_esperado": {"prioridad": "rutina", "requiere_aclaracion": false}
+}

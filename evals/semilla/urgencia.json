@@ -1,0 +1,9 @@
+{
+  "id": "urgencia",
+  "descripcion": "Signos de alarma claros y datos completos",
+  "paciente": {"edad": 62, "sexo": "M"},
+  "motivo": "Dolor opresivo en el pecho irradiado al brazo izquierdo desde hace 30 minutos",
+  "sintomas": ["dolor torácico", "sudoración", "disnea"],
+  "signos_vitales": {"fc": 122, "pa_sistolica": 90, "pa_diastolica": 60, "temperatura": 36.8, "spo2": 90},
+  "resultado_esperado": {"prioridad": "urgencia", "requiere_aclaracion": false}
+}
