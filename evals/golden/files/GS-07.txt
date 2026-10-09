@@ -1,0 +1,110 @@
+GS-07.txt
+
+CENTRO DE DIAGNÓSTICO POR IMÁGENES
+Tecnología al servicio de la salud
+
+Av. Rivadavia 2345
+Ciudad Autónoma de Buenos Aires
+Tel. (011) 4980-7700
+www.cdi.com.ar
+
+======================================================================
+ANGIOTOMOGRAFÍA DE TÓRAX
+CON CONTRASTE ENDOVENOSO
+======================================================================
+
+DATOS DEL PACIENTE
+-----------------
+
+Paciente: Gómez, Laura
+DNI: 32.778.901
+Fecha de nacimiento: 25/08/1985
+Edad: 38 años
+Sexo: Femenino
+
+DATOS DEL ESTUDIO
+-----------------
+
+Número de estudio: TAC-2024-001573
+Fecha del estudio: 03/04/2024
+Médico solicitante: Dra. Ana Torres
+Servicio: Guardia - Emergencias
+
+Indicación clínica:
+Disnea aguda. Sospecha de tromboembolismo pulmonar.
+
+TÉCNICA
+--------
+
+Angiotomografía de tórax multidetector con contraste endovenoso.
+
+Adquisición en fase arterial pulmonar.
+
+Reconstrucciones en planos axial, coronal y sagital. MIP.
+
+HALLAZGOS
+---------
+
+Se observan defectos de repleción en ramas de la arteria pulmonar
+derecha, a nivel del lóbulo inferior, compatibles con material
+trombótico.
+
+No se evidencian signos de dilatación del ventrículo derecho.
+
+Parénquima pulmonar sin consolidaciones.
+
+Sin derrame pleural.
+
+Aorta de calibre y trayecto conservados.
+
+Sin adenopatías mediastínicas significativas.
+
+IMÁGENES INCORPORADAS AL INFORME
+--------------------------------
+
+Figura 1.
+Corte axial.
+Defecto de repleción en arteria pulmonar derecha (flecha).
+
+[Imagen TC axial incluida en documento]
+
+Orientación visible:
+R = Right
+L = Left
+
+Figura 2.
+Reconstrucción coronal.
+Defecto de repleción (flecha).
+
+[Imagen TC coronal incluida en documento]
+
+Orientación visible:
+R = Right
+L = Left
+S = Superior
+
+CONCLUSIÓN
+----------
+
+Hallazgos compatibles con tromboembolismo pulmonar agudo.
+
+Se sugiere correlacionar con la clínica y evaluación por servicio de
+emergencias.
+
+PROFESIONAL FIRMANTE
+--------------------
+
+Dra. Valeria Sánchez
+Médica Radióloga
+MN 98765
+
+[Firma manuscrita presente]
+
+SELLO PROFESIONAL
+-----------------
+
+Dra. Valeria Sánchez
+MÉDICA RADIÓLOGA
+MN 98765
+
+Centro de Diagnóstico por Imagenes

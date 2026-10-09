@@ -1,0 +1,119 @@
+==================================================
+HOSPITAL GENERAL SAN MARTÍN
+EPICRISIS - INFORME DE ALTA HOSPITALARIA
+==================================================
+
+DATOS DE LA INSTITUCIÓN
+-----------------------
+Hospital General San Martín
+Av. Libertador 1250
+Ciudad Autónoma de Buenos Aires
+Tel. (011) 4950-2200
+Sitio web: www.hgsm.gov.ar
+
+DATOS DEL PACIENTE
+------------------
+Paciente: Pérez, Juan Carlos
+DNI: 28.456.123
+Fecha de nacimiento: 14/03/1978
+Edad: 46 años
+Sexo: Masculino
+Domicilio: Av. Rivadavia 3200, CABA
+Obra social: PAMI
+Servicio: Clínica Médica
+Sala/Cama: 3B - Cama 12
+
+DATOS DE INTERNACIÓN
+--------------------
+Historia Clínica Nº: 123456
+Internación Nº: 45872/2024
+Fecha de ingreso: 10/05/2024
+Fecha de egreso: 14/05/2024
+Días de internación: 4
+Médico de cabecera: Dr. Martín Ruiz
+Médico de alta: Dra. Lucía Fernández
+Fecha del informe: 14/05/2024 10:30 hs
+
+MOTIVO DE INTERNACIÓN
+---------------------
+Hiperglucemia sintomática.
+
+ENFERMEDAD ACTUAL
+-----------------
+Paciente con antecedentes de diabetes mellitus tipo 2, consulta por poliuria,
+polidipsia, astenia y mal control glucémico en los últimos días.
+
+Refiere no adherencia parcial al tratamiento ambulatorio.
+
+Al ingreso se constata glucemia de 382 mg/dL, sin cetonemia ni datos de
+cetoacidosis.
+
+EVOLUCIÓN DURANTE LA INTERNACIÓN
+--------------------------------
+Se realiza hidratación endovenosa, ajuste de tratamiento insulínico y controles
+metabólicos seriados.
+
+Buena evolución clínica, con descenso progresivo de glucemias.
+
+Tolerancia oral adecuada, sin intercurrencias.
+
+Se brinda educación diabetológica e indicaciones para el automonitoreo.
+
+Paciente estable, con adecuados parámetros clínicos y de laboratorio al momento
+del alta.
+
+DIAGNÓSTICOS
+------------
+1. Diabetes mellitus tipo 2 descompensada (E11.9)
+2. Hiperglucemia sin cetoacidosis
+3. Obesidad grado I
+
+TRATAMIENTO AL ALTA
+-------------------
+- Insulina glargina 12 UI subcutánea nocturna.
+- Metformina 850 mg cada 12 horas.
+- Plan alimentario y actividad física.
+- Controles por consultorio externo de diabetología.
+- Educación sobre automonitoreo glucémico.
+
+RECOMENDACIONES
+---------------
+- Control con diabetología en 2 semanas.
+- Continuar medicación según indicación.
+- Control de glucemia capilar en domicilio.
+- Consultar en caso de síntomas de alarma:
+  * Náuseas
+  * Vómitos
+  * Dolor abdominal
+  * Fiebre
+- Concurrir a guardia en caso de descompensación o glucemias sostenidas
+  mayores a 300 mg/dL.
+
+ALERTA IMPORTANTE
+-----------------
+Acudir de urgencia si presenta falta de aire.
+
+PROFESIONAL RESPONSABLE
+-----------------------
+Dra. Lucía Fernández
+Médica Clínica
+MN 154321
+
+FIRMA Y SELLO
+-------------
+Documento firmado por:
+Dra. Lucía Fernández
+Médica Clínica
+MN 154321
+
+PIE DE DOCUMENTO
+----------------
+Hospital General San Martín
+Av. Libertador 1250 - CABA
+Tel. (011) 4950-2200
+www.hgsm.gov.ar
+
+Salud pública, siempre.
+==================================================
+FIN DEL DOCUMENTO GS-23
+==================================================
