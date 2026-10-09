@@ -23,9 +23,10 @@ Al combinarlas se corrigieron estos problemas:
 - Se recuperó la sanitización de logs de clasificación tras resolver el conflicto entre ramas.
 - Se cierran explícitamente las conexiones SQLite para liberar los archivos también en Windows.
 
-El CI corre en PR a `develop`, con LLM desactivado y almacenamiento local. Esta parte coincide
-con el objetivo de #22; no sustituye la revisión de ese PR. El job de evaluación real conserva
-la activación por etiqueta `evals` y usa la CLI vigente.
+El workflow actual solo se activa en PR a `main`. La credencial disponible no tiene el
+scope `workflow`, por lo que el ajuste de CI se entregó como parche separado y no se publica
+en esta rama. El PR #22 ya propone habilitar CI en `develop`; el equipo debe integrar ese
+cambio y verificar la CLI vigente de `evals/run.py`. Las pruebas indicadas aquí son locales.
 
 ## Evidencia
 
