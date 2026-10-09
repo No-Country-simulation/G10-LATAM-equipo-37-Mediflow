@@ -1,0 +1,8 @@
+# El squad dueño de cada carpeta revisa sus PRs. Los equipos se crean en la organización de GitHub.
+/agent/   @mediflow-one-g10/agente
+/api/     @mediflow-one-g10/plataforma
+/ui/      @mediflow-one-g10/plataforma
+/worker/  @mediflow-one-g10/plataforma
+/infra/   @mediflow-one-g10/plataforma
+/evals/   @mediflow-one-g10/datos
+/docs/    @mediflow-one-g10/datos

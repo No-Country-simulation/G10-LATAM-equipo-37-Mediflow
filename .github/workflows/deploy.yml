@@ -1,0 +1,23 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+concurrency: deploy-prod
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/mediflow
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose -f infra/docker-compose.yml up -d --build --remove-orphans
+            docker image prune -f
+            sleep 10
+            curl -fsS https://${{ secrets.APP_DOMAIN }}/api/health

@@ -1,9 +1,6 @@
 {
-  "id": "urgencia",
-  "descripcion": "Signos de alarma claros y datos completos",
-  "paciente": {"edad": 62, "sexo": "M"},
-  "motivo": "Dolor opresivo en el pecho irradiado al brazo izquierdo desde hace 30 minutos",
-  "sintomas": ["dolor torácico", "sudoración", "disnea"],
-  "signos_vitales": {"fc": 122, "pa_sistolica": 90, "pa_diastolica": 60, "temperatura": 36.8, "spo2": 90},
-  "resultado_esperado": {"prioridad": "urgencia", "requiere_aclaracion": false}
+  "documento_id": "SEM-URGENCIA-001",
+  "tipo_archivo": "TEXTO",
+  "documento_texto": "HOSPITAL SANTA LUCIA - INFORME DE ESTUDIO RADIOLOGICO. Paciente: Carlos Eduardo Mendes, 52 anos. Medico Solicitante: Dra. Renata Silveira MP 145892. Estudio: Tomografia de Torax con contraste. Indicacion: Sospecha de embolia pulmonar aguda, disnea subita. Hallazgos: Defecto de llenado en arteria pulmonar principal derecha compatible con TEP agudo. CONCLUSION: Cuadro compatible con Tromboembolismo Pulmonar Agudo. Se sugiere correlacion clinica urgente.",
+  "canal_origen": "Guardia_Emergencias"
 }

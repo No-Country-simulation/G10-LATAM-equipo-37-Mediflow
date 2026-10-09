@@ -1,10 +1,10 @@
 # Datos semilla (N1-10, issue #53)
 
+Tres solicitudes con el contrato de entrada de `POST /triage` (ver `docs/api-contract.md`
+y `docs/examples/triage_request.json`). Guion de ejecución en [`docs/demo.md`](../../docs/demo.md).
+
 | Archivo | Escenario | Resultado esperado |
 |---|---|---|
-| `rutina.json` | Rutina | prioridad `rutina`, sin aclaración |
-| `urgencia.json` | Urgencia | prioridad `urgencia`, sin aclaración |
-| `ambiguedad.json` | Ambigüedad | prioridad `indeterminada`, requiere aclaración |
-
-El campo `resultado_esperado` es el criterio de comparación. Los nombres de campos
-deben alinearse con el esquema de entrada real cuando exista en el repositorio.
+| `rutina.json` | Rutina (certificado médico) | `Historia_Clinica_Electronica`, sin auditoría |
+| `urgencia.json` | Urgencia (TEP agudo) | `Cola_Emergencia_Medica`, alerta generada |
+| `ambiguedad.json` | Ambigüedad (dosis dudosa) | `Cola_Revision_Humana`, auditoría humana |

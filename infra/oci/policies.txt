@@ -1,0 +1,11 @@
+Allow group mediflow-admins to manage all-resources in compartment mediflow
+Allow group mediflow-devs to manage object-family in compartment mediflow
+Allow group mediflow-devs to use autonomous-databases in compartment mediflow
+Allow group mediflow-devs to read secret-family in compartment mediflow
+Allow group mediflow-devs to read instances in compartment mediflow
+Allow dynamic-group mediflow-vm to manage objects in compartment mediflow
+Allow dynamic-group mediflow-vm to read secret-family in compartment mediflow
+Allow dynamic-group mediflow-vm to use ons-topics in compartment mediflow
+
+Dynamic group mediflow-vm, regla:
+Any {instance.compartment.id = '<OCID del compartment mediflow>'}

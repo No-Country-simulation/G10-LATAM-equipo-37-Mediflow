@@ -1,0 +1,24 @@
+CENTRO MÉDICO SAN GABRIEL
+SERVICIO DE MEDICINA GENERAL
+
+RECETA MÉDICA
+
+Paciente: MARTÍNEZ GARCÍA, Laura Isabel
+DNI: 38.472.615
+Fecha de nacimiento: 14/06/1994
+Edad: 32 años
+HC N.º: 184.627
+
+Fecha: 03/10/2026
+
+DIAGNÓSTICO:
+Faringoamigdalitis aguda.
+CIE-10: J03.9 Amigdalitis aguda, no especificada.
+
+Rp/
+
+Amoxicilina 5000 mg cada 8 horas.
+
+Dr. Alejandro Ruiz Mendoza
+Médico de Medicina General
+Matrícula 128.547

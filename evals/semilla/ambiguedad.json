@@ -1,9 +1,6 @@
 {
-  "id": "ambiguedad",
-  "descripcion": "Datos incompletos y contradictorios; debe pedirse aclaración",
-  "paciente": {"edad": null, "sexo": "F"},
-  "motivo": "Me siento mal desde ayer, no sé bien qué tengo",
-  "sintomas": ["malestar general", "mareo leve"],
-  "signos_vitales": {"fc": null, "pa_sistolica": null, "pa_diastolica": null, "temperatura": 37.9, "spo2": 97},
-  "resultado_esperado": {"prioridad": "indeterminada", "requiere_aclaracion": true}
+  "documento_id": "SEM-AMBIGUEDAD-001",
+  "tipo_archivo": "TEXTO",
+  "documento_texto": "CENTRO MEDICO SAN GABRIEL - RECETA MEDICA. Paciente: Laura Isabel Martinez Garcia, 32 anos. Diagnostico: Faringoamigdalitis aguda (J03.9). Rp/ Amoxicilina 5000 mg cada 8 horas (dosis manuscrita poco legible, podria ser 500 mg). Dr. Pablo Herrera MP 123456.",
+  "canal_origen": "Mesa_Administrativa"
 }

@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    env_file: .env
+    ports: ["8000:8000"]
+    volumes:
+      - ./agent:/app/agent
+      - ./api:/app/api
+      - ./wallet:/app/wallet:ro
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+  ui:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    env_file: .env
+    environment:
+      - API_URL=http://api:8000
+    ports: ["8501:8501"]
+    volumes:
+      - ./ui:/app/ui
+    depends_on: [api]
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    env_file: .env
+    volumes:
+      - ./agent:/app/agent
+      - ./worker:/app/worker
+      - ./wallet:/app/wallet:ro
+    depends_on: [api]

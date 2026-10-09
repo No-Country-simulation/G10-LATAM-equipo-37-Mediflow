@@ -1,57 +1,64 @@
 # Demo: tres escenarios reproducibles (N1-10, issue #53)
 
 ## Contexto y objetivo
-Ejecutar tres escenarios semilla (rutina, urgencia, ambigüedad) de forma reproducible
-en Codespaces. Datos en `evals/semilla/`.
-
-> Estado actual: al momento de escribir esto el repositorio solo contiene el README;
-> no hay aplicación, dependencias, pruebas ni esquema de entrada. Los seeds usan un
-> esquema provisional (ver `evals/semilla/README.md`). Cuando exista el código
-> (dependencias N1-03, N1-05, N1-06), reemplazar los comandos marcados como *(pendiente)*
-> y alinear los campos de los JSON.
+Correr en Codespaces los tres escenarios del brief (rutina, urgencia, ambigüedad) con datos
+semilla de `evals/semilla/`, usando la misma API `POST /triage` que la demo final.
 
 ## Prerrequisitos
-- Codespace del repositorio con Python 3.10+.
+- Codespace (o máquina) con Python 3.12.
+- Clave de API del proveedor de modelos en `.env` (`GEMINI_API_KEY`). Sin clave, el agente usa
+  clasificación por reglas (fallback): la urgencia se detecta igual, pero rutina y ambigüedad
+  no producen el resultado esperado de la tabla (ver "Sin clave de modelo").
 
 ## Instalación
 ```bash
-git clone https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow
-cd G10-LATAM-equipo-37-Mediflow
-# (pendiente) pip install -r requirements.txt
+cp .env.example .env            # completar GEMINI_API_KEY
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
 ```
 
 ## Pruebas
 ```bash
-# (pendiente) pytest -q
-# Verificación vigente: los seeds son JSON válidos y completos
-for f in rutina urgencia ambiguedad; do
-  python -c "import json,sys; d=json.load(open('evals/semilla/$f.json')); assert d['id']=='$f' and 'resultado_esperado' in d; print('OK', d['id'])"
+make test                       # ruff + pytest -q
+```
+
+## Ejecución de los escenarios
+Terminal 1:
+```bash
+set -a; source .env; set +a
+uvicorn api.main:app --port 8000
+```
+Terminal 2:
+```bash
+for e in rutina urgencia ambiguedad; do
+  echo "== $e"
+  curl -s -X POST http://localhost:8000/triage -H "Content-Type: application/json" \
+    -d @evals/semilla/$e.json | python -m json.tool
 done
 ```
-
-## Ejecución de escenarios
-```bash
-# Hoy: mostrar el escenario y su resultado esperado
-python -m json.tool evals/semilla/rutina.json
-python -m json.tool evals/semilla/urgencia.json
-python -m json.tool evals/semilla/ambiguedad.json
-# (pendiente) ejecutar con el flujo real, p. ej.: <comando> --input evals/semilla/<escenario>.json
-```
+Para ver solo lo esencial, reemplazar `python -m json.tool` por
+`python -c "import sys,json; r=json.load(sys.stdin); print(r['decision_enrutamiento']['destino_principal'], r['decision_enrutamiento']['requiere_auditoria_humana'], r['almacenamiento_oci']['ruta_objeto'])"`.
 
 ## Resultado esperado
-| Escenario | Resultado esperado |
-|---|---|
-| Rutina | Prioridad rutina; sin aclaración |
-| Urgencia | Prioridad urgencia; sin aclaración |
-| Ambigüedad | Prioridad indeterminada; solicita aclaración |
+| Escenario | Archivo | Destino | Auditoría humana | Objeto |
+|---|---|---|---|---|
+| Rutina | `rutina.json` | `Historia_Clinica_Electronica` | No | `procesados/historia_clinica/` |
+| Urgencia | `urgencia.json` | `Cola_Emergencia_Medica` + alerta | No | `procesados/urgentes/` |
+| Ambigüedad | `ambiguedad.json` | `Cola_Revision_Humana` | Sí | `auditoria_humana/` |
+
+### Sin clave de modelo
+Observado con el fallback por reglas: urgencia coincide con lo esperado; rutina y ambigüedad
+no (rutina cae en `Cola_Revision_Humana` por falta de extracción; ambigüedad en
+`Farmacia_Hospitalaria` con auditoría). Usar la clave para validar los tres.
 
 ## Evidencia de ejecución (plantilla)
-- Fecha: 
-- Ejecutó: 
-- Commit: 
+- Fecha:
+- Ejecutó:
+- Commit:
+- `make test`: 
 
-| Escenario | Comando | Resultado obtenido | ¿Coincide? |
-|---|---|---|---|
-| Rutina | | | |
-| Urgencia | | | |
-| Ambigüedad | | | |
+| Escenario | Destino obtenido | Auditoría | Objeto | ¿Coincide? |
+|---|---|---|---|---|
+| Rutina | | | | |
+| Urgencia | | | | |
+| Ambigüedad | | | | |

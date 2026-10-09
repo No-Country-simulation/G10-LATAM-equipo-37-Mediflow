@@ -1,0 +1,33 @@
+services:
+  nginx:
+    image: nginx:stable
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on: [api, ui]
+    restart: unless-stopped
+  api:
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    env_file: ../.env
+    volumes:
+      - ../wallet:/app/wallet:ro
+    restart: unless-stopped
+  ui:
+    build:
+      context: ..
+      dockerfile: ui/Dockerfile
+    env_file: ../.env
+    environment:
+      - API_URL=http://api:8000
+    restart: unless-stopped
+  worker:
+    build:
+      context: ..
+      dockerfile: worker/Dockerfile
+    env_file: ../.env
+    volumes:
+      - ../wallet:/app/wallet:ro
+    restart: unless-stopped

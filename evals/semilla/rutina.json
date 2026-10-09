@@ -1,9 +1,6 @@
 {
-  "id": "rutina",
-  "descripcion": "Consulta de control, datos completos, sin signos de alarma",
-  "paciente": {"edad": 34, "sexo": "F"},
-  "motivo": "Control anual y renovación de receta de anticonceptivos",
-  "sintomas": [],
-  "signos_vitales": {"fc": 72, "pa_sistolica": 118, "pa_diastolica": 76, "temperatura": 36.6, "spo2": 98},
-  "resultado_esperado": {"prioridad": "rutina", "requiere_aclaracion": false}
+  "documento_id": "SEM-RUTINA-001",
+  "tipo_archivo": "TEXTO",
+  "documento_texto": "CENTRO MEDICO SAN GABRIEL - CERTIFICADO MEDICO. Se certifica que la paciente Laura Isabel Martinez Garcia, 32 anos, DNI 38.472.615, fue evaluada el 03/10/2026 por faringoamigdalitis aguda (CIE-10 J03.9) y debe guardar reposo laboral por 3 dias. Dr. Pablo Herrera MP 123456.",
+  "canal_origen": "Mesa_Administrativa"
 }
