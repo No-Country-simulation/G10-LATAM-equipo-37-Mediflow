@@ -3,7 +3,7 @@ import hashlib
 import json
 import os
 import sqlite3
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -31,11 +31,12 @@ def sesion(documento_id):
     ruta.parent.mkdir(parents=True, exist_ok=True)
     # Un bloqueo SQLite entre procesos evita dos ejecuciones simultáneas del mismo estado.
     # MVP: serializa también otros documentos. Escalar requiere una cola/locks por documento.
-    with sqlite3.connect(str(ruta) + ".lock", timeout=30) as lock:
+    with closing(sqlite3.connect(str(ruta) + ".lock", timeout=30)) as lock:
         lock.execute("CREATE TABLE IF NOT EXISTS mutex (id INTEGER PRIMARY KEY)")
+        lock.commit()
         lock.execute("BEGIN IMMEDIATE")
         try:
-            with sqlite3.connect(str(ruta), check_same_thread=False) as conn:
+            with closing(sqlite3.connect(str(ruta), check_same_thread=False)) as conn:
                 saver = SqliteSaver(conn, serde=PayloadSerializer())
                 from agent.graph import build_graph
                 yield build_graph(checkpointer=saver), {"configurable": {"thread_id": documento_id}}

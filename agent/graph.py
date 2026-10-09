@@ -46,6 +46,13 @@ def _tras_urgencia(state: TriageState) -> str:
     return "enrutar"
 
 
+def _persistir_durable(state):
+    resultado = persistir(state)
+    if resultado["almacenamiento"]["status_backup"] != "exito":
+        raise OSError("No se pudo persistir el documento y su auditoría")
+    return resultado
+
+
 def build_graph(checkpointer=None):
     g = StateGraph(TriageState)
     g.add_node("normalizar", normalizar)
@@ -56,7 +63,7 @@ def build_graph(checkpointer=None):
     g.add_node("detectar_urgencia", detectar_urgencia)
     g.add_node("segunda_opinion", segunda_opinion)
     g.add_node("enrutar", enrutar)
-    g.add_node("persistir", persistir)
+    g.add_node("persistir", _persistir_durable if checkpointer is not None else persistir)
     g.add_node("notificar", notificar)
 
     g.set_entry_point("normalizar")

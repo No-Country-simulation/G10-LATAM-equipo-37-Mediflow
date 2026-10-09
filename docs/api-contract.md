@@ -251,9 +251,10 @@ reanudación del grafo con la decisión es N2-05.
 original al lado, en `original.{ext}`. En local, la carpeta es la de `agent/storage/local.py`:
 `./data/{bucket}/auditoria_humana/`.
 
-**Pendiente:** hoy `persistir.py` guarda `auditoria_humana/{documento_id}.json` y solo para
-`Cola_Revision_Humana`, y la API lee `./data/auditoria_humana/`. Hasta que las dos sigan este punto, la
-cola real está vacía y el panel se prueba con su modo demostración.
+En la rama de integración, persistencia, API, checkpoints y resoluciones usan el mismo
+backend (`STORAGE_BACKEND`) y `bucket_actual()`. La cola incluye también documentos urgentes
+que requieren auditoría. El original de una carga se conserva en `recibidos/` y se copia
+junto a la extracción. La integración todavía requiere revisión antes de pasar a `develop`.
 
 `extraccion.json` es la salida de la sección 2, con los mismos nombres de campo, más tres que el panel
 necesita:
@@ -263,6 +264,7 @@ necesita:
 | `validacion` | El bloque de la sección 6 |
 | `texto` | El texto que leyó el agente, o null si no llegó a leerlo, como en una imagen ilegible |
 | `legibilidad` | De 0 a 1, o null en un documento de texto |
+| `revision_version` | Versión de revisión, comienza en 1 y aumenta tras cada decisión |
 
 Las rutas de campo son relativas a `datos_extraidos` y van con punto: `paciente.nombre`,
 `medico_solicitante.matricula`. Son las mismas en `validacion.campos_faltantes`, en
@@ -274,8 +276,8 @@ Las rutas de campo son relativas a `datos_extraidos` y van con punto: `paciente.
 | Método y ruta | Qué hace | Respuestas |
 |---|---|---|
 | `GET /queue/human` | Lista los documentos que tienen `extraccion.json` y todavía no tienen `resolucion.json` | 200 con `{"items": [{"documento_id", "extraccion"}]}` |
-| `POST /audit/{documento_id}` | Guarda la decisión del auditor en `resolucion.json` | 200 con `{"documento_id", "resolucion"}`; 404 si no está en la cola; 409 si ya tiene decisión; 422 si el cuerpo no cumple 11.3 |
-| `GET /audit/{documento_id}/original` | **Pendiente.** Devuelve el original con su tipo de contenido, para verlo al lado de la extracción. Mientras no exista, el panel muestra `texto` | 200 con el archivo; 404 si no hay |
+| `POST /audit/{documento_id}` | Reanuda el checkpoint y persiste la decisión | 200 con `documento_id`, `resolucion`, `status`, `decision_enrutamiento` y `revision_version`; 404 sin checkpoint; 409 por versión desactualizada o decisión repetida; 422 por decisión inválida; 503 por fallo de persistencia |
+| `GET /audit/{documento_id}/original` | Devuelve el original con su tipo de contenido, para verlo al lado de la extracción. Mientras no exista, el panel muestra `texto` | 200 con el archivo; 404 si no hay |
 
 El `documento_id` va codificado en la ruta (`DOC#7` es `DOC%237`). El panel ordena la cola: primero las
 urgencias, después lo prioritario, después el resto.
@@ -303,7 +305,8 @@ urgencias, después lo prioritario, después el resto.
 | `correcciones` | Solo con `corregir`, y solo los campos que cambiaron, con su valor nuevo. Con las otras dos acciones va `null` |
 
 La API rechaza con 422 un `revisor` o un `motivo` vacíos, y `correcciones` con una acción que no sea
-`corregir`. **Pendiente:** hoy los acepta, y guarda `{}` en lugar de `null`.
+`corregir`. Las acciones sin correcciones conservan `null`. El panel envía `revision_version`
+con la versión de la extracción mostrada. Una versión desactualizada devuelve 409 y exige recargar la cola.
 
 Cómo se escriben las correcciones:
 
@@ -330,8 +333,10 @@ Si después de corregir el documento vuelve a necesitar revisión, la reanudaci�
 anterior a `resolucion_1.json` (después `resolucion_2.json`, y así) y escribe una `extraccion.json`
 nueva: el documento vuelve a la cola con su historia.
 
-Cuando la reanudación esté en `develop`, la respuesta del `POST` suma `decision_enrutamiento` con el
-destino nuevo, y el panel lo muestra. Mientras tanto, la API guarda la decisión y el grafo no sigue.
+La respuesta del `POST` incluye el destino nuevo cuando continúa el procesamiento. Si el documento
+vuelve a revisión, `status` es `revision_humana`; si se rechaza, `decision_enrutamiento` es `null`.
+Los documentos creados antes de habilitar checkpoints necesitan reprocesamiento controlado.
+Un fallo después de la decisión se reintenta con el mismo cuerpo para evitar aplicarla dos veces.
 
 ### 11.5 Privacidad
 

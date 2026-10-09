@@ -1,54 +1,35 @@
 """Archivos del ciclo de auditoría. Las escrituras repetidas son idempotentes."""
-import json
-import os
 
 from agent.nodes.notificar import notificar
 from agent.nodes.persistir import persistir, storage
-from agent.storage import local
+from agent.storage import local, local_audit
+from agent.storage.buckets import bucket_actual
+from agent.storage.identificadores import validar_id
 
 
 def carpeta(documento_id):
-    if (not documento_id or len(documento_id) > 128 or documento_id in {".", ".."}
-            or any(c in documento_id for c in '/\\:\x00') or ".." in documento_id):
-        raise ValueError("Identificador no permitido")
-    return local.DATA_DIR / os.getenv("OCI_BUCKET", "mediflow-documentos-clinicos") / "auditoria_humana" / documento_id
-
-
-def _escribir(path, contenido):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporal = path.with_suffix(path.suffix + ".tmp")
-    temporal.write_text(json.dumps(contenido, ensure_ascii=False, indent=2), encoding="utf-8")
-    temporal.replace(path)
+    return local.DATA_DIR / bucket_actual() / "auditoria_humana" / validar_id(documento_id)
 
 
 def extraccion(state):
-    return {"documento_id": state["documento_id"],
-            "clasificacion": state.get("clasificacion"),
-            "datos_extraidos": state.get("datos_extraidos", {}),
-            "decision_enrutamiento": state.get("decision"),
-            "score_confianza": state.get("score"),
-            "validacion": state.get("validacion"), "texto": state.get("texto"),
-            "legibilidad": state.get("legibilidad"),
-            "evidencias": state.get("evidencias", []),
-            "revision_version": state.get("revision_version", 1)}
+    return local_audit.snapshot_revision(state)
 
 
 def preparar_revision(state):
-    destino = carpeta(state["documento_id"])
-    _escribir(destino / "extraccion.json", extraccion(state))
-    if not any(destino.glob("original*")) and state.get("texto"):
-        # Es el texto de entrada; nunca se presenta como la imagen o el PDF original.
-        if state.get("tipo_archivo") in {"TEXTO", "JSON"}:
-            (destino / "original.txt").write_text(state["texto"], encoding="utf-8")
+    documento_id = state["documento_id"]
+    local_audit.guardar_extraccion(documento_id, extraccion(state))
+    if state.get("texto") and state.get("tipo_archivo") in {"TEXTO", "JSON"}:
+        # Texto de entrada, nunca un reemplazo del PDF o imagen original.
+        local_audit.escribir_archivo(documento_id, "original.txt", state["texto"].encode("utf-8"))
     return {"revision_version": state.get("revision_version", 1),
             "alerta_emitida": bool(state.get("decision", {}).get("notificacion_generada"))}
 
 
 def cerrar_revision(state):
-    destino = carpeta(state["documento_id"])
+    documento_id = state["documento_id"]
     resolucion = dict(state["resolucion_humana"])
     resolucion["fecha"] = state["fecha_revision"]
-    bucket = os.getenv("OCI_BUCKET", "mediflow-documentos-clinicos")
+    bucket = bucket_actual()
     if state.get("rechazado"):
         ruta = f"rechazados/{state['documento_id']}.json"
         storage.upload_json(bucket, ruta, {**extraccion(state), "status": "rechazado", "resolucion": resolucion})
@@ -63,8 +44,8 @@ def cerrar_revision(state):
     repetida = not state.get("rechazado") and state["decision"].get("requiere_auditoria_humana")
     if repetida:
         numero = state["revision_version"] - 1
-        _escribir(destino / f"resolucion_{numero}.json", resolucion)
-        _escribir(destino / "extraccion.json", extraccion(state))
+        local_audit.escribir_json(documento_id, f"resolucion_{numero}.json", resolucion)
+        local_audit.guardar_extraccion(documento_id, extraccion(state))
     else:
-        _escribir(destino / "resolucion.json", resolucion)
+        local_audit.escribir_json(documento_id, "resolucion.json", resolucion)
     return cambios

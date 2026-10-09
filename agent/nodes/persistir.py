@@ -14,18 +14,14 @@ import os
 
 from agent.nodes.common import step
 from agent.state import TriageState
+from agent.storage.backend import storage
 from agent.storage.buckets import bucket_actual
+from agent.storage.local_audit import snapshot_revision
 
 logger = logging.getLogger(__name__)
 
 # Elegir el backend según STORAGE_BACKEND.
 _STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "local").lower()
-
-if _STORAGE_BACKEND == "oci":
-    from agent.storage import object_storage as storage
-else:
-    from agent.storage import local as storage
-
 
 _CARPETAS = {
     "Cola_Emergencia_Medica": "procesados/urgentes",
@@ -49,12 +45,7 @@ def _persistir_auditoria(state: TriageState, bucket: str) -> None:
         return
 
     # 1. Escribir extraccion.json
-    extraccion = {
-        "documento_id": documento_id,
-        "validacion": state.get("validacion"),
-        "texto": state.get("texto"),
-        "legibilidad": state.get("legibilidad"),
-    }
+    extraccion = snapshot_revision(state)
     ruta_extraccion = f"auditoria_humana/{documento_id}/extraccion.json"
     storage.upload_json(bucket, ruta_extraccion, extraccion)
     logger.info("Persistida extracción para auditoría")
@@ -62,13 +53,11 @@ def _persistir_auditoria(state: TriageState, bucket: str) -> None:
     # 2. Copiar el original al lado (si existe ruta_original)
     ruta_original = state.get("ruta_original")
     if ruta_original:
-        try:
-            contenido = storage.download(bucket, ruta_original)
-            ruta_destino = f"auditoria_humana/{documento_id}/original"
-            storage.upload_bytes(bucket, ruta_destino, contenido)
-            logger.info("Copiado original para auditoría")
-        except Exception as e:  # noqa: BLE001
-            logger.warning("No se pudo copiar el original a auditoria_humana: %s", type(e).__name__)
+        contenido = storage.download(bucket, ruta_original)
+        ruta_destino = f"auditoria_humana/{documento_id}/original"
+        storage.upload_bytes(bucket, ruta_destino, contenido)
+        logger.info("Copiado original para auditoría")
+
 
 
 def persistir(state: TriageState) -> dict:
@@ -123,6 +112,7 @@ def persistir(state: TriageState) -> dict:
         try:
             _persistir_auditoria(state, bucket)
         except Exception as e:  # noqa: BLE001
+            almacenamiento["status_backup"] = "error"
             logger.warning("Fallo al persistir los archivos de auditoría: %s", type(e).__name__)
 
     return {

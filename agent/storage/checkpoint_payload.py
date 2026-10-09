@@ -3,18 +3,18 @@
 El respaldo/restauración debe conservar SQLite Y estos objetos. No usar pickle.
 """
 import hashlib
-import os
 from threading import Lock
 
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 
-from agent.nodes.persistir import storage
+from agent.storage.backend import storage
+from agent.storage.buckets import bucket_actual
 
 
 class PayloadSerializer:
     def __init__(self):
         self.serde = JsonPlusSerializer()
-        self.bucket = os.getenv("OCI_BUCKET", "mediflow-documentos-clinicos")
+        self.bucket = bucket_actual()
         self.lock = Lock()
 
     def dumps_typed(self, obj):

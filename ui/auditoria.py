@@ -479,15 +479,20 @@ def validar_decision(
     return errores
 
 
-def armar_decision(accion: str, revisor: str, motivo: str | None, correcciones: dict) -> dict:
+def armar_decision(accion: str, revisor: str, motivo: str | None, correcciones: dict,
+                   revision_version: int | None = None) -> dict:
     """El cuerpo de POST /audit/{documento_id}."""
     motivo = (motivo or "").strip() or (MOTIVO_APROBAR if accion == "aprobar" else "")
-    return {
+    decision = {
         "accion": accion,
         "revisor": revisor.strip(),
         "motivo": motivo,
         "correcciones": correcciones if accion == "corregir" else None,
     }
+
+    if revision_version is not None:
+        decision["revision_version"] = revision_version
+    return decision
 
 
 # ---------------------------------------------------------------------------

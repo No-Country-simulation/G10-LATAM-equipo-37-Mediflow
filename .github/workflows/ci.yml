@@ -1,10 +1,13 @@
 name: CI
 on:
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      USE_LLM: "false"
+      STORAGE_BACKEND: local
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,6 +25,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
-      - run: python evals/run.py --golden evals/golden/golden_v0.jsonl --report evals/output/report.md
+      - run: python evals/run.py
         env:
+          USE_LLM: "true"
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_EVALS }}

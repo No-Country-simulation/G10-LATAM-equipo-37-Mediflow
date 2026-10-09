@@ -128,14 +128,14 @@ def _normalizar_respuesta(datos: dict) -> dict:
     tipo_raw = datos.get("tipo_documento", "Otro")
     tipo = _TIPOS.get(_sin_tildes(str(tipo_raw)), TipoDocumento.OTRO.value)
     if tipo == TipoDocumento.OTRO.value and _sin_tildes(str(tipo_raw)) != _sin_tildes(TipoDocumento.OTRO.value):
-        logger.warning("Tipo documental inválido '%s', usando Otro.", tipo_raw)
+        logger.warning("Tipo documental inválido, usando Otro.")
 
     # nivel_prioridad: normalizar tildes y validar contra el enum.
     prioridad_raw = datos.get("nivel_prioridad", "Rutina")
     prioridad = _PRIORIDADES.get(_sin_tildes(str(prioridad_raw)), NivelPrioridad.RUTINA.value)
     es_rutina_por_defecto = _sin_tildes(str(prioridad_raw)) == _sin_tildes(NivelPrioridad.RUTINA.value)
     if prioridad == NivelPrioridad.RUTINA.value and not es_rutina_por_defecto:
-        logger.warning("Prioridad inválida '%s', usando Rutina.", prioridad_raw)
+        logger.warning("Prioridad inválida, usando Rutina.")
 
     # confianza → score_confianza_clasificacion.
     try:
