@@ -1,32 +1,57 @@
-## 8. Alertas en tiempo real (N2-09)
+# Despliegue en OCI (N2-01)
 
-### Topic de OCI Notifications
+## Estado actual
 
-- **Nombre:** `mediflow-alertas`
-- **OCID:** `ocid1.onstopic.oc1.sa-saopaulo-1.amaaaaaaof3op2aa77wg5xnuyc4cxw2wqahukas2shrzamxyg2jhdrlenx2q`
-- **Variable de entorno:** `ONS_TOPIC_OCID`
+**Fecha:** 9 de octubre de 2026
+**Estado:** ✅ Deploy funcionando (HTTP, sin dominio)
+**Responsable:** Carlos Zunino
 
-### Suscripciones
+## URLs públicas
 
-| Protocolo | Endpoint | Estado | Notas |
-|---|---|---|---|
-| EMAIL | `zunino.cau@gmail.com` | ✅ ACTIVE | Recibe alertas de urgencia |
-| CUSTOM_HTTPS | Discord webhook | ⚠️ PENDING | OCI no valida webhooks de Discord |
+| Servicio | URL | Estado |
+| :--- | :--- | :--- |
+| **API** | http://144.22.215.79:8000 | ✅ Funcionando |
+| **API Docs** | http://144.22.215.79:8000/docs | ✅ Funcionando |
+| **UI Streamlit** | http://144.22.215.79:8501 | ✅ Funcionando |
+| **Health Check** | http://144.22.215.79:8000/health | ✅ `{"status":"ok"}` |
 
-### Cómo funciona
+## Infraestructura
 
-El nodo `notificar` lee `notificacion_generada` del state y llama a `publicar()`. Esta función elige el canal según las variables de entorno:
+### VM
 
-| Prioridad | Variable | Destino |
-|---|---|---|
-| 1 | `N8N_WEBHOOK_URL` | n8n (Nivel 3, N3-08) |
-| 2 | `DISCORD_WEBHOOK_URL` | Discord/Slack directo |
-| 3 | `ONS_TOPIC_OCID` | OCI Notifications (correo) |
+| Componente | Valor |
+| :--- | :--- |
+| **Shape** | VM.Standard.A1.Flex (ARM) |
+| **OCPU** | 2 |
+| **RAM** | 12 GB |
+| **Disco** | 30 GB (raíz) + 15 GB (/var/oled) |
+| **Sistema Operativo** | Oracle Linux 9.8 (aarch64) |
+| **IP pública** | 144.22.215.79 |
+| **Usuario SSH** | `opc` |
+| **Clave SSH** | `~/.ssh/mediflow-vm-1.key` |
+| **Región** | sa-saopaulo-1 |
+| **Dominio de disponibilidad** | AD-1 |
 
-### Variables de entorno
+### Red
+
+| Componente | Valor |
+| :--- | :--- |
+| **VCN** | vcn-mediflow (10.0.0.0/16) |
+| **Subred** | subnet-mediflow-public (10.0.0.0/24) |
+| **Internet Gateway** | igw-mediflow |
+| **Route Table** | Default Route Table for vcn-mediflow |
+
+### Puertos abiertos
+
+| Puerto | Protocolo | Origen | Descripción |
+| :--- | :--- | :--- | :--- |
+| 22 | TCP | 0.0.0.0/0 | SSH |
+| 80 | TCP | 0.0.0.0/0 | HTTP |
+| 443 | TCP | 0.0.0.0/0 | HTTPS |
+| 8000 | TCP | 0.0.0.0/0 | API FastAPI |
+| 8501 | TCP | 0.0.0.0/0 | UI Streamlit |
+
+## Cómo conectarse a la VM
 
 ```bash
-# Alertas (N2-09): prioridad N8N > DISCORD > OCI
-# N8N_WEBHOOK_URL=           # (Nivel 3, N3-08)
-DISCORD_WEBHOOK_URL=         # URL del webhook de Discord
-ONS_TOPIC_OCID=              # OCID del topic de OCI Notifications
+ssh -i "$env:USERPROFILE\.ssh\mediflow-vm-1.key" opc@144.22.215.79
