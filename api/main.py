@@ -1,11 +1,37 @@
 """API de MediFlow."""
+from typing import Literal, Optional
+
+from fastapi import FastAPI, File, Form, HTTPException, Response, UploadFile
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
 from agent.rules.loader import load_rules
 from agent.schemas.contrato import TriageRequest, TriageResponse
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from agent.storage import local_audit
+from agent.storage.local_audit import (
+    AccionInvalida,
+    DocumentoNoEncontrado,
+    OriginalNoDisponible,
+    ResolucionYaExiste,
+)
 
 app = FastAPI(title="MediFlow", version="0.1.0")
+
+
+class DecisionAuditor(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    accion: Literal["aprobar", "corregir", "rechazar"]  # ADR-004
+    revisor: str = Field(min_length=1)
+    motivo: str = Field(min_length=1)
+    correcciones: Optional[dict] = None
+
+    @model_validator(mode="after")
+    def _correcciones_solo_al_corregir(self):
+        if self.correcciones and self.accion != "corregir":
+            raise ValueError("Las correcciones solo se admiten con la acción 'corregir'")
+        return self
 
 
 def _a_respuesta(resultado: dict) -> TriageResponse:
@@ -47,13 +73,10 @@ async def triage_upload(
         contenido = await archivo.read()
         documento = ingest_document(contenido, filename=archivo.filename, content_type=archivo.content_type)
     except IngestionError as exc:
-        # Mensaje controlado: no devolver bytes, rutas internas ni contenido clínico.
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     finally:
         await archivo.close()
 
-    # TODO N1-01: guardar el original en recibidos/ con agent.storage y pasar la ruta como
-    # ruta_original, para que persistir.py enlace el documento con su resultado.
     resultado = run_triage(
         documento_id,
         documento.tipo_archivo,
@@ -67,22 +90,43 @@ async def triage_upload(
 
 @app.get("/triage/{documento_id}")
 def obtener_triage(documento_id: str):
-    # TODO sprint 2: leer de ADB o del bucket.
     raise HTTPException(status_code=404, detail="pendiente de implementar")
 
 
 @app.get("/queue/human")
 def cola_humana():
-    # TODO sprint 3: listar auditoria_humana/ desde ADB.
-    return {"items": []}
+    items = local_audit.listar_cola_humana(base=local_audit.DATA_DIR)
+    return {"items": items}
 
 
 @app.post("/audit/{documento_id}")
-def auditar(documento_id: str, decision: dict):
-    # TODO sprint 3: guardar la decisión del auditor y reencaminar.
-    return {"documento_id": documento_id, "recibido": decision}
+def auditar(documento_id: str, decision: DecisionAuditor):
+    try:
+        resolucion = local_audit.guardar_resolucion(
+            documento_id,
+            decision.accion,
+            revisor=decision.revisor,
+            motivo=decision.motivo,
+            correcciones=decision.correcciones,
+            base=local_audit.DATA_DIR,
+        )
+    except DocumentoNoEncontrado as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ResolucionYaExiste as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except AccionInvalida as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    return {"documento_id": documento_id, "resolucion": resolucion}
 
 
+@app.get("/audit/{documento_id}/original")
+def original_auditoria(documento_id: str):
+    try:
+        contenido, tipo = local_audit.obtener_original(documento_id, base=local_audit.DATA_DIR)
+    except (DocumentoNoEncontrado, OriginalNoDisponible) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return Response(content=contenido, media_type=tipo)
 @app.get("/rules")
 def reglas():
     return load_rules()
@@ -90,11 +134,9 @@ def reglas():
 
 @app.put("/rules")
 def actualizar_reglas(nuevas: dict):
-    # TODO sprint 3: persistir en la tabla rules de ADB y limpiar la caché.
     return {"actualizado": False, "detalle": "pendiente de implementar"}
 
 
 @app.get("/metrics")
 def metricas():
-    # TODO sprint 3: KPIs desde ADB para el dashboard y el reporte diario.
     return {"documentos_hoy": 0, "urgencias_hoy": 0, "en_revision": 0, "confianza_media": None}

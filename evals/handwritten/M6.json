@@ -1,0 +1,10 @@
+{
+  "id": "M6",
+  "paciente": "Laura Isabel Martínez García",
+  "edad": null,
+  "medicamento": "Atorvastatina",
+  "dosis": "20 mg",
+  "frecuencia": "cada 24 horas",
+  "duracion": null,
+  "resultado_esperado": "ambiguedad"
+}

@@ -65,3 +65,16 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 - Alternativa descartada: usar documentos reales anonimizados para evaluar. Anonimizar bien un documento clínico es difícil, el riesgo de reidentificación es real, y el plan gratuito no admite datos personales.
 - Consecuencia: la privacidad del producto se diseña desde ahora, en `docs/privacidad.md`: el dato completo va solo a su destino y al auditor, y los registros, trazas y métricas se seudonimizan con una clave secreta. MediFlow está diseñado según los principios de las normas de referencia, sin afirmar que las cumple, porque eso exige auditorías que un prototipo no tiene.
 
+
+## ADR-011 · Un CIE-10 inexistente es AMB-2, con prioridad sobre AMB-3
+- Fecha: 5 de octubre de 2026
+- Contexto: `validar.py` marcaba conflicto cuando el código CIE-10 del documento no existía en `cie10.csv`, pero no le asignaba categoría. Todo conflicto necesita una categoría para ir a revisión humana con un motivo visible, y `enrutar.py` podía tratar el caso como «sin categoría».
+- Decisión: un código CIE-10 inexistente se clasifica como AMB-2. Si el mismo documento tiene además un conflicto de dosis (AMB-3), AMB-2 tiene prioridad.
+- Alternativa descartada: dejar el conflicto sin categoría, porque el auditor no vería el motivo y el enrutamiento quedaba ambiguo.
+- Consecuencia: `enrutar.py` y `plan_golden.csv` no deben tratarlo como «sin categoría». `test_validar.py` tiene una prueba por categoría AMB.
+## ADR-012 · Una sola revisión por documento del conjunto de prueba
+- Fecha: 6 de octubre de 2026
+- Contexto: el plan pedía dos revisiones cruzadas por documento, 90 en total, y solo se anotaban las de los revisores asignados. Con la redistribución de las tareas de Kevin y las fechas del sprint 3, completar las 90 no era viable, y la evaluación del modelo necesita el conjunto revisado cuanto antes.
+- Decisión: cada documento lleva una sola revisión, de alguien distinto de quien lo escribió, anotada como `revisor_1` y `revision_1` en `plan_golden.csv`. Si un documento ya estaba revisado, por el revisor 1, el revisor 2 o la coordinación del conjunto, esa revisión cuenta y esa persona queda como revisor 1. Las segundas revisiones ya completas se conservan (GS-26 y GS-30), y las pendientes de quien no había revisado se cancelan. Con esto, la mañana del 6 de octubre quedaron 17 documentos aprobados y 6 revisados a la espera de correcciones de sus autores. `evals/run.py` cuenta un elemento como oficial con una revisión.
+- Alternativa descartada: mantener dos revisiones y evaluar con el conjunto incompleto. Medir con la mitad de los documentos sin revisar daría números menos confiables que medir con todos revisados una vez.
+- Consecuencia: baja la verificación de cada etiqueta. Para compensar, cuando la evaluación marca un fallo, antes de contarlo como error del agente se vuelve a mirar la etiqueta, y si estaba mal se corrige. La segunda mirada se concentra donde agente y etiqueta no coinciden, que es donde un error de etiqueta cambiaría los números.
