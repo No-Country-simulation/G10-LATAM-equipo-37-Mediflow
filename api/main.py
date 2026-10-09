@@ -1,8 +1,8 @@
 """API de MediFlow."""
 from typing import Literal, Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from pydantic import BaseModel
+from fastapi import FastAPI, File, Form, HTTPException, Response, UploadFile
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
@@ -12,6 +12,7 @@ from agent.storage import local_audit
 from agent.storage.local_audit import (
     AccionInvalida,
     DocumentoNoEncontrado,
+    OriginalNoDisponible,
     ResolucionYaExiste,
 )
 
@@ -19,10 +20,18 @@ app = FastAPI(title="MediFlow", version="0.1.0")
 
 
 class DecisionAuditor(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     accion: Literal["aprobar", "corregir", "rechazar"]  # ADR-004
-    revisor: str
-    motivo: str
+    revisor: str = Field(min_length=1)
+    motivo: str = Field(min_length=1)
     correcciones: Optional[dict] = None
+
+    @model_validator(mode="after")
+    def _correcciones_solo_al_corregir(self):
+        if self.correcciones and self.accion != "corregir":
+            raise ValueError("Las correcciones solo se admiten con la acción 'corregir'")
+        return self
 
 
 def _a_respuesta(resultado: dict) -> TriageResponse:
@@ -111,6 +120,13 @@ def auditar(documento_id: str, decision: DecisionAuditor):
     return {"documento_id": documento_id, "resolucion": resolucion}
 
 
+@app.get("/audit/{documento_id}/original")
+def original_auditoria(documento_id: str):
+    try:
+        contenido, tipo = local_audit.obtener_original(documento_id, base=local_audit.DATA_DIR)
+    except (DocumentoNoEncontrado, OriginalNoDisponible) as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return Response(content=contenido, media_type=tipo)
 @app.get("/rules")
 def reglas():
     return load_rules()
