@@ -14,6 +14,7 @@ import os
 
 from agent.nodes.common import step
 from agent.state import TriageState
+from agent.storage.buckets import bucket_actual
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ def persistir(state: TriageState) -> dict:
     destino = state.get("decision", {}).get("destino_principal", "Cola_Revision_Humana")
     carpeta = _CARPETAS.get(destino, "auditoria_humana")
     ruta = f"{carpeta}/{state['documento_id']}.json"
-    bucket = os.getenv("OCI_BUCKET", "mediflow-documentos-clinicos")
+    bucket = bucket_actual()
 
     payload = {
         "documento_id": state.get("documento_id"),
