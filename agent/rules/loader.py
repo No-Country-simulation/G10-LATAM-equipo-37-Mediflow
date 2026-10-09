@@ -111,19 +111,26 @@ def validar_reglas(reglas: Any) -> list[str]:
         if clave in reglas and not _lista_texto(reglas[clave]):
             errores.append(f"{clave} debe ser una lista de textos no vacíos")
 
-    aplica = (reglas.get("deteccion_automatica_urgencia") or {}).get("aplica_a")
-    if aplica is not None:
-        if not _lista_texto(aplica):
-            errores.append("deteccion_automatica_urgencia.aplica_a debe ser una lista de textos")
-        else:
-            errores += [f"aplica_a: '{t}' no está en tipos_documento" for t in aplica if t not in tipos]
+        du = reglas.get("deteccion_automatica_urgencia")
+    if du is not None and not isinstance(du, dict):
+        errores.append("deteccion_automatica_urgencia debe ser un objeto")
+    elif du:
+        aplica = du.get("aplica_a")
+        if aplica is not None:
+            if not _lista_texto(aplica):
+                errores.append("deteccion_automatica_urgencia.aplica_a debe ser una lista de textos")
+            else:
+                errores += [f"aplica_a: '{t}' no está en tipos_documento" for t in aplica if t not in tipos]
 
-    for i, v in enumerate(reglas.get("valores_criticos_laboratorio") or []):
-        if not isinstance(v, dict) or not isinstance(v.get("analito"), str) or "valor" not in v:
-            errores.append(f"valores_criticos_laboratorio[{i}] necesita analito y valor")
-        elif v.get("operador") not in (">=", "<=", ">", "<", "texto"):
-            errores.append(f"valores_criticos_laboratorio[{i}].operador no es válido")
-
+    vcl = reglas.get("valores_criticos_laboratorio")
+    if vcl is not None and not isinstance(vcl, list):
+        errores.append("valores_criticos_laboratorio debe ser una lista")
+    else:
+        for i, v in enumerate(vcl or []):
+            if not isinstance(v, dict) or not isinstance(v.get("analito"), str) or "valor" not in v:
+                errores.append(f"valores_criticos_laboratorio[{i}] necesita analito y valor")
+            elif v.get("operador") not in (">=", "<=", ">", "<", "texto"):
+                errores.append(f"valores_criticos_laboratorio[{i}].operador no es válido")
     fa = reglas.get("fuera_de_alcance")
     if fa is not None and (not isinstance(fa, dict) or not fa.get("categoria")):
         errores.append("fuera_de_alcance necesita 'categoria'")
@@ -170,16 +177,33 @@ def guardar_reglas(reglas: dict, quien: str = "desconocido") -> list[dict[str, A
     """Valida y escribe el override de forma atómica y deja registro de quién cambió qué.
 
     Devuelve la lista de cambios. Lanza ReglasInvalidas si algo no cuadra (en ese caso no escribe nada).
+    Si falla el registro de auditoría, deja el override como estaba y vuelve a lanzar el error.
     """
     errores = validar_reglas(reglas)
     if errores:
         raise ReglasInvalidas(errores)
     cambios = diferencias(load_rules(), reglas)
     OVERRIDE_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # 1) Guardar cómo estaba el override antes (None si no existía).
+    previo = OVERRIDE_PATH.read_bytes() if OVERRIDE_PATH.exists() else None
+
+    # 2) Escribir el override nuevo.
     tmp = OVERRIDE_PATH.with_suffix(".tmp")
     tmp.write_text(yaml.safe_dump(reglas, allow_unicode=True, sort_keys=False), encoding="utf-8")
     tmp.replace(OVERRIDE_PATH)
     _cache["marca"] = None
+
+    # 3) Registrar la auditoría. Si falla, deshacer el paso 2.
     if cambios:
-        _registrar(quien, cambios)
+        try:
+            _registrar(quien, cambios)
+        except OSError:
+            if previo is None:
+                OVERRIDE_PATH.unlink(missing_ok=True)
+            else:
+                tmp.write_bytes(previo)
+                tmp.replace(OVERRIDE_PATH)
+            _cache["marca"] = None
+            raise
     return cambios
