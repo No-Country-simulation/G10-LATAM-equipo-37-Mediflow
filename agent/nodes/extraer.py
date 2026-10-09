@@ -263,7 +263,7 @@ def extraer(state: TriageState) -> dict:
             ambiguedad = payload.get("ambiguedad_detectada")
             modelo = resultado_llm.model
     except Exception as e:  # noqa: BLE001
-        logger.warning("LLM falló en extraer (%s), usando regex.", e)
+        logger.warning("LLM falló en extraer (%s), usando regex.", type(e).__name__)
         datos = _normalizar_datos(_extraer_por_regex(texto))
         evidencias = []
 
