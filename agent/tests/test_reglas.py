@@ -48,3 +48,12 @@ def test_si_falla_la_auditoria_no_queda_el_override(tmp_path, monkeypatch):
     with pytest.raises(OSError):
         loader.guardar_reglas(_reglas_con_cambio(), "test")
     assert not loader.OVERRIDE_PATH.exists()
+
+
+def test_validar_no_depende_de_listas_de_texto(monkeypatch):
+    # Con LISTAS_DE_TEXTO vacío, du y valores_criticos deben validarse igual
+    monkeypatch.setattr(loader, "LISTAS_DE_TEXTO", ())
+    reglas = copy.deepcopy(loader.load_rules())
+    assert loader.validar_reglas(reglas) == []
+    reglas["deteccion_automatica_urgencia"] = "x"
+    assert loader.validar_reglas(reglas)

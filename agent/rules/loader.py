@@ -111,7 +111,7 @@ def validar_reglas(reglas: Any) -> list[str]:
         if clave in reglas and not _lista_texto(reglas[clave]):
             errores.append(f"{clave} debe ser una lista de textos no vacíos")
 
-        du = reglas.get("deteccion_automatica_urgencia")
+    du = reglas.get("deteccion_automatica_urgencia")
     if du is not None and not isinstance(du, dict):
         errores.append("deteccion_automatica_urgencia debe ser un objeto")
     elif du:
@@ -131,6 +131,7 @@ def validar_reglas(reglas: Any) -> list[str]:
                 errores.append(f"valores_criticos_laboratorio[{i}] necesita analito y valor")
             elif v.get("operador") not in (">=", "<=", ">", "<", "texto"):
                 errores.append(f"valores_criticos_laboratorio[{i}].operador no es válido")
+
     fa = reglas.get("fuera_de_alcance")
     if fa is not None and (not isinstance(fa, dict) or not fa.get("categoria")):
         errores.append("fuera_de_alcance necesita 'categoria'")
