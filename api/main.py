@@ -1,12 +1,14 @@
 """API de MediFlow."""
+import hmac
+import os
 from typing import Literal, Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, Response, UploadFile
+from fastapi import FastAPI, File, Form, Header, HTTPException, Response, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
-from agent.rules.loader import load_rules
+from agent.rules.loader import ReglasInvalidas, guardar_reglas, load_rules, toca_umbrales
 from agent.schemas.contrato import TriageRequest, TriageResponse
 from agent.storage import local_audit
 from agent.storage.local_audit import (
@@ -133,8 +135,29 @@ def reglas():
 
 
 @app.put("/rules")
-def actualizar_reglas(nuevas: dict):
-    return {"actualizado": False, "detalle": "pendiente de implementar"}
+def actualizar_reglas(
+    nuevas: dict,
+    x_admin_token: str | None = Header(default=None),
+    x_editor: str | None = Header(default=None),
+):
+    esperado = os.getenv("RULES_ADMIN_TOKEN")
+    if not esperado:
+        raise HTTPException(status_code=503, detail="Edición de reglas deshabilitada: falta RULES_ADMIN_TOKEN")
+    if not x_admin_token or not hmac.compare_digest(x_admin_token, esperado):
+        raise HTTPException(status_code=401, detail="Token de administrador inválido")
+    if not x_editor or not x_editor.strip():
+        raise HTTPException(status_code=422, detail="Falta el header X-Editor con quién hace el cambio")
+    try:
+        cambios = guardar_reglas(nuevas, quien=x_editor.strip())
+    except ReglasInvalidas as exc:
+        raise HTTPException(status_code=422, detail={"errores": exc.errores}) from exc
+    umbral = toca_umbrales(cambios)
+    return {
+        "actualizado": True,
+        "cambios": cambios,
+        "umbral_modificado": umbral,
+        "aviso": "Cambiaste un umbral: corre el golden set antes de dejarlo." if umbral else None,
+    }
 
 
 @app.get("/metrics")
