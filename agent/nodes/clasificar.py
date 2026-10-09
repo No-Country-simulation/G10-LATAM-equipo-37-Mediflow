@@ -29,6 +29,7 @@ from pathlib import Path
 
 from agent.llm import adapter
 from agent.nodes.common import step
+from agent.nodes.documentos_multiples import detectar_documentos_multiples
 from agent.schemas.contrato import NivelPrioridad, TipoDocumento
 from agent.state import TriageState
 
@@ -85,6 +86,7 @@ def _clasificar_por_reglas(texto: str) -> dict:
         "idioma": "es",
         "legible": bool(texto.strip()),
         "justificacion": "Clasificación por reglas (fallback).",
+        "multiples_documentos": detectar_documentos_multiples(texto),
     }
 
 
@@ -126,14 +128,14 @@ def _normalizar_respuesta(datos: dict) -> dict:
     tipo_raw = datos.get("tipo_documento", "Otro")
     tipo = _TIPOS.get(_sin_tildes(str(tipo_raw)), TipoDocumento.OTRO.value)
     if tipo == TipoDocumento.OTRO.value and _sin_tildes(str(tipo_raw)) != _sin_tildes(TipoDocumento.OTRO.value):
-        logger.warning("Tipo documental inválido, usando Otro.")
+        logger.warning("Tipo documental inválido '%s', usando Otro.", tipo_raw)
 
     # nivel_prioridad: normalizar tildes y validar contra el enum.
     prioridad_raw = datos.get("nivel_prioridad", "Rutina")
     prioridad = _PRIORIDADES.get(_sin_tildes(str(prioridad_raw)), NivelPrioridad.RUTINA.value)
     es_rutina_por_defecto = _sin_tildes(str(prioridad_raw)) == _sin_tildes(NivelPrioridad.RUTINA.value)
     if prioridad == NivelPrioridad.RUTINA.value and not es_rutina_por_defecto:
-        logger.warning("Prioridad inválida, usando Rutina.")
+        logger.warning("Prioridad inválida '%s', usando Rutina.", prioridad_raw)
 
     # confianza → score_confianza_clasificacion.
     try:
@@ -151,6 +153,7 @@ def _normalizar_respuesta(datos: dict) -> dict:
         "idioma": datos.get("idioma", "es"),
         "legible": bool(datos.get("legible", True)),
         "justificacion": datos.get("justificacion"),
+        "multiples_documentos": datos.get("multiples_documentos") is True,
     }
 
 
@@ -184,6 +187,9 @@ def clasificar(state: TriageState) -> dict:
         logger.warning("LLM falló en clasificar (%s), usando reglas.", type(e).__name__)
         clasificacion = _clasificar_por_reglas(texto)
 
+    clasificacion["multiples_documentos"] = (
+        clasificacion.get("multiples_documentos") is True or detectar_documentos_multiples(texto)
+    )
     return {
         "clasificacion": clasificacion,
         "modelo_utilizado": modelo,
