@@ -120,7 +120,7 @@ def guardar_resolucion(
         "fecha": datetime.now(timezone.utc).isoformat(),
         "accion": accion,
         "motivo": motivo,
-        "correcciones": correcciones or {},
+        "correcciones": correcciones if accion == "corregir" else None,
     }
     resolucion_path.write_text(json.dumps(resolucion, ensure_ascii=False, indent=2), encoding="utf-8")
     return resolucion
