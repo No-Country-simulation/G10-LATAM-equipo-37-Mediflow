@@ -52,6 +52,6 @@ if result:
     render_result(result)
     if result.get("status") == "revision_humana" or result.get("decision_enrutamiento", {}).get("requiere_auditoria_humana"):
         with st.expander("Abrir documento para auditoría", expanded=True):
-            from ui.lib import show_document_preview
+            from lib import show_document_preview
 
             show_document_preview()
