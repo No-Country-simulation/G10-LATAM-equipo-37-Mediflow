@@ -16,7 +16,7 @@ DATOS DEL PACIENTE
 Paciente: Pérez, Juan Carlos
 DNI: 28.456.123
 Fecha de nacimiento: 14/03/1978
-Edad: 46 años
+Edad: 48 años
 Sexo: Masculino
 Domicilio: Av. Rivadavia 3200, CABA
 Obra social: PAMI
@@ -26,13 +26,13 @@ Sala/Cama: 3B - Cama 12
 DATOS DE INTERNACIÓN
 --------------------
 Historia Clínica Nº: 123456
-Internación Nº: 45872/2024
-Fecha de ingreso: 10/10/2026
-Fecha de egreso: 14/10/2026
+Internación Nº: 45872/2026
+Fecha de ingreso: 28/09/2026
+Fecha de egreso: 02/10/2026
 Días de internación: 4
 Médico de cabecera: Dr. Martín Ruiz
 Médico de alta: Dra. Lucía Fernández
-Fecha del informe: 14/10/2026 10:30 hs
+Fecha del informe: 02/10/2026 10:30 hs
 
 MOTIVO DE INTERNACIÓN
 ---------------------
