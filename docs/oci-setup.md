@@ -25,7 +25,7 @@ MediFlow usa **dos buckets separados** por entorno:
 
 ```bash
 # Ver el compartment
-COMPARTMENT_ID="ocid1.compartment.oc1..aaaaaaaaklh5si4fxiesxrqwnb3j62yxdui2zx6swahioi4wo3jrkwm6qcq"
+COMPARTMENT_ID="<COMPARTMENT_OCID>"
 
 # Bucket dev
 oci os bucket create \
@@ -144,11 +144,11 @@ Variables configuradas para la VM:
 ```bash
 ENV=dev
 OCI_REGION=sa-saopaulo-1
-OCI_NAMESPACE=grhx3cql3ypi
+OCI_NAMESPACE=<OCI_NAMESPACE>
 OCI_BUCKET=mediflow-dev
-OCI_COMPARTMENT=ocid1.compartment.oc1..aaaaaaaaklh5si4fxiesxrqwnb3j62yxdui2zx6swahioi4wo3jrkwm6qcq
+OCI_COMPARTMENT=<COMPARTMENT_OCID>
 OCI_AUTH=instance_principal
-ONS_TOPIC_OCID=ocid1.onstopic.oc1.sa-saopaulo-1.amaaaaaaof3op2aa77wg5xnuyc4cxw2wqahukas2shrzamxyg2jhdrlenx2q
+ONS_TOPIC_OCID=<ONS_TOPIC_OCID>
 STORAGE_BACKEND=oci
 ```
 
