@@ -1,0 +1,85 @@
+FARMACIA CENTRAL S.A.
+Sucursal 04 - Av. Libertador 1840, Capital
+Tel: (011) 4891-2200
+CUIT/RUC: 30-71829301-8
+IVA Resp. Inscripto
+Ing. Brutos: 1029384-0
+
+FACTURA B
+Nº: 0004-00128941
+Fecha: 20/09/2026
+
+DATOS DEL CLIENTE
+-----------------
+Cliente / Paciente: Gómez, Elena B.
+Documento: DNI 28.192.403
+Obra Social / Prepaga: Swiss Medical / OSDE
+Nº Afiliado: 3-9182391-01
+Condición de Pago: Tarjeta Débito
+Nº Receta / Autorización: A-01 / REC-88192
+
+DATOS DE ATENCIÓN
+-----------------
+Atendido por: Elena (Caja 02)
+Hora de Emisión: 11:24:18 hs
+
+DETALLE DE PRODUCTOS
+--------------------
+
+Código: 7798122
+Producto: LEVOTIROXINA MONO 100MCG Comp x 50
+Laboratorio: Sanofi
+Cantidad: 1
+Precio Unitario: $14.500,00
+Copago: 40%
+Importe: $8.700,00
+
+Código: 7791029
+Producto: LIPITOR 20MG (Atorvastatina) Comp x 30
+Cantidad: 1
+Precio Unitario: $22.800,00
+Copago: 40%
+Importe: $13.680,00
+
+Código: 7794410
+Producto: TIRAS REACTIVAS ACCU-CHEK GUIDE Box x 50
+Cantidad: 2
+Precio Unitario: $18.200,00
+Copago: 50%
+Importe: $18.200,00
+
+Código: 7790011
+Producto: LANCETAS SOFTCLIX x 100 Unidades
+Cantidad: 1
+Precio Unitario: $6.400,00
+Copago: 0%
+Importe: $6.400,00
+
+Código: 7795521
+Producto: ALCOHOL EN GEL 70% 250ml (Venta Libre)
+Cantidad: 1
+Precio Unitario: $3.100,00
+Copago: 0%
+Importe: $3.100,00
+
+OBSERVACIONES
+-------------
+Descuento de cobertura médica aplicado según vademécum vigente.
+Conserve este comprobante para eventuales reclamos o reintegros.
+
+RESUMEN ECONÓMICO
+-----------------
+Subtotal Bruto: $83.200,00
+Cobertura OS/Prepaga: -$33.120,00
+IVA (21% Incluido): $00,00
+TOTAL A PAGAR: $50.080,00
+
+DATOS FISCALES
+--------------
+CAE Nº: 74819203918239
+Vto. CAE: 29/09/2026
+
+COMPROBANTE HOMOLOGADO
+Código Interno Documento: A-01
+
+

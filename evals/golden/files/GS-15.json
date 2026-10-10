@@ -1,7 +1,6 @@
 {
-  "tipo_documento": "Informe de Laboratorio",
-  "diagnostico": "Hipotiroidismo primario",
-  "TSH": 9.8,
-  "T4_libre": 0.7,
-  "interpretacion": "Compatible con hipotiroidismo primario"
+  "documento_id": "GS-15",
+  "tipo_archivo": "TEXTO",
+  "documento_texto": "LABORATORIO CLÍNICO SAN MARTÍN · INFORME DE LABORATORIO\n\nPaciente: Laura Fernández\nFecha de nacimiento: 12/08/1978\nEdad: 48 años\nFecha del estudio: 21/09/2026\nSolicitante: Dra. Mariana López, MP 41258\n\nEstudio: Perfil tiroideo\n\nResultados:\n- TSH: 9.8 mUI/L (referencia 0.4 - 4.0)\n- T4 libre: 0.7 ng/dL (referencia 0.8 - 1.8)\n\nConclusión:\nHallazgos compatibles con hipotiroidismo primario (E03.9). Se recomienda evaluación endocrinológica y ajuste terapéutico según criterio médico.",
+  "canal_origen": "Sistema_Laboratorio"
 }
