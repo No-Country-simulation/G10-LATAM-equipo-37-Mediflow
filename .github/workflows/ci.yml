@@ -1,7 +1,7 @@
 name: CI
 on:
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -12,7 +12,7 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
-      - run: pytest -q
+      - run: USE_LLM=false STORAGE_BACKEND=local pytest -q
   evals:
     if: contains(github.event.pull_request.labels.*.name, 'evals')
     runs-on: ubuntu-latest
@@ -22,6 +22,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
-      - run: python evals/run.py --golden evals/golden/golden_v0.jsonl --report evals/output/report.md
+      - run: USE_LLM=true python evals/run.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_EVALS }}
+          STORAGE_BACKEND: local

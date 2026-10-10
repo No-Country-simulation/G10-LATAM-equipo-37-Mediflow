@@ -36,11 +36,7 @@ tmp/
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
 
-
-
-# Temporales del generador
-augraphy_cache/
+# Carpetas temporales y locales (no subir)
+/data/
 fonts/
-
-# Backups de anonimizacion (no subir)
-evals/golden/files/*.original.txt
+augraphy_cache/
