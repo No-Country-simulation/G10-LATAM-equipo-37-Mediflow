@@ -145,7 +145,8 @@ Variables configuradas para la VM:
 ENV=dev
 OCI_REGION=sa-saopaulo-1
 OCI_NAMESPACE=<OCI_NAMESPACE>
-OCI_BUCKET=mediflow-dev
+OCI_BUCKET_DEV=mediflow-dev
+OCI_BUCKET_PROD=mediflow-prod
 OCI_COMPARTMENT=<COMPARTMENT_OCID>
 OCI_AUTH=instance_principal
 ONS_TOPIC_OCID=<ONS_TOPIC_OCID>
