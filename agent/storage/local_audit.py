@@ -30,7 +30,6 @@ TODO / coordinar con el equipo:
 """
 
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -39,7 +38,9 @@ from agent.storage import local as _local
 
 # Misma carpeta que agent/storage/local.py: ./data/{bucket}/auditoria_humana/
 # El bucket tiene el mismo valor por defecto que en persistir.py.
-BUCKET = os.getenv("OCI_BUCKET", "mediflow-documentos-clinicos")
+from agent.storage.buckets import bucket_actual
+
+BUCKET = bucket_actual()
 DATA_DIR = _local.DATA_DIR / BUCKET / "auditoria_humana"
 
 ACCIONES_VALIDAS = {"aprobar", "corregir", "rechazar"}  # ADR-004: rechazar es acción, no destino
