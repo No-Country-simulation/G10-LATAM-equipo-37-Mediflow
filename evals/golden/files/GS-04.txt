@@ -1,0 +1,30 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE CLÍNICA MÉDICA
+Internación General
+
+RECETA MÉDICA
+
+Paciente: GIMÉNEZ, Héctor Raúl
+DNI: 12.486.307
+Edad: 68 años          Sexo: Masculino
+Peso: 80 kg
+HC N°: 302.618
+Fecha: 29/09/2026
+
+Diagnóstico: Tromboembolismo pulmonar agudo (I26.9), tratado durante la internación.
+Internación: del 22/09/2026 al 29/09/2026. Alta: 29/09/2026.
+
+Rp/
+Enoxaparina 80 mg, jeringa prellenada
+Aplicar 1 jeringa por vía subcutánea cada 12 horas durante 10 días (1 mg/kg)
+Cantidad: 20 jeringas prellenadas
+
+INDICACIONES:
+Aplicar en el abdomen, a 5 cm del ombligo, alternando lado derecho e izquierdo. No purgar la burbuja de aire de la jeringa. No frotar la zona después de la aplicación.
+Control por consultorio externo de Clínica Médica en 7 días.
+Consultar de urgencia ante sangrado, falta de aire o dolor de pecho.
+
+Dr. Gustavo Adrián Peralta
+Médico Clínico
+Matrícula 118.264
+Firma y sello
