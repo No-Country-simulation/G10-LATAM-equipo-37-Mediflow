@@ -1,7 +1,7 @@
 """Pruebas de la detección de urgencia y de alto riesgo. Fijan la regla A y el contrato, no la
 implementación: arman el estado a mano y no llaman al modelo.
 """
-from agent.nodes.urgencia import detectar_urgencia
+from agent.nodes.urgencia import _a_numero, _valores_criticos, detectar_urgencia
 
 
 def _urgencia(texto="", tipo="Informe de Laboratorio", **cambios):
@@ -153,3 +153,12 @@ def test_traza_registra_el_nodo():
     estado = {"texto": "", "clasificacion": {"tipo_documento": "Receta Medica"}, "trace": []}
     resultado = detectar_urgencia(estado)
     assert resultado["trace"][-1]["nodo"] == "detectar_urgencia"
+
+
+def test_valor_critico_al_final_de_la_oracion():
+    reglas = {"valores_criticos_laboratorio": [{"analito": "potasio", "operador": ">=", "valor": 6.5, "unidad": "mEq/L"}]}
+    assert _valores_criticos("potasio 7,2. paciente estable", reglas) == ["valor critico de laboratorio: potasio 7,2 mEq/L"]
+    assert _valores_criticos("potasio 4,1. paciente estable", reglas) == []
+    assert _a_numero("7,2,") == 7.2
+    assert _a_numero("15.000.") == 15000.0
+    assert _a_numero("7,2") == 7.2

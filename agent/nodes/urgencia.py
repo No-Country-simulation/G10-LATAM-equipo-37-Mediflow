@@ -44,7 +44,7 @@ def _mencion_afirmativa(texto: str, termino: str) -> bool:
 
 def _a_numero(crudo: str) -> float | None:
     """Acepta 6,8 y 15.000, que es como se escriben los números en los documentos en español."""
-    texto = crudo.strip()
+    texto = crudo.strip().rstrip(".,")
     if re.fullmatch(r"\d{1,3}(\.\d{3})+", texto):  # separador de miles
         texto = texto.replace(".", "")
     return float(texto.replace(",", ".")) if re.fullmatch(r"\d+(\.\d+)?", texto.replace(",", ".")) else None
@@ -72,7 +72,7 @@ def _valores_criticos(texto: str, reglas: dict) -> list[str]:
             limite = float(regla.get("valor", 0))
             if (operador == ">=" and valor >= limite) or (operador == "<=" and valor <= limite):
                 unidad = regla.get("unidad", "")
-                motivos.append(f"valor critico de laboratorio: {analito} {encontrado.group(1)} {unidad}".strip())
+                motivos.append(f"valor critico de laboratorio: {analito} {encontrado.group(1).rstrip('.,')} {unidad}".strip())
                 break  # una mención por analito alcanza
     return motivos
 
