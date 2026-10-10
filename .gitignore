@@ -18,6 +18,10 @@ wallet/
 .streamlit/secrets.toml
 
 # Datos locales y salidas
+data/*
+!data/raw/
+data/raw/*
+!data/raw/*.csv
 evals/output/
 evals/cache/
 *.log
@@ -33,6 +37,6 @@ tmp/
 .github\instructions\codacy.instructions.md
 
 # Carpetas temporales y locales (no subir)
-data/
+/data/
 fonts/
 augraphy_cache/

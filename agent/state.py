@@ -21,3 +21,6 @@ class TriageState(TypedDict, total=False):
     modelo_utilizado: str
     trace: list[dict[str, Any]]     # un registro por nodo
     error: Optional[str]
+    evidencias: list[dict[str, Any]]
+    hallazgo_critico: Optional[str]
+    ambiguedad: Optional[str]

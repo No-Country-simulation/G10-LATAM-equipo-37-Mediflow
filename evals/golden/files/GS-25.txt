@@ -1,0 +1,24 @@
+HOSPITAL UNIVERSITARIO · EPICRISIS
+
+Paciente: Marcos Aguirre, 58 años
+Fecha de ingreso: 18/09/2026
+Fecha de egreso: 23/09/2026
+Solicitante: Dra. Silvia Romero, MP 42156
+
+Motivo de ingreso:
+Disnea súbita y dolor torácico pleurítico. Taquicardia 118, saturación 88 %. Dímero D elevado.
+
+Diagnóstico de ingreso:
+Tromboembolismo pulmonar agudo (I26.9).
+
+Evolución:
+Paciente con TEP agudo confirmado por angiotomografía. Se inició anticoagulación con enoxaparina. Buena respuesta clínica. Estable hemodinámicamente. Se egresa con anticoagulación oral.
+
+Diagnóstico de egreso:
+Tromboembolismo pulmonar agudo resuelto. Paciente estable.
+
+Indicaciones al alta:
+- Continuar anticoagulación oral según indicación.
+- Control en 7 días con hematología.
+- Reposo relativo por 15 días.
+- Acudir de urgencia si presenta falta de aire, dolor torácico o sangrado.
