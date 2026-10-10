@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements-dev.txt
-      - run: USE_LLM=true python evals/run.py --golden evals/golden/plan_golden.csv --report evals/output/report.md
+      - run: USE_LLM=true python evals/run.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_EVALS }}
           STORAGE_BACKEND: local
