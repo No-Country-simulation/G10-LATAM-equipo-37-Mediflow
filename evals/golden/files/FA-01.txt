@@ -7,7 +7,7 @@ Ing. Brutos: 1029384-0
 
 FACTURA B
 Nº: 0004-00128941
-Fecha: 19/09/2026
+Fecha: 20/09/2026
 
 DATOS DEL CLIENTE
 -----------------
@@ -16,11 +16,11 @@ Documento: DNI 28.192.403
 Obra Social / Prepaga: Swiss Medical / OSDE
 Nº Afiliado: 3-9182391-01
 Condición de Pago: Tarjeta Débito
-Nº Receta / Autorización: FA-01 / REC-88192
+Nº Receta / Autorización: A-01 / REC-88192
 
 DATOS DE ATENCIÓN
 -----------------
-Atendido por: Alessandro (Caja 02)
+Atendido por: Elena (Caja 02)
 Hora de Emisión: 11:24:18 hs
 
 DETALLE DE PRODUCTOS
@@ -71,7 +71,7 @@ RESUMEN ECONÓMICO
 -----------------
 Subtotal Bruto: $83.200,00
 Cobertura OS/Prepaga: -$33.120,00
-IVA (21% Incluido): $8.694,21
+IVA (21% Incluido): $00,00
 TOTAL A PAGAR: $50.080,00
 
 DATOS FISCALES
@@ -80,6 +80,6 @@ CAE Nº: 74819203918239
 Vto. CAE: 29/09/2026
 
 COMPROBANTE HOMOLOGADO
-Código Interno Documento: FA-01
+Código Interno Documento: A-01
 
 Gracias por su compra en Farmacia Central S
