@@ -248,12 +248,13 @@ reanudación del grafo con la decisión es N2-05.
 
 `persistir.py` escribe `auditoria_humana/{documento_id}/extraccion.json` para todo documento con
 `requiere_auditoria_humana = true`, además de la copia por destino de la sección 9, y copia el
-original al lado, en `original.{ext}`. En local, la carpeta es la de `agent/storage/local.py`:
-`./data/{bucket}/auditoria_humana/`.
+original al lado, en `original` (la API también acepta `original.{ext}`). En local, la carpeta es la de
+`agent/storage/local.py`, `./data/{bucket}/auditoria_humana/`, y la API lee esa misma.
 
-**Pendiente:** hoy `persistir.py` guarda `auditoria_humana/{documento_id}.json` y solo para
-`Cola_Revision_Humana`, y la API lee `./data/auditoria_humana/`. Hasta que las dos sigan este punto, la
-cola real está vacía y el panel se prueba con su modo demostración.
+**Pendiente:** hoy `extraccion.json` solo trae `documento_id`, `validacion`, `texto` y `legibilidad`.
+Le faltan `clasificacion`, `datos_extraidos`, `decision_enrutamiento`, `score_confianza` y
+`evidencias`, así que la cola real llega con el formulario vacío. Mientras tanto, el panel se prueba con
+su modo demostración.
 
 `extraccion.json` es la salida de la sección 2, con los mismos nombres de campo, más tres que el panel
 necesita:
@@ -275,7 +276,7 @@ Las rutas de campo son relativas a `datos_extraidos` y van con punto: `paciente.
 |---|---|---|
 | `GET /queue/human` | Lista los documentos que tienen `extraccion.json` y todavía no tienen `resolucion.json` | 200 con `{"items": [{"documento_id", "extraccion"}]}` |
 | `POST /audit/{documento_id}` | Guarda la decisión del auditor en `resolucion.json` | 200 con `{"documento_id", "resolucion"}`; 404 si no está en la cola; 409 si ya tiene decisión; 422 si el cuerpo no cumple 11.3 |
-| `GET /audit/{documento_id}/original` | **Pendiente.** Devuelve el original con su tipo de contenido, para verlo al lado de la extracción. Mientras no exista, el panel muestra `texto` | 200 con el archivo; 404 si no hay |
+| `GET /audit/{documento_id}/original` | Devuelve el original con su tipo de contenido, para verlo al lado de la extracción. Si no hay original, el panel muestra `texto` | 200 con el archivo; 404 si no hay |
 
 El `documento_id` va codificado en la ruta (`DOC#7` es `DOC%237`). El panel ordena la cola: primero las
 urgencias, después lo prioritario, después el resto.
@@ -303,7 +304,7 @@ urgencias, después lo prioritario, después el resto.
 | `correcciones` | Solo con `corregir`, y solo los campos que cambiaron, con su valor nuevo. Con las otras dos acciones va `null` |
 
 La API rechaza con 422 un `revisor` o un `motivo` vacíos, y `correcciones` con una acción que no sea
-`corregir`. **Pendiente:** hoy los acepta, y guarda `{}` en lugar de `null`.
+`corregir`. **Pendiente:** al aprobar o rechazar, `resolucion.json` guarda `{}` en lugar de `null`.
 
 Cómo se escriben las correcciones:
 
@@ -338,3 +339,45 @@ destino nuevo, y el panel lo muestra. Mientras tanto, la API guarda la decisión
 La extracción, el texto y las correcciones son datos clínicos: viven en el bucket privado y no se
 escriben en registros ni en la traza. El panel muestra el documento completo, porque el auditor lo
 necesita, y sus mensajes de error no repiten lo enviado.
+
+---
+
+## 12. Reglas editables
+
+`GET /rules` devuelve las reglas vigentes: las de `agent/rules/rules.yaml`, o las editadas si existen. `PUT /rules` las reemplaza. Valida el objeto completo antes de guardarlo y el cambio rige desde la siguiente decisión, sin reiniciar.
+
+**Headers del PUT (obligatorios)**
+
+| Header | Contenido |
+| --- | --- |
+| `X-Admin-Token` | Clave de administrador. Debe coincidir con la variable de entorno `RULES_ADMIN_TOKEN`, que no va al repo. |
+| `X-Editor` | Nombre de quien hace el cambio. Queda en el registro. |
+
+**Cuerpo:** el objeto completo de reglas, con el mismo formato que devuelve `GET /rules`.
+
+**Respuestas del PUT**
+
+| Código | Cuándo | Cuerpo |
+| --- | --- | --- |
+| 200 | Reglas guardadas | `actualizado`, `cambios`, `umbral_modificado`, `aviso` |
+| 401 | Token ausente o incorrecto | `detail` |
+| 422 | Reglas inválidas | `{"detail": {"errores": [...]}}` con la lista legible; no se guarda nada |
+| 422 | Falta `X-Editor` | `detail` |
+| 503 | `RULES_ADMIN_TOKEN` no está definida | `detail`; la edición queda desactivada |
+
+**Qué se valida:** que estén las claves `version`, `umbrales`, `legibilidad`, `tipos_documento` y `campos_obligatorios`; que los umbrales estén entre 0 y 1 y cumplan `automatico > segunda_opinion > legibilidad_minima`; que `legibilidad.leve > legibilidad.media`; que los tipos de `campos_obligatorios` y de `deteccion_automatica_urgencia.aplica_a` existan en `tipos_documento`; que las listas de palabras sean textos; y que cada valor crítico de laboratorio tenga analito, valor y un operador válido. El bloque de destinos todavía no se valida.
+
+**Registro de cambios:** cada PUT que cambia algo agrega una línea a `data/rules.audit.jsonl` con la fecha (UTC), quién, si tocó un umbral y la lista de campos con su valor antes y después. Un PUT sin cambios no registra nada.
+
+**Aviso al tocar umbrales:** si cambia algo de `umbrales` o `legibilidad`, la respuesta trae `umbral_modificado: true` y el texto «Cambiaste un umbral: corre el golden set antes de dejarlo.». La pantalla debe mostrarlo antes de dar el cambio por bueno. El servidor no corre el golden set.
+
+```json
+{
+  "actualizado": true,
+  "cambios": [
+    {"campo": "umbrales.segunda_opinion", "antes": 0.6, "despues": 0.55}
+  ],
+  "umbral_modificado": true,
+  "aviso": "Cambiaste un umbral: corre el golden set antes de dejarlo."
+}
+```
