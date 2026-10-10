@@ -34,10 +34,12 @@ jobs:
     needs: guard
     if: needs.guard.outputs.pr_merged == 'true'
     runs-on: ubuntu-latest
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
       - name: Deploy por SSH
         id: deploy
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
@@ -46,37 +48,31 @@ jobs:
             set -e
             cd /opt/mediflow
             PREV_COMMIT=$(git rev-parse HEAD)
-            echo "$PREV_COMMIT" > /tmp/mediflow_last_deploy
+            rollback() {
+              echo "❌ Fallo el deploy. Rollback a $PREV_COMMIT..."
+              git reset --hard "$PREV_COMMIT"
+              docker compose -f infra/docker-compose.yml up -d --build --remove-orphans
+              echo "🔄 Rollback completado"
+            }
+            trap rollback ERR
             git fetch origin main
             git reset --hard origin/main
             docker compose -f infra/docker-compose.yml up -d --build --remove-orphans
+            curl -fsS --retry 6 --retry-delay 5 --retry-connrefused https://${{ secrets.APP_DOMAIN }}/api/health
+            trap - ERR
             docker image prune -f
-            sleep 10
-            if ! curl -fsS https://${{ secrets.APP_DOMAIN }}/api/health; then
-              echo "❌ Health check falló. Haciendo rollback a $PREV_COMMIT..."
-              git reset --hard $PREV_COMMIT
-              docker compose -f infra/docker-compose.yml up -d --build --remove-orphans
-              sleep 10
-              curl -fsS https://${{ secrets.APP_DOMAIN }}/api/health
-              echo "🔄 Rollback completado"
-              exit 1
-            fi
             echo "✅ Deploy exitoso"
 
       - name: Avisar a Discord (éxito)
         if: success() && env.DISCORD_WEBHOOK != ''
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          curl -X POST $DISCORD_WEBHOOK \
+          curl -fsS -X POST $DISCORD_WEBHOOK \
             -H "Content-Type: application/json" \
             -d "{\"content\": \"✅ **Deploy exitoso** en MediFlow\nCommit: \`${{ github.sha }}\`\nPR: #${{ needs.guard.outputs.pr_number }}\nAutor: ${{ github.actor }}\"}"
 
       - name: Avisar a Discord (fallo)
         if: failure() && env.DISCORD_WEBHOOK != ''
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          curl -X POST $DISCORD_WEBHOOK \
+          curl -fsS -X POST $DISCORD_WEBHOOK \
             -H "Content-Type: application/json" \
             -d "{\"content\": \"❌ **Deploy fallido** en MediFlow\nCommit: \`${{ github.sha }}\`\nAutor: ${{ github.actor }}\nRevisar logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
