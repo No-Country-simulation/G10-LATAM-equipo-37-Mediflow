@@ -17,14 +17,14 @@ DATOS DEL PACIENTE
 Paciente: Gómez, Laura
 DNI: 32.778.901
 Fecha de nacimiento: 25/08/1985
-Edad: 38 años
+Edad: 41 años
 Sexo: Femenino
 
 DATOS DEL ESTUDIO
 -----------------
 
-Número de estudio: TAC-2024-001573
-Fecha del estudio: 03/10/2026
+Número de estudio: TAC-2026-001573
+Fecha del estudio: 03/10/2026 18:20
 Médico solicitante: Dra. Ana Torres
 Servicio: Guardia - Emergencias
 
