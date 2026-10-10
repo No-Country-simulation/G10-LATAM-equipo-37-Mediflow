@@ -23,7 +23,8 @@ Devuelve SOLO un JSON con esta estructura:
   "idioma": "es | pt | en",
   "legible": true,
   "confianza": 0.0,
-  "justificacion": "una frase"
+  "justificacion": "una frase",
+  "motivo_fuera_de_alcance": "uno de los 5 motivos de fuera_de_alcance, o null"
 }
 
 Reglas adicionales:
@@ -31,6 +32,7 @@ Reglas adicionales:
 - Si hay hallazgos que ponen en riesgo la vida (por ejemplo tromboembolismo pulmonar, infarto, ACV, sepsis), nivel_prioridad es "Urgente".
 - Si el texto es ilegible o incompleto, legible es false y confianza baja.
 - No inventes datos. Si no estás seguro, baja la confianza.
+- Si tipo_documento es "Otro", motivo_fuera_de_alcance DEBE ser uno de los 5 motivos. En cualquier otro caso, es null.
 
 Documento:
 

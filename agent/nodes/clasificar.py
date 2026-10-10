@@ -10,7 +10,8 @@ Nodo AI-02 (Carlos Zunino). Usa el prompt existente en
       "idioma": "es | pt | en",
       "legible": true | false,
       "confianza": 0.0 a 1.0,
-      "justificacion": "..."
+      "justificacion": "...",
+      "motivo_fuera_de_alcance": "uno de los 5 motivos de fuera_de_alcance, o null"
     }
 
 Si el LLM falla o USE_LLM=false, cae al fallback de reglas.
@@ -52,6 +53,14 @@ def _sin_tildes(s: str) -> str:
 _TIPOS = {_sin_tildes(t.value): t.value for t in TipoDocumento}
 _PRIORIDADES = {_sin_tildes(p.value): p.value for p in NivelPrioridad}
 
+_MOTIVOS_VALIDOS = {
+    "no_clinico",
+    "tipo_no_soportado",
+    "paciente_no_humano",
+    "idioma_no_soportado",
+    "pide_diagnostico",
+}
+
 
 # --- Fallback por reglas ---
 
@@ -85,6 +94,7 @@ def _clasificar_por_reglas(texto: str) -> dict:
         "idioma": "es",
         "legible": bool(texto.strip()),
         "justificacion": "Clasificación por reglas (fallback).",
+        "motivo_fuera_de_alcance": None,
     }
 
 
@@ -142,6 +152,17 @@ def _normalizar_respuesta(datos: dict) -> dict:
         confianza = 0.5
     confianza = max(0.0, min(1.0, confianza))
 
+    # motivo_fuera_de_alcance: solo válido si tipo_documento es "Otro".
+    motivo_raw = datos.get("motivo_fuera_de_alcance")
+    motivo = None
+    if tipo == TipoDocumento.OTRO.value and motivo_raw:
+        if str(motivo_raw).lower() in _MOTIVOS_VALIDOS:
+            motivo = str(motivo_raw).lower()
+        else:
+            logger.warning(
+                "Motivo fuera de alcance inválido '%s', ignorando.", motivo_raw
+            )
+
     return {
         "tipo_documento": tipo,
         "especialidad": datos.get("especialidad"),
@@ -151,6 +172,7 @@ def _normalizar_respuesta(datos: dict) -> dict:
         "idioma": datos.get("idioma", "es"),
         "legible": bool(datos.get("legible", True)),
         "justificacion": datos.get("justificacion"),
+        "motivo_fuera_de_alcance": motivo,
     }
 
 
