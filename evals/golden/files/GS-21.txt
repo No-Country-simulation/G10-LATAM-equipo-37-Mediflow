@@ -1,0 +1,25 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE NEUMONOLOGÍA
+Consultorio Externo
+
+ORDEN DE SOLICITUD DE PROCEDIMIENTO
+
+Fecha: 30/09/2026
+Paciente: Ricardo Aníbal Ferro Ficticio
+DNI: 31.208.774
+Edad: 58 años
+Historia clínica: SIM-GS21
+
+Procedimiento solicitado: PET-TC de cuerpo entero con 18F-FDG.
+
+Diagnóstico de solicitud: hallazgo anormal en diagnóstico por imagen de pulmón, nódulo pulmonar sospechoso. CIE-10: R91.
+
+Datos clínicos y justificación: nódulo sólido de 13 mm en lóbulo superior derecho, no calcificado, detectado en TC de tórax del 26/09/2026 (estudio SIM-TC-26-0188). Se solicita PET-TC de cuerpo entero para caracterización metabólica del nódulo y búsqueda de enfermedad a distancia.
+
+Prioridad: Prioritario (no urgente).
+
+Estudio de alta complejidad: requiere autorización de la auditoría médica antes de su realización.
+
+Dr. Emiliano Casas Ficticio
+Médico especialista en Neumonología
+Matrícula de simulación: SIM-MP-0521

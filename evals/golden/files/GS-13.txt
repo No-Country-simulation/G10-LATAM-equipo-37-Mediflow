@@ -1,0 +1,36 @@
+HOSPITAL GENERAL SAN MARTÍN
+LABORATORIO CENTRAL
+Sección Química Clínica
+
+INFORME DE LABORATORIO
+
+Paciente: Héctor Fabián Quiroga Ficticio
+DNI: 24.330.915
+Edad: 71 años          Sexo: Masculino
+HC N°: SIM-GS13
+Procedencia: Servicio de Emergencias
+Médico solicitante: Dra. Ana Lucía Bustamante Ficticia, Matrícula de simulación: SIM-MP-0513
+Diagnóstico del pedido: E87.5 Hiperpotasemia
+Datos clínicos: astenia y palpitaciones. Enfermedad renal crónica en tratamiento con enalapril y espironolactona.
+Protocolo N°: SIM-LAB-261002
+Fecha de extracción: 02/10/2026      Fecha de informe: 02/10/2026
+Muestra: suero      Ayuno: no requerido
+
+ESTUDIO REALIZADO: IONOGRAMA PLASMÁTICO Y FUNCIÓN RENAL
+
+DETERMINACIÓN               RESULTADO    VALORES DE REFERENCIA (adultos)
+Potasio (K+)                7,1 mmol/L   3,5 a 5,0 mmol/L     ** VALOR CRÍTICO **
+Sodio (Na+)                 133 mmol/L   135 a 145 mmol/L
+Cloro (Cl-)                 98 mmol/L    98 a 107 mmol/L
+Creatinina                  2,4 mg/dL    0,6 a 1,2 mg/dL
+Urea                        96 mg/dL     15 a 45 mg/dL
+Calcio total                8,4 mg/dL    8,5 a 10,5 mg/dL
+
+Métodos: electrolitos por ion selectivo (ISE); creatinina y urea por método enzimático.
+
+COMENTARIO:
+Hiperpotasemia severa con valor crítico de potasio (7,1 mmol/L) en paciente con enfermedad renal crónica y fármacos retenedores de potasio. Riesgo de arritmias graves. Se notifica el resultado en el momento al médico solicitante por vía telefónica.
+
+Resultado validado y notificado por:
+Bioq. Facundo Ariel Nieto Ficticio
+Bioquímico — Matrícula de simulación: SIM-MP-0613
