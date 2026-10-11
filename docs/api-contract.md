@@ -44,7 +44,7 @@ Idéntica al ejemplo del brief, más cuatro campos propios al final.
 |---|---|
 | `status` | `procesado`, `revision_humana`, `rechazado`, `pendiente` |
 | `documento_id` | El recibido |
-| `clasificacion` | `tipo_documento`, `especialidad`, `nivel_prioridad`, `score_confianza_clasificacion` (0 a 1) |
+| `clasificacion` | `tipo_documento`, `especialidad`, `nivel_prioridad`, `score_confianza_clasificacion` (0 a 1) y `motivo_fuera_de_alcance`, que solo se llena cuando el tipo es `Otro` (sección 6) |
 | `datos_extraidos` | `paciente {nombre, edad, fecha_nacimiento}`, `medico_solicitante {nombre, matricula}`, `estudio_realizado`, `diagnostico_principal`, `cie10_sugerido`, `medicamentos []`, `estudios_solicitados []` |
 | `decision_enrutamiento` | `destino_principal`, `requiere_auditoria_humana`, `justificacion_enrutamiento`, `notificacion_generada {canal, mensaje}` o null |
 | `almacenamiento_oci` | `bucket`, `ruta_objeto`, `status_backup` (`exito`, `pendiente`, `error`) |
@@ -162,8 +162,10 @@ generan AMB-3, pero siguen siendo de alto riesgo y su receta va a Farmacia con a
 ### Cómo viaja el motivo de AMB-6
 
 AMB-6 no dice qué le falta al documento sino por qué el agente no decide sobre él, así que necesita
-un motivo. `validar.py` lo escribe en el estado y `enrutar.py` lo repite en la justificación, sin
-volver a calcularlo.
+un motivo. `clasificar.py` lo propone en `clasificacion.motivo_fuera_de_alcance` cuando el tipo es
+`Otro`, `validar.py` lo copia en la validación al asignar AMB-6 y `enrutar.py` lo repite en la
+justificación, sin volver a calcularlo. Con `USE_LLM=false` el motivo sale `null`, porque necesita
+el juicio del modelo: se evalúa con `evals/run.py`.
 
 ```json
 "validacion": {
@@ -369,7 +371,7 @@ necesita, y sus mensajes de error no repiten lo enviado.
 
 **Registro de cambios:** cada PUT que cambia algo agrega una línea a `data/rules.audit.jsonl` con la fecha (UTC), quién, si tocó un umbral y la lista de campos con su valor antes y después. Un PUT sin cambios no registra nada.
 
-**Aviso al tocar umbrales:** si cambia algo de `umbrales` o `legibilidad`, la respuesta trae `umbral_modificado: true` y el texto «Cambiaste un umbral: corre el golden set antes de dejarlo.». La pantalla debe mostrarlo antes de dar el cambio por bueno. El servidor no corre el golden set.
+**Aviso al tocar umbrales:** si cambia algo de `umbrales` o `legibilidad`, la respuesta trae `umbral_modificado: true` y el texto «Cambiaste un umbral: corre el golden set antes de dejarlo.». La pantalla debe mostrarlo antes de dar el cambio por bueno. Si no cambia ningún umbral, `umbral_modificado` es `false` y `aviso` es `null`. El servidor no corre el golden set.
 
 ```json
 {
