@@ -24,7 +24,7 @@ DATOS DEL ESTUDIO
 -----------------
 
 Número de estudio: TAC-2026-001573
-Fecha del estudio: 03/10/2026 18:20
+Fecha del estudio: 03/10/2026
 Médico solicitante: Dra. Ana Torres
 Servicio: Guardia - Emergencias
 
@@ -104,5 +104,8 @@ SELLO PROFESIONAL
 Dra. Valeria Sánchez
 MÉDICA RADIÓLOGA
 MN 98765
+
+
+Fecha del informe: 03/10/2026 18:20
 
 Centro de Diagnóstico por Imagenes
