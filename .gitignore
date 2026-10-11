@@ -24,6 +24,7 @@ data/raw/*
 !data/raw/*.csv
 evals/output/
 evals/cache/
+evals/golden/files/*.original.txt
 *.log
 tmp/
 
