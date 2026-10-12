@@ -7,6 +7,7 @@ import io
 import json
 
 import pytest
+
 from agent.ingestion import IngestionError, ingest_document
 from agent.nodes.normalizar import normalizar
 

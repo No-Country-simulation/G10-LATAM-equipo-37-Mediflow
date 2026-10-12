@@ -1,0 +1,317 @@
+{
+  "nota": "Cuatro casos del conjunto de prueba (evals/golden), con datos sintéticos (ADR-010). La extracción imita la salida del agente para mostrar el panel sin la API: no es una corrida real. Cada item tiene la forma de GET /queue/human (docs/api-contract.md, sección 11), más el archivo original cuando es una imagen.",
+  "items": [
+    {
+      "documento_id": "GS-06",
+      "original": null,
+      "extraccion": {
+        "documento_id": "GS-06",
+        "status": "revision_humana",
+        "tipo_archivo": "TEXTO",
+        "canal_origen": "Consultorio_Externo",
+        "clasificacion": {
+          "tipo_documento": "Receta Medica",
+          "especialidad": "Medicina General",
+          "nivel_prioridad": "Rutina",
+          "score_confianza_clasificacion": 0.97
+        },
+        "datos_extraidos": {
+          "paciente": {
+            "nombre": "MARTÍNEZ GARCÍA, Laura Isabel",
+            "edad": 32,
+            "fecha_nacimiento": "1994-06-14"
+          },
+          "medico_solicitante": {
+            "nombre": "Dr. Alejandro Ruiz Mendoza",
+            "matricula": "128.547"
+          },
+          "diagnostico_principal": "Faringoamigdalitis aguda",
+          "cie10_sugerido": "J03.9",
+          "medicamentos": [
+            {
+              "nombre": "Amoxicilina",
+              "dosis": "5000 mg",
+              "frecuencia": "cada 8 horas",
+              "duracion": null,
+              "alto_riesgo": false
+            }
+          ],
+          "estudios_solicitados": []
+        },
+        "validacion": {
+          "campos_faltantes": [],
+          "conflictos": [
+            "Dosis fuera de rango para Amoxicilina: 5000.0 mg (rango válido 250-1000)"
+          ],
+          "errores": [],
+          "categoria_amb": "AMB-3",
+          "motivo_fuera_de_alcance": null
+        },
+        "decision_enrutamiento": {
+          "destino_principal": "Cola_Revision_Humana",
+          "requiere_auditoria_humana": true,
+          "justificacion_enrutamiento": "AMB-3: la dosis de Amoxicilina, 5000 mg por toma, está fuera del rango de 250 a 1000 mg.",
+          "notificacion_generada": null
+        },
+        "score_confianza": 0.64,
+        "legibilidad": null,
+        "evidencias": [
+          {
+            "campo": "paciente.nombre",
+            "fragmento": "Paciente: MARTÍNEZ GARCÍA, Laura Isabel"
+          },
+          {
+            "campo": "paciente.edad",
+            "fragmento": "Edad: 32 años"
+          },
+          {
+            "campo": "paciente.fecha_nacimiento",
+            "fragmento": "Fecha de nacimiento: 14/06/1994"
+          },
+          {
+            "campo": "medico_solicitante.nombre",
+            "fragmento": "Dr. Alejandro Ruiz Mendoza"
+          },
+          {
+            "campo": "medico_solicitante.matricula",
+            "fragmento": "Matrícula 128.547"
+          },
+          {
+            "campo": "diagnostico_principal",
+            "fragmento": "Faringoamigdalitis aguda."
+          },
+          {
+            "campo": "cie10_sugerido",
+            "fragmento": "CIE-10: J03.9 Amigdalitis aguda, no especificada."
+          },
+          {
+            "campo": "medicamentos",
+            "fragmento": "Amoxicilina 5000 mg cada 8 horas."
+          }
+        ],
+        "texto": "CENTRO MÉDICO SAN GABRIEL\nSERVICIO DE MEDICINA GENERAL\n\nRECETA MÉDICA\n\nPaciente: MARTÍNEZ GARCÍA, Laura Isabel\nDNI: 38.472.615\nFecha de nacimiento: 14/06/1994\nEdad: 32 años\nHC N.º: 184.627\n\nFecha: 03/10/2026\n\nDIAGNÓSTICO:\nFaringoamigdalitis aguda.\nCIE-10: J03.9 Amigdalitis aguda, no especificada.\n\nRp/\n\nAmoxicilina 5000 mg cada 8 horas.\n\nDr. Alejandro Ruiz Mendoza\nMédico de Medicina General\nMatrícula 128.547"
+      }
+    },
+    {
+      "documento_id": "GS-14",
+      "original": null,
+      "extraccion": {
+        "documento_id": "GS-14",
+        "status": "procesado",
+        "tipo_archivo": "TEXTO",
+        "canal_origen": "Sistema_Laboratorio",
+        "clasificacion": {
+          "tipo_documento": "Informe de Laboratorio",
+          "especialidad": "Laboratorio clínico",
+          "nivel_prioridad": "Urgente",
+          "score_confianza_clasificacion": 0.95
+        },
+        "datos_extraidos": {
+          "paciente": {
+            "nombre": null,
+            "edad": null,
+            "fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Natalia Soledad Vera",
+            "matricula": "131.795"
+          },
+          "estudio_realizado": "Hemograma, función renal, lactato y análisis de orina con urocultivo",
+          "hallazgos": "Leucocitos 19.800/mm³; neutrófilos 91 %; creatinina 1,9 mg/dL; urea 68 mg/dL; lactato 3,8 mmol/L; orina con nitritos positivos y bacterias abundantes",
+          "conclusion": "Leucocitosis con neutrofilia, hiperlactatemia y alteración de la función renal. Hallazgos compatibles con infección urinaria complicada y sospecha de sepsis de foco urinario.",
+          "diagnostico_principal": "Sospecha de sepsis de foco urinario",
+          "cie10_sugerido": "A41.9",
+          "medicamentos": [],
+          "estudios_solicitados": []
+        },
+        "validacion": {
+          "campos_faltantes": [
+            "paciente.nombre"
+          ],
+          "conflictos": [],
+          "errores": [],
+          "categoria_amb": "AMB-1",
+          "motivo_fuera_de_alcance": null
+        },
+        "decision_enrutamiento": {
+          "destino_principal": "Cola_Emergencia_Medica",
+          "requiere_auditoria_humana": true,
+          "justificacion_enrutamiento": "Urgente: sospecha de sepsis de foco urinario con lactato de 3,8 mmol/L. AMB-1: el informe no trae el nombre del paciente.",
+          "notificacion_generada": {
+            "canal": "Alerta_Guardia_Medica",
+            "mensaje": "ALERTA URGENTE: laboratorio de Emergencias compatible con sepsis de foco urinario (lactato 3,8 mmol/L). Paciente sin identificar en el informe."
+          }
+        },
+        "score_confianza": 0.81,
+        "legibilidad": null,
+        "evidencias": [
+          {
+            "campo": "medico_solicitante.nombre",
+            "fragmento": "Solicitante: Dra. Natalia Soledad Vera, MP 131.795"
+          },
+          {
+            "campo": "medico_solicitante.matricula",
+            "fragmento": "Solicitante: Dra. Natalia Soledad Vera, MP 131.795"
+          },
+          {
+            "campo": "estudio_realizado",
+            "fragmento": "Estudio: Hemograma, función renal, lactato y análisis de orina con urocultivo."
+          },
+          {
+            "campo": "hallazgos",
+            "fragmento": "- Lactato: 3,8 mmol/L (referencia 0,5 - 2,0)"
+          },
+          {
+            "campo": "conclusion",
+            "fragmento": "Hallazgos compatibles con infección urinaria complicada y sospecha de sepsis de foco urinario."
+          },
+          {
+            "campo": "diagnostico_principal",
+            "fragmento": "sospecha de sepsis de foco urinario"
+          },
+          {
+            "campo": "cie10_sugerido",
+            "fragmento": "CIE-10: A41.9 — Sepsis, no especificada."
+          }
+        ],
+        "texto": "LABORATORIO CLÍNICO SAN MARTÍN\nSERVICIO DE ANÁLISIS CLÍNICOS\n\nINFORME DE LABORATORIO\n\nFecha de extracción: 03/10/2026\nFecha del informe: 03/10/2026\nProcedencia: Servicio de Emergencias\nSolicitante: Dra. Natalia Soledad Vera, MP 131.795\n\nEstudio: Hemograma, función renal, lactato y análisis de orina con urocultivo.\n\nRESULTADOS:\n\nHemograma:\n- Leucocitos: 19.800/mm³ (referencia 4.000 - 11.000)\n- Neutrófilos: 91 % (referencia 40 - 75 %)\n- Hemoglobina: 12,8 g/dL (referencia 12,0 - 16,0)\n- Plaquetas: 145.000/mm³ (referencia 150.000 - 450.000)\n\nFunción renal:\n- Creatinina: 1,9 mg/dL (referencia 0,6 - 1,2)\n- Urea: 68 mg/dL (referencia 15 - 45)\n\nOtros parámetros:\n- Lactato: 3,8 mmol/L (referencia 0,5 - 2,0)\n\nAnálisis de orina:\n- Leucocitos: abundantes\n- Nitritos: positivos\n- Bacterias: abundantes\n\nUrocultivo: pendiente de resultado.\n\nCONCLUSIÓN:\n\nLeucocitosis con neutrofilia, hiperlactatemia y alteración de la función renal. Hallazgos compatibles con infección urinaria complicada y sospecha de sepsis de foco urinario.\n\nCIE-10: A41.9 — Sepsis, no especificada.\n\nResultado validado electrónicamente.\nBioq. Martín Alejandro Suárez\nMatrícula profesional: 124.683"
+      }
+    },
+    {
+      "documento_id": "GS-26",
+      "original": null,
+      "extraccion": {
+        "documento_id": "GS-26",
+        "status": "revision_humana",
+        "tipo_archivo": "TEXTO",
+        "canal_origen": "web",
+        "clasificacion": {
+          "tipo_documento": "Epicrisis",
+          "especialidad": "Medicina Interna",
+          "nivel_prioridad": "Rutina",
+          "score_confianza_clasificacion": 0.96
+        },
+        "datos_extraidos": {
+          "paciente": {
+            "nombre": "DOMÍNGUEZ, Carlos Alfredo",
+            "edad": 68,
+            "fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Natalia Soledad Vera",
+            "matricula": "131.795"
+          },
+          "fecha_ingreso": "2026-09-02",
+          "fecha_egreso": "2026-09-06",
+          "motivo_ingreso": "Fiebre y tos productiva de 4 días de evolución.",
+          "diagnostico_egreso": "Neumonía adquirida en la comunidad del lóbulo inferior derecho",
+          "cie10_sugerido": "J18.9",
+          "tratamiento": "Ceftriaxona 1 g intravenosa cada 24 horas, durante 4 días.",
+          "indicaciones_alta": "Amoxicilina-clavulánico 875 mg, 1 comprimido por vía oral cada 12 horas por 7 días. Completar el trata",
+          "medicamentos": [],
+          "estudios_solicitados": []
+        },
+        "validacion": {
+          "campos_faltantes": [],
+          "conflictos": [],
+          "errores": [],
+          "categoria_amb": "AMB-4",
+          "motivo_fuera_de_alcance": null
+        },
+        "decision_enrutamiento": {
+          "destino_principal": "Cola_Revision_Humana",
+          "requiere_auditoria_humana": true,
+          "justificacion_enrutamiento": "AMB-4: el documento termina a mitad de las indicaciones de alta («Completar el trata»).",
+          "notificacion_generada": null
+        },
+        "score_confianza": 0.7,
+        "legibilidad": null,
+        "evidencias": [
+          {
+            "campo": "paciente.nombre",
+            "fragmento": "Paciente: DOMÍNGUEZ, Carlos Alfredo"
+          },
+          {
+            "campo": "paciente.edad",
+            "fragmento": "Edad: 68 años"
+          },
+          {
+            "campo": "medico_solicitante.nombre",
+            "fragmento": "Médico tratante: Dra. Natalia Soledad Vera, Mat. 131.795"
+          },
+          {
+            "campo": "medico_solicitante.matricula",
+            "fragmento": "Médico tratante: Dra. Natalia Soledad Vera, Mat. 131.795"
+          },
+          {
+            "campo": "fecha_ingreso",
+            "fragmento": "Fecha de ingreso: 02/09/2026"
+          },
+          {
+            "campo": "fecha_egreso",
+            "fragmento": "Fecha de egreso: 06/09/2026"
+          },
+          {
+            "campo": "diagnostico_egreso",
+            "fragmento": "Neumonía adquirida en la comunidad del lóbulo inferior derecho."
+          },
+          {
+            "campo": "cie10_sugerido",
+            "fragmento": "CIE-10: J18.9 Neumonía, no especificada"
+          },
+          {
+            "campo": "indicaciones_alta",
+            "fragmento": "Amoxicilina-clavulánico 875 mg, 1 comprimido por vía oral cada 12 horas por 7 días. Completar el trata"
+          }
+        ],
+        "texto": "HOSPITAL GENERAL SAN MARTÍN\nSERVICIO DE MEDICINA INTERNA\nInternación General\n\nEPICRISIS\n\nPaciente: DOMÍNGUEZ, Carlos Alfredo\nDNI: 14.870.226\nEdad: 68 años          Sexo: Masculino\nHC N°: 301.449\nFecha de ingreso: 02/09/2026\nFecha de egreso: 06/09/2026\nDías de internación: 4\nMédico tratante: Dra. Natalia Soledad Vera, Mat. 131.795\n\nMOTIVO DE INGRESO:\nFiebre y tos productiva de 4 días de evolución.\n\nESTUDIOS COMPLEMENTARIOS:\nRx de tórax: consolidación alveolar en lóbulo inferior derecho con broncograma aéreo, sin derrame pleural.\n\nDIAGNÓSTICO DE EGRESO:\nNeumonía adquirida en la comunidad del lóbulo inferior derecho.\nCIE-10: J18.9 Neumonía, no especificada\n\nTRATAMIENTO EN INTERNACIÓN:\nCeftriaxona 1 g intravenosa cada 24 horas, durante 4 días.\n\nEVOLUCIÓN:\nEvoluciona favorablemente, afebril desde el 2° día. Se otorga el alta con pase a antibiótico por vía oral.\n\nINDICACIONES AL ALTA:\nAmoxicilina-clavulánico 875 mg, 1 comprimido por vía oral cada 12 horas por 7 días. Completar el trata"
+      }
+    },
+    {
+      "documento_id": "M8",
+      "original": "M8.jpg",
+      "extraccion": {
+        "documento_id": "M8",
+        "status": "revision_humana",
+        "tipo_archivo": "IMAGEN",
+        "canal_origen": "Farmacia",
+        "clasificacion": {
+          "tipo_documento": "Otro",
+          "especialidad": null,
+          "nivel_prioridad": "Rutina",
+          "score_confianza_clasificacion": 0.0
+        },
+        "datos_extraidos": {
+          "paciente": {
+            "nombre": null,
+            "edad": null,
+            "fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": null,
+            "matricula": null
+          },
+          "medicamentos": [],
+          "estudios_solicitados": []
+        },
+        "validacion": {
+          "campos_faltantes": [],
+          "conflictos": [],
+          "errores": [],
+          "categoria_amb": null,
+          "motivo_fuera_de_alcance": null
+        },
+        "decision_enrutamiento": {
+          "destino_principal": "Cola_Revision_Humana",
+          "requiere_auditoria_humana": true,
+          "justificacion_enrutamiento": "Ilegible: legibilidad 0,22, debajo del mínimo de 0,40 aun después de mejorar la imagen. Solicitar nueva captura.",
+          "notificacion_generada": null
+        },
+        "score_confianza": 0.0,
+        "legibilidad": 0.22,
+        "evidencias": [],
+        "texto": null
+      }
+    }
+  ]
+}

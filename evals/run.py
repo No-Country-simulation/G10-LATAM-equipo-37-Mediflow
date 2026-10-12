@@ -32,6 +32,9 @@ PLAN = RAIZ / "evals" / "golden" / "plan_golden.csv"
 DIR_DOCS = RAIZ / "evals" / "golden" / "files"
 DIR_MANUSCRITAS = RAIZ / "evals" / "handwritten"
 SALIDA = RAIZ / "evals" / "output"
+# Revisiones que necesita un elemento para contar en las métricas oficiales: una, la del
+# revisor 1 del plan (ADR-012). Una segunda revisión ya hecha suma, pero no se exige.
+REVISIONES_MINIMAS = 1
 
 EXTENSIONES = {"TEXTO": ".txt", "JSON": ".json", "PDF": ".pdf", "IMAGEN": ".png"}
 
@@ -307,8 +310,8 @@ def informe(resultados: list[Resultado], pendientes: list[Caso], sin_revisar: li
               "No cuentan como error: todavía no tienen archivo.", "",
               ", ".join(c.id for c in pendientes), ""]
     if sin_revisar:
-        L += [f"## Escritos pero sin doble revisión ({len(sin_revisar)})", "",
-              "Un elemento no cuenta para las métricas oficiales hasta tener dos revisiones.", "",
+        L += [f"## Escritos pero sin revisar ({len(sin_revisar)})", "",
+              "Un elemento no cuenta para las métricas oficiales hasta tener su revisión.", "",
               ", ".join(c.id for c in sin_revisar), ""]
     return "\n".join(L)
 
@@ -330,7 +333,7 @@ def main() -> int:
         casos = [c for c in casos if c.id.upper() in pedidos]
     pendientes = [c for c in casos if not c.variantes]
     listos = [c for c in casos if c.variantes]
-    sin_revisar = [c for c in listos if c.revisiones < 2]
+    sin_revisar = [c for c in listos if c.revisiones < REVISIONES_MINIMAS]
     if args.limite:
         listos = listos[:args.limite]
 

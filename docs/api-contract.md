@@ -1,6 +1,6 @@
 # Contrato de MediFlow
 
-Versión 1.0 · Incorpora la regla A de urgencia (ADR-002), el campo del paciente como `nombre` en todo el proyecto (ADR-003), los valores críticos de laboratorio como cuarta fuente de urgencia, el alto riesgo solo en recetas, la categoría AMB-6 de fuera de alcance y la distinción entre medicamentos que se validan por rango y los que se dosifican por protocolo (ADR-007).
+Versión 1.1 · Incorpora la regla A de urgencia (ADR-002), el campo del paciente como `nombre` en todo el proyecto (ADR-003), los valores críticos de laboratorio como cuarta fuente de urgencia, el alto riesgo solo en recetas, la categoría AMB-6 de fuera de alcance, la distinción entre medicamentos que se validan por rango y los que se dosifican por protocolo (ADR-007), la fecha de nacimiento del paciente (ADR-009) y la revisión humana: la cola, la decisión del auditor y cómo se escriben las correcciones (sección 11).
 
 Fuente: `agent/schemas/contrato.py`, `agent/schemas/documentos.py` y `agent/rules/rules.yaml` del esqueleto, más el ejemplo de entrada y salida del brief. Los nombres de campo siguen al brief, con una excepción decidida por el equipo y registrada en el ADR-003: `paciente.nombre` en lugar de `nome`, para que todo el contrato esté en un solo idioma.
 
@@ -44,8 +44,8 @@ Idéntica al ejemplo del brief, más cuatro campos propios al final.
 |---|---|
 | `status` | `procesado`, `revision_humana`, `rechazado`, `pendiente` |
 | `documento_id` | El recibido |
-| `clasificacion` | `tipo_documento`, `especialidad`, `nivel_prioridad`, `score_confianza_clasificacion` (0 a 1) |
-| `datos_extraidos` | `paciente {nombre, edad}`, `medico_solicitante {nombre, matricula}`, `estudio_realizado`, `diagnostico_principal`, `cie10_sugerido`, `medicamentos []`, `estudios_solicitados []` |
+| `clasificacion` | `tipo_documento`, `especialidad`, `nivel_prioridad`, `score_confianza_clasificacion` (0 a 1) y `motivo_fuera_de_alcance`, que solo se llena cuando el tipo es `Otro` (sección 6) |
+| `datos_extraidos` | `paciente {nombre, edad, fecha_nacimiento}`, `medico_solicitante {nombre, matricula}`, `estudio_realizado`, `diagnostico_principal`, `cie10_sugerido`, `medicamentos []`, `estudios_solicitados []` |
 | `decision_enrutamiento` | `destino_principal`, `requiere_auditoria_humana`, `justificacion_enrutamiento`, `notificacion_generada {canal, mensaje}` o null |
 | `almacenamiento_oci` | `bucket`, `ruta_objeto`, `status_backup` (`exito`, `pendiente`, `error`) |
 | `score_confianza` | Propio. Score compuesto de 0 a 1 |
@@ -83,6 +83,17 @@ Seis tipos clínicos más `Otro`, que es el valor que toma cualquier documento f
 | `Epicrisis` | paciente.nombre*, paciente.edad, medico.nombre, medico.matricula, fecha_ingreso, fecha_egreso, motivo_ingreso, diagnostico_egreso*, cie10_sugerido, tratamiento, indicaciones_alta |
 | `Certificado Medico` | paciente.nombre*, medico.nombre*, medico.matricula*, fecha*, motivo, dias_reposo, diagnostico (opcional, suele omitirse), cie10_sugerido |
 | `Otro` | Cualquier documento que no encaje. Siempre va a revisión humana |
+
+**`paciente.fecha_nacimiento`** es opcional en los seis tipos. Va en formato ISO, `AAAA-MM-DD`, sea
+como sea que la escriba el documento, y es `null` si el documento no la trae. **Nunca se calcula a
+partir de la edad**: eso sería inventar un dato, y además taparía justo la contradicción que el
+campo existe para detectar. Si el documento trae edad y fecha de nacimiento, `validar.py` calcula la
+edad a la fecha del documento, o a la de procesamiento si el documento no tiene fecha, y si difiere
+de la declarada en más de un año marca AMB-2. Si falta cualquiera de las dos, no se compara.
+
+**`cie10_sugerido`** se valida por el código contra `evals/generator/data/cie10.csv`. La descripción
+puede variar según la edición de la clasificación, por ejemplo "Septicemia" o "Sepsis" para A41.9, y
+no genera conflicto: lo que se compara es el código.
 
 `especialidad` es texto libre sugerido por el modelo (por ejemplo `Radiologia / Neumonologia`). No se valida contra una lista en el MVP.
 
@@ -151,8 +162,10 @@ generan AMB-3, pero siguen siendo de alto riesgo y su receta va a Farmacia con a
 ### Cómo viaja el motivo de AMB-6
 
 AMB-6 no dice qué le falta al documento sino por qué el agente no decide sobre él, así que necesita
-un motivo. `validar.py` lo escribe en el estado y `enrutar.py` lo repite en la justificación, sin
-volver a calcularlo.
+un motivo. `clasificar.py` lo propone en `clasificacion.motivo_fuera_de_alcance` cuando el tipo es
+`Otro`, `validar.py` lo copia en la validación al asignar AMB-6 y `enrutar.py` lo repite en la
+justificación, sin volver a calcularlo. Con `USE_LLM=false` el motivo sale `null`, porque necesita
+el juicio del modelo: se evalúa con `evals/run.py`.
 
 ```json
 "validacion": {
@@ -190,7 +203,7 @@ El conjunto vive en `evals/golden/plan_golden.csv`: 45 elementos, 30 documentos 
 
 ## 8. Formato de la etiqueta en el golden set
 
-El conjunto de prueba vive en `evals/golden/plan_golden.csv`: una fila por elemento, con la etiqueta esperada y las dos columnas de revisión. `evals/run.py` lee esa tabla, busca en `evals/golden/files/` todas las variantes que existan de cada elemento (texto, JSON, PDF e imagen degradada) y evalúa cada una por separado.
+El conjunto de prueba vive en `evals/golden/plan_golden.csv`: una fila por elemento, con la etiqueta esperada y las columnas de su revisión. `evals/run.py` lee esa tabla, busca en `evals/golden/files/` todas las variantes que existan de cada elemento (texto, JSON, PDF e imagen degradada) y evalúa cada una por separado.
 
 La etiqueta de la fila describe el documento legible. De una imagen degradada se espera otra cosa, porque manda el umbral de legibilidad: en nivel medio, revisión humana con AMB-4; en nivel severo, revisión humana sin comparar el tipo, porque el grafo no llega a clasificar. Está explicado en `evals/golden/README.md`.
 
@@ -223,3 +236,150 @@ como fuente de verdad.
 Sigue vigente una regla de trabajo: cualquier cambio de nombre de campo se hace en `contrato.py` y
 en este documento en el mismo PR, y el test `test_ejemplo_del_brief` tiene que seguir pasando.
 
+---
+
+## 11. Revisión humana
+
+Un documento espera a una persona cuando sale del grafo con `requiere_auditoria_humana = true`: en
+`Cola_Revision_Humana`, en `Cola_Emergencia_Medica` con ambigüedad, o en el destino de su tipo con alto
+riesgo farmacológico o con un score entre 0,60 y 0,85. La urgencia ya se avisó al entrar: la revisión no
+la frena. La API de la cola es N2-04, el panel del auditor es N2-06 (`ui/pages/3_Auditoria.py`) y la
+reanudación del grafo con la decisión es N2-05.
+
+### 11.1 Qué espera en la cola
+
+`persistir.py` escribe `auditoria_humana/{documento_id}/extraccion.json` para todo documento con
+`requiere_auditoria_humana = true`, además de la copia por destino de la sección 9, y copia el
+original al lado, en `original` (la API también acepta `original.{ext}`). En local, la carpeta es la de
+`agent/storage/local.py`, `./data/{bucket}/auditoria_humana/`, y la API lee esa misma.
+
+**Pendiente:** hoy `extraccion.json` solo trae `documento_id`, `validacion`, `texto` y `legibilidad`.
+Le faltan `clasificacion`, `datos_extraidos`, `decision_enrutamiento`, `score_confianza` y
+`evidencias`, así que la cola real llega con el formulario vacío. Mientras tanto, el panel se prueba con
+su modo demostración.
+
+`extraccion.json` es la salida de la sección 2, con los mismos nombres de campo, más tres que el panel
+necesita:
+
+| Campo | Contenido |
+|---|---|
+| `validacion` | El bloque de la sección 6 |
+| `texto` | El texto que leyó el agente, o null si no llegó a leerlo, como en una imagen ilegible |
+| `legibilidad` | De 0 a 1, o null en un documento de texto |
+
+Las rutas de campo son relativas a `datos_extraidos` y van con punto: `paciente.nombre`,
+`medico_solicitante.matricula`. Son las mismas en `validacion.campos_faltantes`, en
+`evidencias[].campo` y en las correcciones. Solo `campos_faltantes` señala un medicamento por su
+índice, como `medicamentos[0].dosis`; las correcciones nunca usan índices (11.3).
+
+### 11.2 Endpoints
+
+| Método y ruta | Qué hace | Respuestas |
+|---|---|---|
+| `GET /queue/human` | Lista los documentos que tienen `extraccion.json` y todavía no tienen `resolucion.json` | 200 con `{"items": [{"documento_id", "extraccion"}]}` |
+| `POST /audit/{documento_id}` | Guarda la decisión del auditor en `resolucion.json` | 200 con `{"documento_id", "resolucion"}`; 404 si no está en la cola; 409 si ya tiene decisión; 422 si el cuerpo no cumple 11.3 |
+| `GET /audit/{documento_id}/original` | Devuelve el original con su tipo de contenido, para verlo al lado de la extracción. Si no hay original, el panel muestra `texto` | 200 con el archivo; 404 si no hay |
+
+El `documento_id` va codificado en la ruta (`DOC#7` es `DOC%237`). El panel ordena la cola: primero las
+urgencias, después lo prioritario, después el resto.
+
+### 11.3 La decisión
+
+```json
+{
+  "accion": "corregir",
+  "revisor": "Camila",
+  "motivo": "Confirmado con el médico: 500 mg cada 8 horas",
+  "correcciones": {
+    "medicamentos": [
+      {"nombre": "Amoxicilina", "dosis": "500 mg", "frecuencia": "cada 8 horas", "duracion": null}
+    ]
+  }
+}
+```
+
+| Campo | Regla |
+|---|---|
+| `accion` | `aprobar`, `corregir` o `rechazar`. Rechazar es una acción del auditor, no un destino (ADR-004) |
+| `revisor` | Quién decide. Obligatorio y no vacío |
+| `motivo` | Por qué. Obligatorio y no vacío; al aprobar sin escribir nada, el panel manda "Extracción verificada contra el documento original." |
+| `correcciones` | Solo con `corregir`, y solo los campos que cambiaron, con su valor nuevo. Con las otras dos acciones va `null` |
+
+La API rechaza con 422 un `revisor` o un `motivo` vacíos, y `correcciones` con una acción que no sea
+`corregir`. **Pendiente:** al aprobar o rechazar, `resolucion.json` guarda `{}` en lugar de `null`.
+
+Cómo se escriben las correcciones:
+
+- Un campo suelto, con su ruta: `"paciente.nombre": "Rodríguez, Ana María"`. Un valor `null` borra el
+  dato.
+- Una lista va entera: si cambia un medicamento, va `medicamentos` con la lista completa. Nunca por
+  índice.
+- La clasificación, con el prefijo `clasificacion.`: `"clasificacion.tipo_documento": "Receta Medica"`,
+  `"clasificacion.nivel_prioridad": "Urgente"`.
+- Un medicamento corregido no lleva `alto_riesgo`: esa marca la calcula siempre el grafo con
+  `rules.yaml`, y el auditor no la cambia.
+
+`resolucion.json` guarda el cuerpo de la decisión más `fecha`, en UTC: quién, cuándo, qué y por qué.
+
+### 11.4 Después de la decisión
+
+| Acción | Qué hace el grafo al reanudarse |
+|---|---|
+| `aprobar` | Sigue con la extracción tal cual: lo que estaba en revisión va al destino de su tipo, y lo que ya tenía destino, como una urgencia, se queda ahí |
+| `corregir` | Aplica las correcciones, calcula `alto_riesgo` con `rules.yaml`, vuelve a validar y enruta con la sección 5 |
+| `rechazar` | Guarda el documento en `rechazados/` con el motivo y no sigue |
+
+Si después de corregir el documento vuelve a necesitar revisión, la reanudación renombra la decisión
+anterior a `resolucion_1.json` (después `resolucion_2.json`, y así) y escribe una `extraccion.json`
+nueva: el documento vuelve a la cola con su historia.
+
+Cuando la reanudación esté en `develop`, la respuesta del `POST` suma `decision_enrutamiento` con el
+destino nuevo, y el panel lo muestra. Mientras tanto, la API guarda la decisión y el grafo no sigue.
+
+### 11.5 Privacidad
+
+La extracción, el texto y las correcciones son datos clínicos: viven en el bucket privado y no se
+escriben en registros ni en la traza. El panel muestra el documento completo, porque el auditor lo
+necesita, y sus mensajes de error no repiten lo enviado.
+
+---
+
+## 12. Reglas editables
+
+`GET /rules` devuelve las reglas vigentes: las de `agent/rules/rules.yaml`, o las editadas si existen. `PUT /rules` las reemplaza. Valida el objeto completo antes de guardarlo y el cambio rige desde la siguiente decisión, sin reiniciar.
+
+**Headers del PUT (obligatorios)**
+
+| Header | Contenido |
+| --- | --- |
+| `X-Admin-Token` | Clave de administrador. Debe coincidir con la variable de entorno `RULES_ADMIN_TOKEN`, que no va al repo. |
+| `X-Editor` | Nombre de quien hace el cambio. Queda en el registro. |
+
+**Cuerpo:** el objeto completo de reglas, con el mismo formato que devuelve `GET /rules`.
+
+**Respuestas del PUT**
+
+| Código | Cuándo | Cuerpo |
+| --- | --- | --- |
+| 200 | Reglas guardadas | `actualizado`, `cambios`, `umbral_modificado`, `aviso` |
+| 401 | Token ausente o incorrecto | `detail` |
+| 422 | Reglas inválidas | `{"detail": {"errores": [...]}}` con la lista legible; no se guarda nada |
+| 422 | Falta `X-Editor` | `detail` |
+| 503 | `RULES_ADMIN_TOKEN` no está definida | `detail`; la edición queda desactivada |
+
+**Qué se valida:** que estén las claves `version`, `umbrales`, `legibilidad`, `tipos_documento` y `campos_obligatorios`; que los umbrales estén entre 0 y 1 y cumplan `automatico > segunda_opinion > legibilidad_minima`; que `legibilidad.leve > legibilidad.media`; que los tipos de `campos_obligatorios` y de `deteccion_automatica_urgencia.aplica_a` existan en `tipos_documento`; que las listas de palabras sean textos; y que cada valor crítico de laboratorio tenga analito, valor y un operador válido. El bloque de destinos todavía no se valida.
+
+**Registro de cambios:** cada PUT que cambia algo agrega una línea a `data/rules.audit.jsonl` con la fecha (UTC), quién, si tocó un umbral y la lista de campos con su valor antes y después. Un PUT sin cambios no registra nada.
+
+**Aviso al tocar umbrales:** si cambia algo de `umbrales` o `legibilidad`, la respuesta trae `umbral_modificado: true` y el texto «Cambiaste un umbral: corre el golden set antes de dejarlo.». La pantalla debe mostrarlo antes de dar el cambio por bueno. Si no cambia ningún umbral, `umbral_modificado` es `false` y `aviso` es `null`. El servidor no corre el golden set.
+
+```json
+{
+  "actualizado": true,
+  "cambios": [
+    {"campo": "umbrales.segunda_opinion", "antes": 0.6, "despues": 0.55}
+  ],
+  "umbral_modificado": true,
+  "aviso": "Cambiaste un umbral: corre el golden set antes de dejarlo."
+}
+```

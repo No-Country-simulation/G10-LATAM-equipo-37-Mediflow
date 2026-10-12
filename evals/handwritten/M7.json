@@ -1,0 +1,10 @@
+{
+  "id": "M7",
+  "paciente": null,
+  "edad": null,
+  "medicamento": "Omeprazol",
+  "dosis": "20 mg",
+  "frecuencia": "cada 24 horas",
+  "duracion": "8 semanas",
+  "resultado_esperado": "ilegible"
+}

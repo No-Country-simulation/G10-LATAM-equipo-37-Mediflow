@@ -1,0 +1,20 @@
+# Enforce Unix line endings (LF) for all text files to avoid CRLF conflicts
+# caused by contributors on Windows.
+# After changing this file, run `git add --renormalize .` to convert existing files.
+* text=auto eol=lf
+
+# Binary files: never normalize
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
