@@ -1,8 +1,7 @@
-
 """Worker de MediFlow.
 
-Lee recibidos/ cada 30 segundos.
-El procesamiento de documentos se implementará en la siguiente etapa.
+Revisa recibidos/ cada 30 segundos, procesa documentos con el grafo,
+registra los resultados en SQLite y aplica reintentos ante fallos temporales.
 """
 import logging
 import os
