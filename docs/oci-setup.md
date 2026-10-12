@@ -215,6 +215,11 @@ server {
     ssl_certificate     /etc/letsencrypt/live/mediflow-equipo37.duckdns.org/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/mediflow-equipo37.duckdns.org/privkey.pem;
 
+    location = /openapi.json {
+        proxy_pass http://api:8000/openapi.json;
+        proxy_set_header Host $host;
+    }
+
     location /api/ {
         proxy_pass http://api:8000/;
         proxy_set_header Host $host;
@@ -265,9 +270,9 @@ RULES_ADMIN_TOKEN=<TOKEN>
 
 #### Seguridad de endpoints
 
-- **PUT /rules:** No valida `RULES_ADMIN_TOKEN` (la función está pendiente de implementar).
-- **POST /audit/{id}:** No valida token (abierto).
-- **Plan:** Implementar validación antes de H3 o documentar como deuda técnica.
+- **PUT /rules:** ✅ Ya implementado en `develop` (PR #81). Valida el token: 503 si falta `RULES_ADMIN_TOKEN`, 401 si no coincide, 422 si falta `X-Editor`. La VM corre una versión vieja; hay que redesplegar `develop`.
+- **POST /audit/{id}:** No valida token. Es módulo de Cristian; queda así por ahora y se coordina con Camila después de H3.
+- **Acción:** Redesplegar `develop` en la VM para que `PUT /rules` funcione con validación de token.
 
 #### ADB (Autonomous Database)
 
@@ -286,4 +291,4 @@ RULES_ADMIN_TOKEN=<TOKEN>
 | Fecha | Cambio |
 | :--- | :--- |
 | 9 oct 2026 | Deploy inicial en VM ARM. 3 contenedores corriendo (api, ui, worker). |
-| 12 oct 2026 | Deploy con HTTPS y dominio (DuckDNS + Let's Encrypt + nginx). 4 contenedores en stack `infra`. |
+| 12 oct 2026 | Deploy con HTTPS y dominio (DuckDNS + Let's Encrypt + nginx). 4 contenedores en stack `infra`. Bloque `/openapi.json` para Swagger. |
