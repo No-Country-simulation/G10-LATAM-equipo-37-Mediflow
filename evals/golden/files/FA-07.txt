@@ -1,11 +1,11 @@
 RECETA VETERINARIA
 
-CLÍNICA VETERINARIA LOS ÁLAMOS DE PRUEBA
+CLÍNICA VETERINARIA LOS ÁLAMOS
 Pequeños Animales · Av. de los Constituyentes 4820 · Tel. (011) 4555-9100
 Fecha: 03/10/2026
 
 Paciente: Rocco — Especie: Canina — Raza: Golden Retriever — Edad: 8 años — Peso: 22 kg
-Tutor responsable: Ignacio Javier Ferreyra Ficticio — DNI: 27.601.338
+Tutor responsable: Ignacio Javier Ferreyra — DNI: 27.601.338
 
 Diagnóstico: osteoartritis degenerativa de cadera y rodilla. Cojera de miembro posterior izquierdo.
 
@@ -18,6 +18,6 @@ Indicaciones:
 - Suspender la medicación y consultar si aparecen vómitos, diarrea o falta de apetito.
 - Control clínico en 14 días.
 
-Dr. Sergio Damián Maldonado Ficticio
+Dr. Sergio Damián Maldonado
 Médico Veterinario
-Matrícula de simulación: SIM-MP-0707
+Matrícula: MP 0707

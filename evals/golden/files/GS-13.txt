@@ -4,15 +4,15 @@ Sección Química Clínica
 
 INFORME DE LABORATORIO
 
-Paciente: Héctor Fabián Quiroga Ficticio
+Paciente: Héctor Fabián Quiroga
 DNI: 24.330.915
 Edad: 71 años          Sexo: Masculino
-HC N°: SIM-GS13
+HC N°: 284113
 Procedencia: Servicio de Emergencias
-Médico solicitante: Dra. Ana Lucía Bustamante Ficticia, Matrícula de simulación: SIM-MP-0513
+Médico solicitante: Dra. Ana Lucía Bustamante, Matrícula: MP 0513
 Diagnóstico del pedido: E87.5 Hiperpotasemia
 Datos clínicos: astenia y palpitaciones. Enfermedad renal crónica en tratamiento con enalapril y espironolactona.
-Protocolo N°: SIM-LAB-261002
+Protocolo N°: 261002
 Fecha de extracción: 02/10/2026      Fecha de informe: 02/10/2026
 Muestra: suero      Ayuno: no requerido
 
@@ -32,5 +32,5 @@ COMENTARIO:
 Hiperpotasemia severa con valor crítico de potasio (7,1 mmol/L) en paciente con enfermedad renal crónica y fármacos retenedores de potasio. Riesgo de arritmias graves. Se notifica el resultado en el momento al médico solicitante por vía telefónica.
 
 Resultado validado y notificado por:
-Bioq. Facundo Ariel Nieto Ficticio
-Bioquímico — Matrícula de simulación: SIM-MP-0613
+Bioq. Facundo Ariel Nieto
+Bioquímico — Matrícula: MP 0613

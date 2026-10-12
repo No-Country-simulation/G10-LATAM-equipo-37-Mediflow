@@ -5,10 +5,10 @@ Consultorio Externo
 RECETA MÉDICA
 
 Fecha: 02/10/2026
-Paciente: Claudia Verónica Paredes Ficticia
+Paciente: Claudia Verónica Paredes
 DNI: 29.144.872
 Edad: 47 años
-Historia clínica: SIM-GS05
+Historia clínica: 284105
 
 Diagnóstico: artritis reumatoide seropositiva en tratamiento de fondo. CIE-10: M06.9.
 
@@ -22,6 +22,6 @@ Indicaciones:
 - No duplicar ni suspender dosis sin indicación del médico tratante. Evitar el consumo de alcohol.
 - Concurrir a la guardia ante fiebre persistente, aftas bucales o dificultad para respirar.
 
-Dra. Marisol Etchegoyen Ficticia
+Dra. Marisol Etchegoyen
 Médica especialista en Reumatología
-Matrícula de simulación: SIM-MP-0505
+Matrícula: MP 0505

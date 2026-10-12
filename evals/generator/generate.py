@@ -27,7 +27,7 @@ FILES = RAIZ / "evals" / "golden" / "files"
 
 MEMBRETE = "HOSPITAL GENERAL SAN MARTÍN"
 SUBMEMBRETE = "Servicio de {especialidad} · Av. Libertador 2350 · Tel. (011) 4555-8000"
-PIE = "Documento generado para el conjunto de prueba de MediFlow. Paciente ficticio."
+PIE = "Documento de ejemplo para el conjunto de evaluación de MediFlow."
 
 
 def _tipo_a_titulo(tipo: str) -> str:
