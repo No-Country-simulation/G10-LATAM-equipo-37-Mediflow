@@ -8,9 +8,13 @@ lo mismo y compartan la etiqueta esperada.
     python evals/generator/generate.py --solo GS-07  # un caso
     python evals/generator/generate.py --forzar      # rehace los que ya existen
 
-El PDF imita un documento clínico impreso: membrete, bloque del paciente, cuerpo y pie de firma.
-No es decoración: el modelo tiene que vérselas con encabezados, columnas y sellos, no con texto
-plano metido en una hoja.
+El PDF dice exactamente lo que dice el .txt, ni una palabra más ni una menos: el membrete, el título
+y la firma los escribe cada persona en su texto. El generador solo les da formato de documento
+impreso. Una versión anterior agregaba un membrete propio, con dirección y teléfono, y una marca de
+"paciente ficticio" al pie, y eso hacía que el PDF y el texto no fueran el mismo documento.
+
+Que los datos son sintéticos está documentado en `evals/DATA.md`, que es su lugar, y nunca dentro
+de los documentos: un documento real no trae esa marca y el agente podría usarla para decidir.
 """
 from __future__ import annotations
 
@@ -25,76 +29,73 @@ RAIZ = Path(__file__).resolve().parents[2]
 PLAN = RAIZ / "evals" / "golden" / "plan_golden.csv"
 FILES = RAIZ / "evals" / "golden" / "files"
 
-MEMBRETE = "HOSPITAL GENERAL SAN MARTÍN"
-SUBMEMBRETE = "Servicio de {especialidad} · Av. Libertador 2350 · Tel. (011) 4555-8000"
-PIE = "Documento generado para el conjunto de prueba de MediFlow. Paciente ficticio."
+CAMPO = re.compile(r"^([A-ZÁÉÍÓÚÑ][^:]{0,40}:)(.*)$")
 
 
-def _tipo_a_titulo(tipo: str) -> str:
-    return {
-        "Receta Medica": "RECETA MÉDICA",
-        "Informe de Estudio por Imagenes": "INFORME DE ESTUDIO POR IMÁGENES",
-        "Informe de Laboratorio": "INFORME DE LABORATORIO",
-        "Orden de Solicitud de Procedimiento": "ORDEN DE SOLICITUD DE PROCEDIMIENTO",
-        "Epicrisis": "EPICRISIS",
-        "Certificado Medico": "CERTIFICADO MÉDICO",
-    }.get(tipo, "DOCUMENTO CLÍNICO")
+def _es_titulo(linea: str) -> bool:
+    letras = [c for c in linea if c.isalpha()]
+    return bool(letras) and all(c.isupper() for c in letras) and len(linea) < 90
 
 
-def _partir(texto: str) -> tuple[str, list[str]]:
-    """Separa un encabezado opcional del cuerpo. Una línea en MAYÚSCULAS al principio se toma como
-    título propio del documento y no se repite."""
-    lineas = [line.rstrip() for line in texto.strip().splitlines()]
-    titulo = ""
-    if lineas and lineas[0].isupper() and len(lineas[0]) < 80:
-        titulo = lineas.pop(0).strip()
-        while lineas and not lineas[0].strip():
-            lineas.pop(0)
-    return titulo, lineas
+def _es_tabla(linea: str) -> bool:
+    """Una línea con columnas alineadas a espacios, como los resultados de un laboratorio."""
+    return re.search(r"\S {3,}\S", linea) is not None
 
 
 def escribir_pdf(destino: Path, texto: str, fila: dict) -> None:
+    """Imprime el .txt tal cual, solo con formato: no agrega ni quita una palabra.
+
+    El membrete, el título, la firma y todo lo demás vienen del texto que escribió cada persona. El
+    generador solo decide cómo se ven: las líneas en mayúsculas van en negrita, el encabezado
+    centrado, y las tablas en fuente de ancho fijo para que las columnas sigan alineadas.
+    """
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import cm
-    from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer
+    from reportlab.platypus import Paragraph, Preformatted, SimpleDocTemplate, Spacer
 
     base = getSampleStyleSheet()
-    membrete = ParagraphStyle("membrete", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=13,
-                              alignment=TA_CENTER, textColor=colors.HexColor("#1B2A4A"))
-    submembrete = ParagraphStyle("sub", parent=base["Normal"], fontSize=7.5, alignment=TA_CENTER,
-                                 textColor=colors.HexColor("#5A6270"))
-    titulo = ParagraphStyle("titulo", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=11,
-                            alignment=TA_CENTER, spaceBefore=10, spaceAfter=10)
-    cuerpo = ParagraphStyle("cuerpo", parent=base["Normal"], fontSize=9.5, leading=14, alignment=TA_JUSTIFY)
-    campo = ParagraphStyle("campo", parent=cuerpo, fontName="Helvetica-Bold", spaceBefore=3)
-    pie = ParagraphStyle("pie", parent=base["Normal"], fontSize=6.5, alignment=TA_CENTER,
-                         textColor=colors.HexColor("#9AA1AC"))
+    normal = ParagraphStyle("normal", parent=base["Normal"], fontSize=9.5, leading=13.5, alignment=TA_LEFT)
+    negrita = ParagraphStyle("negrita", parent=normal, fontName="Helvetica-Bold")
+    cabecera = ParagraphStyle("cabecera", parent=negrita, fontSize=12, leading=15, alignment=TA_CENTER,
+                              textColor=colors.HexColor("#1B2A4A"))
+    subcabecera = ParagraphStyle("subcabecera", parent=normal, fontSize=8.5, alignment=TA_CENTER,
+                                 textColor=colors.HexColor("#3A4250"))
+    tabla = ParagraphStyle("tabla", parent=normal, fontName="Courier", fontSize=8, leading=10.5)
 
-    propio, lineas = _partir(texto)
-    doc = SimpleDocTemplate(str(destino), pagesize=A4, topMargin=1.6 * cm, bottomMargin=1.6 * cm,
-                            leftMargin=2.2 * cm, rightMargin=2.2 * cm, title=fila["id"])
-    s = [Paragraph(MEMBRETE, membrete),
-         Paragraph(SUBMEMBRETE.format(especialidad=fila.get("cuadro", "") and "Clínica Médica" or "Clínica Médica"),
-                   submembrete),
-         Spacer(1, 6), HRFlowable(width="100%", color=colors.HexColor("#C9CFD9")),
-         Paragraph(propio or _tipo_a_titulo(fila["tipo_documento"]), titulo)]
+    def esc(t: str) -> str:
+        return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-    for linea in lineas:
-        if not linea.strip():
-            s.append(Spacer(1, 5))
+    lineas = texto.strip("\n").splitlines()
+    s = []
+    en_cabecera = True  # las primeras líneas, hasta el primer campo o la primera línea en blanco
+    for n, linea in enumerate(lineas):
+        limpia = linea.rstrip()
+        if not limpia.strip():
+            en_cabecera = False
+            s.append(Spacer(1, 6))
             continue
-        # "Paciente: Ana Pérez" se destaca; el resto va como párrafo
-        estilo = campo if re.match(r"^[A-ZÁÉÍÓÚÑ][\w áéíóúñ/()-]{2,28}:", linea.strip()) else cuerpo
-        s.append(Paragraph(linea.strip().replace("&", "&amp;").replace("<", "&lt;"), estilo))
+        if en_cabecera and ":" not in limpia:
+            s.append(Paragraph(esc(limpia.strip()), cabecera if n == 0 else subcabecera))
+            continue
+        en_cabecera = False
+        partes = [x for x in re.split(r" {3,}", limpia.strip()) if x]
+        campos = [CAMPO.match(x) for x in partes]
+        if all(campos):
+            # "Edad: 68 años     Sexo: Masculino": uno o varios campos en la misma línea
+            unidos = "&nbsp;&nbsp;&nbsp;&nbsp;".join(f"<b>{esc(m.group(1))}</b>{esc(m.group(2))}" for m in campos)
+            s.append(Paragraph(unidos, normal))
+        elif _es_tabla(limpia):
+            s.append(Preformatted(limpia, tabla))
+        elif _es_titulo(limpia.strip()):
+            s.append(Paragraph(esc(limpia.strip()), negrita))
+        else:
+            s.append(Paragraph(esc(limpia.strip()), normal))
 
-    s += [Spacer(1, 26), HRFlowable(width="45%", color=colors.HexColor("#5A6270"), hAlign="RIGHT"),
-          Paragraph("Firma y sello del profesional", ParagraphStyle(
-              "firma", parent=base["Normal"], fontSize=7.5, alignment=2,
-              textColor=colors.HexColor("#5A6270"))),
-          Spacer(1, 14), Paragraph(PIE, pie)]
+    doc = SimpleDocTemplate(str(destino), pagesize=A4, topMargin=1.8 * cm, bottomMargin=1.8 * cm,
+                            leftMargin=2.2 * cm, rightMargin=2.2 * cm, title=fila["id"])
     doc.build(s)
 
 
@@ -152,4 +153,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
 

@@ -3,7 +3,7 @@
   "paciente": "Adriana Molina Ficticia",
   "medicamento": "Metotrexato",
   "dosis": "15 mg",
-  "frecuencia": "diario",
+  "frecuencia": "cada 24 horas",
   "duracion": null,
   "resultado_esperado": "ambiguedad",
   "edad": 45

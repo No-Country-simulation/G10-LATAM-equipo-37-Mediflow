@@ -4,13 +4,15 @@ Regla que no se negocia: ningún documento real de ningún paciente.
 
 ## Qué es el conjunto de prueba
 
-Documentos cuya respuesta correcta conocemos de antemano. Cada uno lleva su etiqueta: tipo, datos a extraer, prioridad, destino y si requiere auditoría. Se pasan por el agente, se compara la salida con la etiqueta y de ahí salen las métricas. Un documento no entra hasta que dos personas revisan su etiqueta.
+Documentos cuya respuesta correcta conocemos de antemano. Cada uno lleva su etiqueta: tipo, datos a extraer, prioridad, destino y si requiere auditoría. Se pasan por el agente, se compara la salida con la etiqueta y de ahí salen las métricas. Un documento no entra hasta que una persona distinta de quien lo escribió revisa su etiqueta: el `revisor_1` del plan.
+
+Hasta el 5 de octubre pedíamos dos revisiones; desde el 6, por tiempo, alcanza con una (ADR-012). Las segundas revisiones ya hechas, en GS-26 y GS-30, quedan registradas. Para compensar, **cuando la evaluación marca un fallo, antes de contarlo como error del agente se vuelve a mirar la etiqueta**: si la etiqueta estaba mal, se corrige y no cuenta como error. Así la segunda mirada va justo donde agente y etiqueta no coinciden.
 
 ## Cuánto y por qué
 
 | Qué | Cantidad | Quién lo produce |
 |---|---|---|
-| Documentos de texto | 30 | El generador, y dos personas revisan cada etiqueta |
+| Documentos de texto | 30 | Escritos por el equipo; el generador produce sus otros formatos. Otra persona revisa cada uno |
 | Casos fuera de alcance | 7 | Escritos por el equipo, uno por cada motivo de `fuera_de_alcance` en rules.yaml, más el de la instrucción incrustada: factura de farmacia, consentimiento informado, carnet de obra social, informe en inglés, pedido de diagnóstico, receta veterinaria e ionograma con una orden escondida en el texto |
 | Imágenes degradadas | 12 | Un script sobre los PDF ya generados, así que son de varios tipos. Heredan el contenido, no hay que revisarlas |
 | Fotos de recetas manuscritas | 8, una por persona | Cada integrante escribe y fotografía la suya. Todas son Receta Médica, que es el único tipo que se escribe a mano |
@@ -76,7 +78,7 @@ Solo aplica a las 20 imágenes, las 12 degradadas más las 8 manuscritas. Tres n
 | Media | Entre 0,40 y 0,70 | Extraer lo legible, resto en `null`, revisión con AMB-4 | 4 | 3 |
 | Severa | Menos de 0,40 | Rechazar y pedir nueva captura | 4 | 2 |
 
-Las degradadas se producen con Augraphy sobre el PDF limpio: ruido, inclinación, sombra, desenfoque y baja resolución según el nivel. Heredan el contenido verdadero, así que no hay que etiquetar de nuevo; lo que cambia con el nivel es la decisión esperada: leve mantiene la del documento limpio, media va a revisión con AMB-4 y severa pide nueva captura. Las manuscritas las escribe el equipo, una receta ficticia por persona con paciente inventado y un medicamento real, fotografiada con el celular; dos se toman mal a propósito.
+Las degradadas se producen con `degradar.py` sobre el PDF limpio, con una tubería de Pillow calibrada con OCR: ruido, inclinación, sombra, desenfoque y pérdida de resolución según el nivel. Heredan el contenido verdadero, así que no hay que etiquetar de nuevo; lo que cambia con el nivel es la decisión esperada: leve mantiene la del documento limpio, media va a revisión con AMB-4 y severa pide nueva captura. Las manuscritas las escribe el equipo, una receta ficticia por persona con paciente inventado y un medicamento real, fotografiada con el celular; dos se toman mal a propósito.
 
 ## Fuentes externas
 
@@ -107,4 +109,23 @@ No son casos de prueba: el agente las consulta mientras procesa cada documento.
 | `evals/dev/` | Para iterar prompts y reglas |
 | `evals/golden/` | De aquí salen los números publicados |
 
-Salen del mismo generador con semillas distintas, así que son disjuntos por construcción.
+Son conjuntos separados: ningún documento de `golden/` se usa para ajustar prompts, y ningún ejemplo de los prompts se evalúa.
+
+## Columnas que lee el código
+
+Estas columnas son un contrato con `agent/nodes/validar.py`. **No se renombran, no se mueven y no
+se borran sin avisar a quien mantiene `validar.py`**, y el cambio va en un PR donde esa persona sea
+revisora. Si una falta, la validación debe fallar con un error claro, nunca saltarse en silencio.
+
+| Tabla | Columnas que usa `validar.py` |
+|---|---|
+| `medicamentos.csv` | `nombre`, `sinonimos`, `unidad`, `dosis_min_toma`, `dosis_max_toma`, `validar_dosis`, `periodicidad_especial` |
+
+Las dosis, `dosis_min_toma`, `dosis_max_toma` y `dosis_max_dia`, se escriben con **punto decimal**:
+`7.5`, nunca `7,5`. El código las lee como número, y con coma la conversión falla.
+
+`periodicidad_especial` hoy solo admite el valor `semanal`, que tiene metotrexato. Una periodicidad
+nueva necesita primero el cambio en `validar.py`, porque la regla no reconoce otros valores.
+
+Las únicas tablas vigentes son las de `evals/generator/data/`. Cualquier copia en otra carpeta es
+una versión vieja y no alimenta al agente.

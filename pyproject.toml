@@ -8,4 +8,4 @@ select = ["E", "F", "I", "B"]
 ignore = ["B008"]  # File(...) y Form(...) de FastAPI
 
 [tool.pytest.ini_options]
-testpaths = ["agent/tests", "api/tests"]
+testpaths = ["agent/tests", "api/tests", "ui/tests"]

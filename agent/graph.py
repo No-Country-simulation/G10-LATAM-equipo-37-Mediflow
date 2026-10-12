@@ -10,6 +10,8 @@ enrutar → persistir → notificar → FIN
 El auditor tiene tres salidas y no son equivalentes: aprobar o corregir devuelve el documento al
 enrutamiento por tipo; rechazar termina en rechazados/ y nunca continúa hacia un destino operativo.
 """
+from langgraph.graph import END, StateGraph
+
 from agent.nodes.clasificar import clasificar
 from agent.nodes.enrutar import enrutar
 from agent.nodes.extraer import extraer
@@ -22,7 +24,6 @@ from agent.nodes.urgencia import detectar_urgencia
 from agent.nodes.validar import validar
 from agent.rules.loader import load_rules
 from agent.state import TriageState
-from langgraph.graph import END, StateGraph
 
 
 def _tras_normalizar(state: TriageState) -> str:

@@ -1,0 +1,33 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE MEDICINA INTERNA
+Internación General
+
+EPICRISIS
+
+Paciente: DOMÍNGUEZ, Carlos Alfredo
+DNI: 14.870.226
+Edad: 68 años          Sexo: Masculino
+HC N°: 301.449
+Fecha de ingreso: 02/09/2026
+Fecha de egreso: 06/09/2026
+Días de internación: 4
+Médico tratante: Dra. Natalia Soledad Vera, Mat. 131.795
+
+MOTIVO DE INGRESO:
+Fiebre y tos productiva de 4 días de evolución.
+
+ESTUDIOS COMPLEMENTARIOS:
+Rx de tórax: consolidación alveolar en lóbulo inferior derecho con broncograma aéreo, sin derrame pleural.
+
+DIAGNÓSTICO DE EGRESO:
+Neumonía adquirida en la comunidad del lóbulo inferior derecho.
+CIE-10: J18.9 Neumonía, no especificada
+
+TRATAMIENTO EN INTERNACIÓN:
+Ceftriaxona 1 g intravenosa cada 24 horas, durante 4 días.
+
+EVOLUCIÓN:
+Evoluciona favorablemente, afebril desde el 2° día. Se otorga el alta con pase a antibiótico por vía oral.
+
+INDICACIONES AL ALTA:
+Amoxicilina-clavulánico 875 mg, 1 comprimido por vía oral cada 12 horas por 7 días. Completar el trata

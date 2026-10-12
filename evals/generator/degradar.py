@@ -8,9 +8,14 @@ la columna `nivel_legibilidad` decide cuánto se castiga la imagen.
     python evals/generator/degradar.py --solo GS-12
     python evals/generator/degradar.py --forzar
 
-Usa Augraphy si está instalado, porque sus efectos de papel y tinta son más realistas. Si no está,
-cae a una tubería propia con Pillow que produce el mismo tipo de daño. Las dos rutas respetan los
-tres niveles, así que el conjunto se puede regenerar en cualquier máquina.
+Usa una tubería propia con Pillow: iluminación despareja, desenfoque, ruido, compresión y pérdida
+de resolución. Es la que está calibrada con OCR contra los umbrales de `rules.yaml`.
+
+Augraphy queda solo como opción explícita, `--con-augraphy`, y no se recomienda. Su tubería por
+defecto aplica efectos al azar que no existen en una foto de teléfono ni en un escáner: páginas de
+libro encuadernado, el documento repetido en dos hojas, tachones de tinta. Una receta con tachones
+puede leerse como anulada, y una página duplicada como dos documentos en uno, así que contamina la
+etiqueta esperada. Ocurrió con GS-02 y por eso dejó de ser el camino por defecto.
 
 Qué debe lograr cada nivel, medido contra los umbrales de `rules.yaml`:
   leve    legibilidad >= 0,70, el documento se procesa normal
@@ -150,7 +155,8 @@ def main() -> int:
     p = argparse.ArgumentParser(description="Degrada documentos para la puerta de legibilidad.")
     p.add_argument("--solo", nargs="+", metavar="ID")
     p.add_argument("--forzar", action="store_true")
-    p.add_argument("--sin-augraphy", action="store_true", help="usa solo Pillow")
+    p.add_argument("--con-augraphy", action="store_true",
+                   help="agrega los efectos de Augraphy; no calibrado, no recomendado")
     p.add_argument("--semilla", type=int, default=37, help="para que la degradación sea reproducible")
     args = p.parse_args()
     random.seed(args.semilla)
@@ -183,7 +189,7 @@ def main() -> int:
             continue
 
         print(f"  {cid} · {variante} · {nivel}")
-        imagen, motor = degradar(pagina, nivel, variante, not args.sin_augraphy)
+        imagen, motor = degradar(pagina, nivel, variante, args.con_augraphy)
         imagen.save(destino)
         hechos.append(f"{destino.name} ({motor})")
 

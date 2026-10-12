@@ -18,8 +18,13 @@ wallet/
 .streamlit/secrets.toml
 
 # Datos locales y salidas
+data/*
+!data/raw/
+data/raw/*
+!data/raw/*.csv
 evals/output/
 evals/cache/
+evals/golden/files/*.original.txt
 *.log
 tmp/
 
@@ -31,3 +36,7 @@ tmp/
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
+
+# Carpetas temporales y locales (no subir)
+fonts/
+augraphy_cache/
