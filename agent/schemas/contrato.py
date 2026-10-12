@@ -69,6 +69,15 @@ class CategoriaAmbiguedad(str, Enum):
     AMB_5 = "AMB-5"  # Dos documentos en uno
 
 
+class MotivoFueraDeAlcance(str, Enum):
+    """Los 5 motivos de fuera de alcance (sección 4 del prompt de clasificación)."""
+    NO_CLINICO = "no_clinico"
+    TIPO_NO_SOPORTADO = "tipo_no_soportado"
+    PACIENTE_NO_HUMANO = "paciente_no_humano"
+    IDIOMA_NO_SOPORTADO = "idioma_no_soportado"
+    PIDE_DIAGNOSTICO = "pide_diagnostico"
+
+
 class StatusBackup(str, Enum):
     """Estado del respaldo en OCI Object Storage."""
     EXITO = "exito"
@@ -152,6 +161,7 @@ class Clasificacion(BaseModel):
     especialidad: Optional[str] = None
     nivel_prioridad: NivelPrioridad = NivelPrioridad.RUTINA
     score_confianza_clasificacion: float = Field(ge=0, le=1)
+    motivo_fuera_de_alcance: Optional[MotivoFueraDeAlcance] = None
 
 
 class NotificacionGenerada(BaseModel):
@@ -230,6 +240,7 @@ __all__ = [
     "DestinoEnrutamiento",
     "EstadoProcesamiento",
     "CategoriaAmbiguedad",
+    "MotivoFueraDeAlcance",
     "StatusBackup",
     # Entrada
     "TriageRequest",

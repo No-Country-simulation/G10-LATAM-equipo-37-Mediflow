@@ -122,7 +122,7 @@ def test_persistir_escribe_en_local():
     assert ruta == "procesados/farmacia/TEST-LOCAL-001.json"
 
     # Verificar que el archivo existe en la carpeta temporal (no en ./data/)
-    archivo = local.DATA_DIR / "mediflow-documentos-clinicos" / ruta
+    archivo = local.DATA_DIR / "mediflow-dev" / ruta
     assert archivo.exists()
 
     # Verificar el contenido

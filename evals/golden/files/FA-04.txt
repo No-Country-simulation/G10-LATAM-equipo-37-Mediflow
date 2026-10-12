@@ -1,0 +1,41 @@
+ST. MARY'S GENERAL HOSPITAL
+DEPARTMENT OF RADIOLOGY
+
+CT CHEST WITH CONTRAST - RADIOLOGY REPORT
+
+PATIENT DATA
+Name: HARRISON, Robert James
+Patient ID: 418-227-093
+Age: 62 years
+Sex: Male
+MRN: 512093
+Location: Outpatient
+
+EXAMINATION
+CT of the chest with intravenous contrast. Date of exam: 09/15/2026.
+Referring physician: Dr. Andrew Smith
+
+CLINICAL INDICATION
+Persistent cough of three months' duration. Former smoker
+(30 pack-years).
+
+TECHNIQUE
+Helical acquisition of the chest after intravenous contrast
+administration. No prior studies are available for comparison.
+
+FINDINGS
+Lungs: A 14 mm spiculated solid nodule is present in the apical segment
+of the right upper lobe. No additional nodules. No consolidation. No
+pleural effusion or pneumothorax.
+Mediastinum: Mildly enlarged right paratracheal lymph node, measuring
+11 mm in short axis. No pericardial effusion. Heart size is normal.
+Bones and soft tissues: No suspicious lytic or blastic lesions.
+
+IMPRESSION
+1. 14 mm spiculated nodule in the right upper lobe, suspicious for
+   primary lung malignancy. PET-CT and tissue sampling are recommended.
+2. Mildly enlarged right paratracheal lymph node, indeterminate.
+
+Report date: 09/15/2026, 18:40
+Radiologist: Dr. Laura Jones, MD
+Board-certified in Radiology, License No. 245.118

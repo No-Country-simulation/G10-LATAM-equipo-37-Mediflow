@@ -93,3 +93,17 @@ def test_rechazar_es_una_accion_valida_no_un_destino(tmp_path):
 def test_cola_ignora_carpetas_sin_extraccion(tmp_path):
     (tmp_path / "DOC-004").mkdir(parents=True)  # carpeta vacía, sin extraccion.json
     assert listar_cola_humana(base=tmp_path) == []
+
+def test_data_dir_por_defecto_sigue_el_layout_de_local():
+    from agent.storage import local, local_audit
+
+    assert local_audit.DATA_DIR == local.DATA_DIR / local_audit.BUCKET / "auditoria_humana"
+
+
+def test_la_cola_lee_lo_que_escribe_local(tmp_path, monkeypatch):
+    from agent.storage import local
+
+    monkeypatch.setattr(local, "DATA_DIR", tmp_path)
+    local.upload_json("bucket-x", "auditoria_humana/DOC-9/extraccion.json", {"tipo_documento": "Receta Medica"})
+    cola = listar_cola_humana(base=tmp_path / "bucket-x" / "auditoria_humana")
+    assert [c["documento_id"] for c in cola] == ["DOC-9"]

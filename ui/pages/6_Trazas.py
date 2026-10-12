@@ -1,7 +1,13 @@
+"""Trace page for the last result in the current session."""
 import streamlit as st
 
-st.title("Trazas · ver pensar al agente")
-st.info(
-    "Sprint 3: cada nodo del grafo con tiempo, modelo usado, costo y justificación. "
-    "Aquí se muestra el cambio de modelo."
-)
+st.title("🔍 Trazas")
+result = st.session_state.get("last_triage_result")
+if not result:
+    st.info("Procesa un documento para consultar su traza.")
+else:
+    trace = result.get("trace", [])
+    if trace:
+        st.dataframe(trace, use_container_width=True)
+    else:
+        st.info("La API no devolvió pasos de traza para este resultado.")

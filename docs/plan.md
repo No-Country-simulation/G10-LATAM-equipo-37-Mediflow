@@ -80,7 +80,9 @@ El grafo comparte un solo estado (`TriageState` en `agent/state.py`). Cada nodo 
 | Variable | Uso |
 |---|---|
 | `STORAGE_BACKEND` | `local` (por defecto en desarrollo, escribe en `./data/` con el mismo layout del bucket) o `oci` (desde el despliegue del sprint 3) |
-| `OCI_BUCKET` | `mediflow-dev` con carpeta por persona en desarrollo; el de producción solo lo usa la VM |
+| `ENV` | `dev` o `prod`: elige el bucket con `bucket_actual()` en `agent/storage/buckets.py` |
+| `OCI_BUCKET_DEV`, `OCI_BUCKET_PROD` | `mediflow-dev`, con carpeta por persona, y `mediflow-prod`, que solo usa la VM. Reemplazan a `OCI_BUCKET` |
+| `RULES_ADMIN_TOKEN` | Clave para editar reglas con `PUT /rules`. Solo en el `.env`, nunca en el repo; sin ella la edición responde 503 |
 | `USE_LLM` | `false` en los tests del CI (respuestas simuladas); `true` en `evals/run.py` y en producción |
 | `LLM_PRIMARY`, `LLM_FALLBACKS` | Modelo principal y cadena de respaldo, con la clave de cada desarrollador como secreto de Codespaces |
 
