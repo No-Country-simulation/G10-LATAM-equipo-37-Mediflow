@@ -10,7 +10,6 @@ import time
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
 from agent.storage import triage_results
-
 from agent.storage.buckets import bucket_actual
 
 logging.basicConfig(
