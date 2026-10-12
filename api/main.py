@@ -10,8 +10,7 @@ from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
 from agent.rules.loader import ReglasInvalidas, guardar_reglas, load_rules, toca_umbrales
 from agent.schemas.contrato import TriageRequest, TriageResponse
-from agent.storage import local_audit
-from agent.storage import triage_results
+from agent.storage import local_audit, triage_results
 from agent.storage.local_audit import (
     AccionInvalida,
     DocumentoNoEncontrado,

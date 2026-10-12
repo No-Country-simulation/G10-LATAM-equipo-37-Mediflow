@@ -63,8 +63,8 @@ def test_triage_no_encontrado(cliente_y_db_temporal):
 
 def test_post_triage_guarda_resultado(cliente_y_db_temporal, monkeypatch):
     """Comprueba que POST /triage persiste el resultado."""
-    from api import main
     from agent.schemas.contrato import TriageResponse
+    from api import main
 
     resultado_simulado = {
         "documento_id": "DOC-POST-001",
