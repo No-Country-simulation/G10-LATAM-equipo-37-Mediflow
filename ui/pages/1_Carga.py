@@ -1,12 +1,11 @@
 """Document upload and triage page."""
 from __future__ import annotations
 
+import sys
 import uuid
+from pathlib import Path
 
 import streamlit as st
-
-import sys
-from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -37,7 +36,13 @@ if submitted:
                     "POST",
                     "/triage/upload",
                     data={"documento_id": document_id.strip(), "canal_origen": channel.strip() or "streamlit"},
-                    files={"archivo": (uploaded.name, uploaded.getvalue(), uploaded.type or "application/octet-stream")},
+                    files={
+                        "archivo": (
+                            uploaded.name,
+                            uploaded.getvalue(),
+                            uploaded.type or "application/octet-stream",
+                        )
+                    },
                 )
                 if response.is_success:
                     st.session_state["last_triage_result"] = response.json()
@@ -50,7 +55,8 @@ result = st.session_state.get("last_triage_result")
 if result:
     st.divider()
     render_result(result)
-    if result.get("status") == "revision_humana" or result.get("decision_enrutamiento", {}).get("requiere_auditoria_humana"):
+    decision = result.get("decision_enrutamiento", {})
+    if result.get("status") == "revision_humana" or decision.get("requiere_auditoria_humana"):
         with st.expander("Abrir documento para auditoría", expanded=True):
             from lib import show_document_preview
 

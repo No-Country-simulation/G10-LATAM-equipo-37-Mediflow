@@ -70,7 +70,10 @@ def show_document_preview() -> None:
         st.image(data, caption=name, use_container_width=True)
     elif mime == "application/pdf":
         st.download_button("Descargar PDF para revisar", data, file_name=name, mime=mime)
-        st.caption("La vista previa del PDF está disponible descargándolo; el archivo original se conserva en esta sesión.")
+        st.caption(
+            "La vista previa del PDF está disponible descargándolo; "
+            "el archivo original se conserva en esta sesión."
+        )
     elif mime.startswith("text/") or name.lower().endswith((".txt", ".json")):
         st.code(data.decode("utf-8", errors="replace"), language="json" if name.endswith(".json") else "text")
     else:
