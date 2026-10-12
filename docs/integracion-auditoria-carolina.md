@@ -1,6 +1,6 @@
 # Integración de auditoría humana
 
-Rama: `integration/carolina-auditoria-completa`. Preparada el 8–9 de octubre de 2026.
+Rama: `integration/carolina-auditoria-completa`. Actualizada el 12 de octubre de 2026 sobre develop a6b65f5, incluido #94.
 Es una propuesta de integración para revisión, no un despliegue ni el cierre de los paquetes.
 
 ## Cambios que reúne
@@ -23,14 +23,15 @@ Al combinarlas se corrigieron estos problemas:
 - Se recuperó la sanitización de logs de clasificación tras resolver el conflicto entre ramas.
 - Se cierran explícitamente las conexiones SQLite para liberar los archivos también en Windows.
 
-El workflow actual solo se activa en PR a `main`. La credencial disponible no tiene el
-scope `workflow`, por lo que el ajuste de CI se entregó como parche separado y no se publica
-en esta rama. El PR #22 ya propone habilitar CI en `develop`; el equipo debe integrar ese
-cambio y verificar la CLI vigente de `evals/run.py`. Las pruebas indicadas aquí son locales.
+El CI ya se activa para develop tras la integración de #22. La rama conserva reglas
+editables y autenticación de #81, motivo_fuera_de_alcance, buckets por entorno y
+persistencia del resultado inicial de triaje de #94. La resolución humana se mantiene
+separada del resultado inicial. Se corrigió el manejo demasiado amplio de ValueError
+en la API y se añadió una regresión HTTP. El estado de CI debe verificarse por commit.
 
 ## Evidencia
 
-Python 3.12, `USE_LLM=false`, `STORAGE_BACKEND=local`: 316 pruebas aprobadas.
+Python 3.12, `USE_LLM=false`, `STORAGE_BACKEND=local`: 346 pruebas aprobadas.
 `python -m ruff check .`: sin errores. La suite cubre API, agentes y helpers del panel.
 
 Las nuevas regresiones verifican cola, original, corrección parcial, versión desactualizada,
@@ -65,7 +66,7 @@ todavía requiere la revisión de controles de acceso del despliegue.
 | N2-10 / #64 | Privacidad y utilidad de respaldo con restauración local. Sabrina valida el job y la restauración en OCI. |
 | N1-13 / #56 | Espera la corrida real y lista de fallas de N1-11. No se ajustó el golden ni se inventó una mejora. |
 | B-06 / #41 | Los 50 issues existen. Falta vincularlos a Projects; la credencial CLI carece de `read:project`. |
-| M3 / #10 | Falta una nueva fotografía manuscrita consistente con el etiquetado solicitado. No se alteró el JSON para contradecir la imagen. |
+| M3 / #10 | Nueva fotografía de Carolina subida el 12/10; JSON alineado con Adriana Molina y cada 24 horas. GS-20 corregido a 01/10. Pendiente confirmación del revisor. |
 | B-08 / #43 | Sigue pendiente la validación de fuentes de medicamentos con Camila. |
 | N3-06 / #70 | Programado después de cerrar niveles 1 y 2. No se habilitó exportación automática de datos clínicos a tests. |
 | F-08 / #80 | Borrador de presentación y guion preparados. Faltan demo integrada y dos ensayos reales con Diana. |
@@ -79,4 +80,4 @@ todavía requiere la revisión de controles de acceso del despliegue.
 5. Publicar el cambio por categoría y tipo documental, e investigar regresiones en otras categorías.
 6. Repetir la evaluación independiente del golden sin usarlo para ajustar prompts.
 
-Las 316 pruebas de software no sustituyen esta comparación.
+Las 346 pruebas de software no sustituyen esta comparación.
