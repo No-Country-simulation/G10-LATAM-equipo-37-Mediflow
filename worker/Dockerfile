@@ -6,5 +6,6 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 COPY agent /app/agent
 COPY worker /app/worker
+RUN mkdir -p /app/data
 ENV PYTHONPATH=/app
 CMD ["python", "-m", "worker.main"]
