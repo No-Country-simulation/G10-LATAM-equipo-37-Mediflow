@@ -1,8 +1,10 @@
 
 """Persistencia SQLite de resultados de triaje."""
+
 import json
 import os
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent.parent
@@ -41,32 +43,34 @@ def guardar_resultado(
     score = resultado["score_confianza"]
     resultado_json = json.dumps(resultado, ensure_ascii=False)
 
-    with _conectar(db_path) as conn:
-        conn.execute(
-            """
-            INSERT INTO triage_results
-                (documento_id, destino, score, resultado_json)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(documento_id) DO UPDATE SET
-                destino = excluded.destino,
-                score = excluded.score,
-                resultado_json = excluded.resultado_json,
-                created_at = CURRENT_TIMESTAMP
-            """,
-            (documento_id, destino, score, resultado_json),
-        )
+    with closing(_conectar(db_path)) as conn:
+        with conn:
+            conn.execute(
+                """
+                INSERT INTO triage_results
+                    (documento_id, destino, score, resultado_json)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(documento_id) DO UPDATE SET
+                    destino = excluded.destino,
+                    score = excluded.score,
+                    resultado_json = excluded.resultado_json,
+                    created_at = CURRENT_TIMESTAMP
+                """,
+                (documento_id, destino, score, resultado_json),
+            )
 
 
 def listar_resultados(db_path: Path | None = None) -> list[dict]:
     """Lista os resultados com os campos necessários para a fila."""
-    with _conectar(db_path) as conn:
-        filas = conn.execute(
-            """
-            SELECT documento_id, destino, score, created_at
-            FROM triage_results
-            ORDER BY created_at DESC, documento_id
-            """
-        ).fetchall()
+    with closing(_conectar(db_path)) as conn:
+        with conn:
+            filas = conn.execute(
+                """
+                SELECT documento_id, destino, score, created_at
+                FROM triage_results
+                ORDER BY created_at DESC, documento_id
+                """
+            ).fetchall()
 
     return [dict(fila) for fila in filas]
 
@@ -74,16 +78,17 @@ def listar_resultados(db_path: Path | None = None) -> list[dict]:
 def obtener_resultado(
     documento_id: str, db_path: Path | None = None
 ) -> dict | None:
-    """Recupera o resultado completo de um documento."""
-    with _conectar(db_path) as conn:
-        fila = conn.execute(
-            """
-            SELECT resultado_json
-            FROM triage_results
-            WHERE documento_id = ?
-            """,
-            (documento_id,),
-        ).fetchone()
+    """Recupera el resultado completo de un documento."""
+    with closing(_conectar(db_path)) as conn:
+        with conn:
+            fila = conn.execute(
+                """
+                SELECT resultado_json
+                FROM triage_results
+                WHERE documento_id = ?
+                """,
+                (documento_id,),
+            ).fetchone()
 
     if fila is None:
         return None
