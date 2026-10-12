@@ -270,9 +270,9 @@ RULES_ADMIN_TOKEN=<TOKEN>
 
 #### Seguridad de endpoints
 
-- **PUT /rules:** ✅ Ya implementado en `develop` (PR #81). Valida el token: 503 si falta `RULES_ADMIN_TOKEN`, 401 si no coincide, 422 si falta `X-Editor`. La VM corre una versión vieja; hay que redesplegar `develop`.
+- **PUT /rules:** ✅ Implementado y validando token en la VM. Valida: 503 si falta `RULES_ADMIN_TOKEN`, 401 si el token no coincide, 422 si falta `X-Editor`.
 - **POST /audit/{id}:** No valida token. Es módulo de Cristian; queda así por ahora y se coordina con Camila después de H3.
-- **Acción:** Redesplegar `develop` en la VM para que `PUT /rules` funcione con validación de token.
+- **Acción:** Ninguna pendiente para H3. `POST /audit/{id}` se coordina después de H3.
 
 #### ADB (Autonomous Database)
 
