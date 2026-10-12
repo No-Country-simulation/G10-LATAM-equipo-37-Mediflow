@@ -5,7 +5,7 @@ Tel: (011) 4788-4500
 CUIT: 30-71829301-8
 IVA Responsable Inscripto
 
-FACTURA B
+FACTURA A
 N° 0004-00128941
 
 Fecha de Emisión: 21/09/2026
@@ -19,19 +19,19 @@ Condición IVA: Responsable Inscripto
 Forma de Pago: Tarjeta Débito
 
 DETALLE DE PRODUCTOS
-7798122 - LEVOTIROXINA MONO 100MCG Comp x 50 - $14.500,00
-7791029 - LIPITOR 20MG (Atorvastatina) Comp x 30 - $22.800,00
-7794410 - TIRAS REACTIVAS ACCU-CHEK GUIDE x50 - $36.400,00
-7795521 - ALCOHOL EN GEL 70% 250ml - $3.100,00
+--------------------
+7798122 - LEVOTIROXINA MONO 100MCG Comp x 50 ........ $14.500,00
+7791029 - LIPITOR 20MG (Atorvastatina) Comp x 30 .... $22.800,00
+7794410 - TIRAS REACTIVAS ACCU-CHEK GUIDE x50 ....... $36.400,00
+7795521 - ALCOHOL EN GEL 70% 250ml .................. $3.100,00
 
-Subtotal Neto: $63.888,43
-IVA (21%): $13.416,57
-TOTAL A PAGAR: $77.305,00
+Neto Gravado: $63.471,07
+IVA (21%):    $13.328,93
+
+TOTAL A PAGAR: $76.800,00
 
 CAE: 74819203918239
 Vencimiento CAE: 01/10/2026
 
 Atendido por: Camila Fernández
 Caja: 02
-
-
