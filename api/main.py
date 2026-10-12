@@ -1,7 +1,16 @@
 """API de MediFlow."""
 import hmac
+import logging
 import os
+from pathlib import Path
 from typing import Literal, Optional
+
+from agent.storage.buckets import bucket_actual
+
+if os.getenv("STORAGE_BACKEND", "local").lower() == "oci":
+    from agent.storage import object_storage as upload_storage
+else:
+    from agent.storage import local as upload_storage
 
 from fastapi import FastAPI, File, Form, Header, HTTPException, Response, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -66,18 +75,102 @@ def triage(req: TriageRequest):
     resultado = run_triage(req.documento_id, req.tipo_archivo, req.documento_texto, req.canal_origen)
     return _a_respuesta(resultado)
 
+_EXTENSOES_POR_TIPO = {
+    "PDF": {".pdf"},
+    "TEXTO": {".txt"},
+    "JSON": {".json"},
+    "IMAGEN": {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"},
+}
+
+_EXTENSOES_POR_MIME = {
+    "application/pdf": ".pdf",
+    "text/plain": ".txt",
+    "application/json": ".json",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/tiff": ".tiff",
+    "image/webp": ".webp",
+}
+
+
+def _extensao_original(
+    filename: str | None,
+    content_type: str | None,
+    tipo_archivo: str,
+) -> str:
+    extensiones_validas = _EXTENSOES_POR_TIPO.get(tipo_archivo)
+    if extensiones_validas is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Tipo de archivo no válido",
+        )
+
+    extension = Path(filename or "").suffix.lower()
+    if extension in extensiones_validas:
+        return extension
+
+    mime = (content_type or "").split(";", 1)[0].lower()
+    extension = _EXTENSOES_POR_MIME.get(mime)
+
+    if extension in extensiones_validas:
+        return extension
+
+    raise HTTPException(
+        status_code=422,
+        detail="No se pudo determinar la extensión del archivo",
+    )
+
+
 
 @app.post("/triage/upload", response_model=TriageResponse)
 async def triage_upload(
-    documento_id: str = Form(...), canal_origen: str = Form("web"), archivo: UploadFile = File(...)
+    documento_id: str = Form(...),
+    canal_origen: str = Form("web"),
+    archivo: UploadFile = File(...),
 ):
+    if (
+        not documento_id.strip()
+        or documento_id in {".", ".."}
+        or "/" in documento_id
+        or "\\" in documento_id
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="documento_id no válido",
+        )
+
     try:
         contenido = await archivo.read()
-        documento = ingest_document(contenido, filename=archivo.filename, content_type=archivo.content_type)
+        documento = ingest_document(
+            contenido,
+            filename=archivo.filename,
+            content_type=archivo.content_type,
+        )
     except IngestionError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     finally:
         await archivo.close()
+
+    extension = _extensao_original(
+        archivo.filename,
+        archivo.content_type,
+        documento.tipo_archivo,
+    )
+    ruta_original = f"recibidos/{documento_id}{extension}"
+
+    try:
+        upload_storage.upload_bytes(
+            bucket_actual(),
+            ruta_original,
+            contenido,
+            content_type=archivo.content_type or "application/octet-stream",
+        )
+    except Exception as exc:
+        logging.exception("No se pudo guardar el archivo original")
+        raise HTTPException(
+            status_code=503,
+            detail="No se pudo guardar el archivo original",
+        ) from exc
 
     resultado = run_triage(
         documento_id,
@@ -88,7 +181,6 @@ async def triage_upload(
         legibilidad=documento.legibilidad,
     )
     return _a_respuesta(resultado)
-
 
 @app.get("/triage/{documento_id}")
 def obtener_triage(documento_id: str):
