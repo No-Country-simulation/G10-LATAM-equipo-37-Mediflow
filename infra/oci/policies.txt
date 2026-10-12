@@ -18,8 +18,6 @@ Allow group Administrators to manage all-resources in compartment mediflow
 # Devs: solo pueden gestionar objects en el bucket de desarrollo
 Allow group Default/mediflow-developers to manage object-family in compartment mediflow where target.bucket.name = 'mediflow-dev'
 
-# Devs: pueden leer el bucket de producción (por si necesitan debug)
-Allow group Default/mediflow-developers to read object-family in compartment mediflow where target.bucket.name = 'mediflow-prod'
 
 # Devs: otros permisos (database, secrets, instancias)
 Allow group Default/mediflow-developers to use autonomous-databases in compartment mediflow

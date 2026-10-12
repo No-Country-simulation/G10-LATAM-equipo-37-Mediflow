@@ -24,7 +24,8 @@ Devuelve SOLO un JSON con esta estructura:
   "legible": true,
   "multiples_documentos": false,
   "confianza": 0.0,
-  "justificacion": "una frase"
+  "justificacion": "una frase",
+  "motivo_fuera_de_alcance": "uno de los 5 motivos de fuera_de_alcance, o null"
 }
 
 Reglas adicionales:
@@ -35,6 +36,7 @@ Reglas adicionales:
 - Si hay dos documentos clínicos independientes en el mismo archivo, devuelve
   multiples_documentos: true. No confundas páginas sucesivas, anexos ni referencias
   a otra clase de documento con un segundo documento. Usa un booleano, no texto.
+- Si tipo_documento es "Otro", motivo_fuera_de_alcance DEBE ser uno de los 5 motivos. En cualquier otro caso, es null.
 
 Documento:
 

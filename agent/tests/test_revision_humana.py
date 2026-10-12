@@ -20,7 +20,8 @@ from api.main import app
 def entorno(tmp_path, monkeypatch):
     monkeypatch.setattr(local, "DATA_DIR", tmp_path)
     monkeypatch.setenv("MEDIFLOW_CHECKPOINT_DB", str(tmp_path / "checkpoints.sqlite3"))
-    monkeypatch.setenv("OCI_BUCKET", "pruebas")
+    monkeypatch.setenv("ENV", "dev")
+    monkeypatch.setenv("OCI_BUCKET_DEV", "pruebas")
     # Solo OCR/LLM son simulados. Validación, puntuación, urgencia y almacenamiento son reales.
     for nombre in ("normalizar", "clasificar", "extraer"):
         monkeypatch.setattr(graph, nombre, lambda s: {})

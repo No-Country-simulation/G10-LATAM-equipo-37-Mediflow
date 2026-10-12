@@ -20,7 +20,8 @@ client = TestClient(app)
 def preparar_checkpoint(tmp_path, monkeypatch, documento_id):
     """La API N2-05 requiere un grafo pausado, no solo un JSON de muestra."""
     monkeypatch.setattr(local, "DATA_DIR", tmp_path)
-    monkeypatch.setenv("OCI_BUCKET", "pruebas")
+    monkeypatch.setenv("ENV", "dev")
+    monkeypatch.setenv("OCI_BUCKET_DEV", "pruebas")
     monkeypatch.setenv("MEDIFLOW_CHECKPOINT_DB", str(tmp_path / "checkpoints.sqlite3"))
     monkeypatch.setattr(local_audit, "DATA_DIR", carpeta(documento_id).parent)
     for nombre in ("normalizar", "clasificar", "extraer"):
@@ -189,3 +190,16 @@ def test_original_no_guardado_devuelve_404(tmp_path, monkeypatch):
     local_audit.guardar_extraccion("DOC-022", {"tipo_documento": "Receta Medica"}, base=tmp_path)
     r = client.get("/audit/DOC-022/original")
     assert r.status_code == 404
+
+def test_error_interno_no_se_presenta_como_decision_invalida(monkeypatch):
+    import api.main as api
+
+    def fallo_interno(*args, **kwargs):
+        raise ValueError("error interno")
+
+    monkeypatch.setattr(api, "reanudar", fallo_interno)
+    with TestClient(app, raise_server_exceptions=False) as http:
+        respuesta = http.post("/audit/DOC-INTERNO", json={
+            "accion": "aprobar", "revisor": "Auditor", "motivo": "Revisado"
+        })
+    assert respuesta.status_code == 500

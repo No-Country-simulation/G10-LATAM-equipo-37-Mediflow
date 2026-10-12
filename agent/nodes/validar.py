@@ -47,13 +47,13 @@ from typing import Any
 import yaml
 
 from agent.nodes.common import step
+from agent.rules.loader import RULES_PATH, load_rules
 from agent.state import TriageState
 
-RULES_PATH = Path("agent/rules/rules.yaml")
 MEDICAMENTOS_PATH = Path("evals/generator/data/medicamentos.csv")
 CIE10_PATH = Path("evals/generator/data/cie10.csv")
 
-_rules_cache: dict | None = None
+
 _medicamentos_cache: list[dict] | None = None
 _cie10_cache: list[dict] | None = None
 
@@ -63,11 +63,11 @@ _cie10_cache: list[dict] | None = None
 # ---------------------------------------------------------------------------
 
 def _cargar_rules(path: Path = RULES_PATH) -> dict:
-    global _rules_cache
-    if _rules_cache is None:
-        with open(path, encoding="utf-8") as f:
-            _rules_cache = yaml.safe_load(f)
-    return _rules_cache
+    """Con la ruta por defecto usa load_rules(), que se recarga sola cuando cambian las reglas."""
+    if path == RULES_PATH:
+        return load_rules()
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
 
 def _cargar_csv(path: Path) -> list[dict]:

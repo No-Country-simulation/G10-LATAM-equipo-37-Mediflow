@@ -44,7 +44,7 @@ Idéntica al ejemplo del brief, más cuatro campos propios al final.
 |---|---|
 | `status` | `procesado`, `revision_humana`, `rechazado`, `pendiente` |
 | `documento_id` | El recibido |
-| `clasificacion` | `tipo_documento`, `especialidad`, `nivel_prioridad`, `score_confianza_clasificacion` (0 a 1) |
+| `clasificacion` | `tipo_documento`, `especialidad`, `nivel_prioridad`, `score_confianza_clasificacion` (0 a 1) y `motivo_fuera_de_alcance`, que solo se llena cuando el tipo es `Otro` (sección 6) |
 | `datos_extraidos` | `paciente {nombre, edad, fecha_nacimiento}`, `medico_solicitante {nombre, matricula}`, `estudio_realizado`, `diagnostico_principal`, `cie10_sugerido`, `medicamentos []`, `estudios_solicitados []` |
 | `decision_enrutamiento` | `destino_principal`, `requiere_auditoria_humana`, `justificacion_enrutamiento`, `notificacion_generada {canal, mensaje}` o null |
 | `almacenamiento_oci` | `bucket`, `ruta_objeto`, `status_backup` (`exito`, `pendiente`, `error`) |
@@ -162,8 +162,10 @@ generan AMB-3, pero siguen siendo de alto riesgo y su receta va a Farmacia con a
 ### Cómo viaja el motivo de AMB-6
 
 AMB-6 no dice qué le falta al documento sino por qué el agente no decide sobre él, así que necesita
-un motivo. `validar.py` lo escribe en el estado y `enrutar.py` lo repite en la justificación, sin
-volver a calcularlo.
+un motivo. `clasificar.py` lo propone en `clasificacion.motivo_fuera_de_alcance` cuando el tipo es
+`Otro`, `validar.py` lo copia en la validación al asignar AMB-6 y `enrutar.py` lo repite en la
+justificación, sin volver a calcularlo. Con `USE_LLM=false` el motivo sale `null`, porque necesita
+el juicio del modelo: se evalúa con `evals/run.py`.
 
 ```json
 "validacion": {
@@ -343,3 +345,45 @@ Un fallo después de la decisión se reintenta con el mismo cuerpo para evitar a
 La extracción, el texto y las correcciones son datos clínicos: viven en el bucket privado y no se
 escriben en registros ni en la traza. El panel muestra el documento completo, porque el auditor lo
 necesita, y sus mensajes de error no repiten lo enviado.
+
+---
+
+## 12. Reglas editables
+
+`GET /rules` devuelve las reglas vigentes: las de `agent/rules/rules.yaml`, o las editadas si existen. `PUT /rules` las reemplaza. Valida el objeto completo antes de guardarlo y el cambio rige desde la siguiente decisión, sin reiniciar.
+
+**Headers del PUT (obligatorios)**
+
+| Header | Contenido |
+| --- | --- |
+| `X-Admin-Token` | Clave de administrador. Debe coincidir con la variable de entorno `RULES_ADMIN_TOKEN`, que no va al repo. |
+| `X-Editor` | Nombre de quien hace el cambio. Queda en el registro. |
+
+**Cuerpo:** el objeto completo de reglas, con el mismo formato que devuelve `GET /rules`.
+
+**Respuestas del PUT**
+
+| Código | Cuándo | Cuerpo |
+| --- | --- | --- |
+| 200 | Reglas guardadas | `actualizado`, `cambios`, `umbral_modificado`, `aviso` |
+| 401 | Token ausente o incorrecto | `detail` |
+| 422 | Reglas inválidas | `{"detail": {"errores": [...]}}` con la lista legible; no se guarda nada |
+| 422 | Falta `X-Editor` | `detail` |
+| 503 | `RULES_ADMIN_TOKEN` no está definida | `detail`; la edición queda desactivada |
+
+**Qué se valida:** que estén las claves `version`, `umbrales`, `legibilidad`, `tipos_documento` y `campos_obligatorios`; que los umbrales estén entre 0 y 1 y cumplan `automatico > segunda_opinion > legibilidad_minima`; que `legibilidad.leve > legibilidad.media`; que los tipos de `campos_obligatorios` y de `deteccion_automatica_urgencia.aplica_a` existan en `tipos_documento`; que las listas de palabras sean textos; y que cada valor crítico de laboratorio tenga analito, valor y un operador válido. El bloque de destinos todavía no se valida.
+
+**Registro de cambios:** cada PUT que cambia algo agrega una línea a `data/rules.audit.jsonl` con la fecha (UTC), quién, si tocó un umbral y la lista de campos con su valor antes y después. Un PUT sin cambios no registra nada.
+
+**Aviso al tocar umbrales:** si cambia algo de `umbrales` o `legibilidad`, la respuesta trae `umbral_modificado: true` y el texto «Cambiaste un umbral: corre el golden set antes de dejarlo.». La pantalla debe mostrarlo antes de dar el cambio por bueno. Si no cambia ningún umbral, `umbral_modificado` es `false` y `aviso` es `null`. El servidor no corre el golden set.
+
+```json
+{
+  "actualizado": true,
+  "cambios": [
+    {"campo": "umbrales.segunda_opinion", "antes": 0.6, "despues": 0.55}
+  ],
+  "umbral_modificado": true,
+  "aviso": "Cambiaste un umbral: corre el golden set antes de dejarlo."
+}
+```

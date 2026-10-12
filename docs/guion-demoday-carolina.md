@@ -43,7 +43,11 @@ con el equipo. La demostración no constituye una validación para uso con pacie
 ## Preparación de la demo
 
 - Usar un commit integrado y aceptado por el equipo. Registrar el commit y la configuración.
-- Elegir con Diana tres casos sintéticos revisados; no improvisar correcciones clínicas.
+- Casos acordados el 12/10: GS-01 en TXT para rutina/Farmacia; GS-10 para urgencia
+  con auditoría; GS-06 para AMB-3 y revisión humana. Usar TXT en GS-01 evita que
+  la calidad de la fotografía cambie el recorrido esperado.
+- Validar esos recorridos en el despliegue integrado con Diana antes de los ensayos;
+  no improvisar correcciones clínicas ni presentar estas expectativas como resultados medidos.
 - Usar IDs nuevos por ensayo: un ID existente recupera su checkpoint en vez de crear otro caso.
 - Comprobar API, panel, original y destinos antes de presentar. El archivo
   `ui/pages/3_Auditoria.py` puede ejecutarse con `streamlit run` para verificar el panel.
