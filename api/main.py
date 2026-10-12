@@ -12,7 +12,7 @@ from agent.nodes.revision_humana import DecisionHumana
 from agent.revision_runtime import RevisionConflicto, RevisionNoExiste, reanudar
 from agent.rules.loader import ReglasInvalidas, guardar_reglas, load_rules, toca_umbrales
 from agent.schemas.contrato import TriageRequest, TriageResponse
-from agent.storage import local_audit
+from agent.storage import local_audit, triage_results
 from agent.storage.backend import storage
 from agent.storage.buckets import bucket_actual
 from agent.storage.identificadores import validar_id
@@ -71,18 +71,32 @@ def triage(req: TriageRequest):
     _validar_id(req.documento_id)
     if req.tipo_archivo in ("TEXTO", "JSON") and not (req.documento_texto or "").strip():
         raise HTTPException(status_code=422, detail="documento_texto es obligatorio para TEXTO y JSON")
-    resultado = _ejecutar_triage(req.documento_id, req.tipo_archivo, req.documento_texto, req.canal_origen)
-    return _a_respuesta(resultado)
+
+    resultado = _ejecutar_triage(
+        req.documento_id,
+        req.tipo_archivo,
+        req.documento_texto,
+        req.canal_origen,
+    )
+    respuesta = _a_respuesta(resultado)
+    triage_results.guardar_resultado(respuesta.model_dump(mode="json"))
+    return respuesta
 
 
 @app.post("/triage/upload", response_model=TriageResponse)
 async def triage_upload(
-    documento_id: str = Form(...), canal_origen: str = Form("web"), archivo: UploadFile = File(...)
+    documento_id: str = Form(...),
+    canal_origen: str = Form("web"),
+    archivo: UploadFile = File(...),
 ):
     try:
         _validar_id(documento_id)
         contenido = await archivo.read()
-        documento = ingest_document(contenido, filename=archivo.filename, content_type=archivo.content_type)
+        documento = ingest_document(
+            contenido,
+            filename=archivo.filename,
+            content_type=archivo.content_type,
+        )
     except IngestionError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     finally:
@@ -103,12 +117,23 @@ async def triage_upload(
         legibilidad=documento.legibilidad,
         ruta_original=ruta_original,
     )
-    return _a_respuesta(resultado)
+    respuesta = _a_respuesta(resultado)
+    triage_results.guardar_resultado(respuesta.model_dump(mode="json"))
+    return respuesta
+
+@app.get("/triage")
+def listar_triage():
+    return {"items": triage_results.listar_resultados()}
 
 
 @app.get("/triage/{documento_id}")
 def obtener_triage(documento_id: str):
-    raise HTTPException(status_code=404, detail="pendiente de implementar")
+    resultado = triage_results.obtener_resultado(documento_id)
+
+    if resultado is None:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+
+    return resultado
 
 
 @app.get("/queue/human")
