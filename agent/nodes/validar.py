@@ -343,6 +343,28 @@ def asignar_categoria_amb(
     return None
 
 
+# Categorías que el modelo puede aportar. AMB-1, AMB-2 y AMB-3 se deciden con reglas sobre los
+# datos; AMB-6 la decide la clasificación. Lo que solo se aprecia leyendo el documento (texto
+# cortado, dos documentos en un archivo) lo informa `extraer` en `state["ambiguedad"]`.
+_CATEGORIAS_DEL_MODELO = ("AMB-4", "AMB-5")
+_PATRON_AMB = re.compile(r"AMB[-_ ]?([1-6])", re.IGNORECASE)
+
+
+def categoria_ambiguedad_del_modelo(valor: Any) -> str | None:
+    """AMB-4 o AMB-5 si `extraer` las informó en el estado; None en cualquier otro caso.
+
+    Acepta «AMB-4», «amb-5» o un texto que la contenga («AMB-5: dos documentos en uno»). Cualquier
+    otra categoría o un valor ilegible se ignora: esas se calculan por reglas, no por el modelo.
+    """
+    if not isinstance(valor, str):
+        return None
+    m = _PATRON_AMB.search(valor)
+    if not m:
+        return None
+    categoria = f"AMB-{m.group(1)}"
+    return categoria if categoria in _CATEGORIAS_DEL_MODELO else None
+
+
 # ---------------------------------------------------------------------------
 # Entrada del nodo
 # ---------------------------------------------------------------------------
@@ -361,8 +383,9 @@ def validar(state: TriageState) -> dict:
     conflictos_dosis = validar_dosis_medicamentos(datos, medicamentos_catalogo, tipo_documento)
     conflictos_cie10 = validar_cie10(datos, cie10_catalogo)
     conflictos_contradiccion = validar_contradiccion_interna(datos)
-    es_ilegible_medio = evaluar_legibilidad(legibilidad, rules)
-    es_multiples_documentos = bool(datos.get("_multiples_documentos"))  # TODO: confirmar origen real de esta marca
+    ambiguedad_modelo = categoria_ambiguedad_del_modelo(state.get("ambiguedad"))
+    es_ilegible_medio = evaluar_legibilidad(legibilidad, rules) or ambiguedad_modelo == "AMB-4"
+    es_multiples_documentos = bool(datos.get("_multiples_documentos")) or ambiguedad_modelo == "AMB-5"
 
     categoria = asignar_categoria_amb(
         campos_faltantes,
