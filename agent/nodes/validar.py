@@ -242,14 +242,33 @@ def validar_dosis_medicamentos(datos: dict, medicamentos_catalogo: list[dict], t
     return conflictos
 
 
+# Categoría de 3 caracteres con subdivisión opcional: "R91", "R91.1", "I26.9". Sin más texto.
+_CODIGO_CIE10 = re.compile(r"^([A-Z]\d{2})(?:\.\d{1,2})?$")
+
+
+def _categoria_cie10(codigo: Any) -> str | None:
+    """Categoría de 3 caracteres de un código CIE-10 («R91.1» -> «R91»), o None si no tiene la forma."""
+    m = _CODIGO_CIE10.match(str(codigo).strip().upper())
+    return m.group(1) if m else None
+
+
 def validar_cie10(datos: dict, cie10_catalogo: list[dict]) -> list[str]:
-    """Verifica que el código CIE-10 sugerido exista en la lista tabular OPS/OMS (ADR-008)."""
+    """Verifica que el código CIE-10 sugerido pertenezca a una categoría de la lista OPS/OMS (ADR-008).
+
+    Se compara por categoría de 3 caracteres (ADR-013): el catálogo sigue la CIE-10 de la OMS, donde
+    «R91» o «I10» no tienen subcódigos, mientras que adaptaciones como la CIE-10-CM agregan «R91.1».
+    Para el triaje lo que importa es la categoría. Límite conocido: un subcódigo inventado dentro de
+    una categoría real (p. ej. «I26.7») pasa. El código queda en el estado tal como lo devolvió el
+    modelo (`datos_extraidos["cie10_sugerido"]`): esta función no lo modifica.
+    """
     codigo = datos.get("cie10_sugerido")
     if not codigo:
         return []
-    for fila in cie10_catalogo:
-        if fila.get("codigo") == codigo:
-            return []
+    categoria = _categoria_cie10(codigo)
+    if categoria is not None:
+        for fila in cie10_catalogo:
+            if _categoria_cie10(fila.get("codigo", "")) == categoria:
+                return []
     return [f"Código CIE-10 no encontrado en la lista OPS/OMS: {codigo}"]
 
 
