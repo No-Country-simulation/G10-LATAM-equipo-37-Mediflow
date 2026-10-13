@@ -2,7 +2,8 @@
 
 Corrida oficial de `evals/run.py`:
 - **Qué se evaluó:** las 76 variantes de los 45 elementos del conjunto de prueba.
-- **Modelo principal:** DeepSeek (`deepseek/deepseek-chat`).
+- **Modelos:** DeepSeek (`deepseek/deepseek-chat`) como principal y `gemini/gemini-2.5-flash` como respaldo. Ese modelo de Gemini hoy está retirado y responde 404, así que en la práctica no hubo respaldo.
+- **OCR:** tesseract 5.5.3 con español, confirmado por Carlos.
 - **Código:** commit `b3ff577` de develop, con #103, #98 y #10 ya fusionados.
 - **Archivos:** `report.md` y `resultados.json` son la salida del harness sin editar. Este análisis se escribió después, a partir de ellos.
 
@@ -35,7 +36,14 @@ Las 22 imágenes terminaron igual:
 - en Revisión humana;
 - en menos de 5 segundos.
 
-Es la señal de que el OCR no devolvió texto. En ese caso la legibilidad provisional de `normalizar.py` queda en 0,30, por debajo del mínimo de 0,40, y el agente decide «ilegible» sin llamar al modelo. Con tesseract instalado, el OCR lee el escaneo de GS-07 sin problema (más de 1.500 caracteres). Todo indica que faltaba tesseract en la máquina de la corrida. La imagen de la API sí lo instala.
+Es la señal de que el OCR no devolvió texto. En ese caso la legibilidad provisional de `normalizar.py` queda en 0,30, por debajo del mínimo de 0,40, y el agente decide «ilegible» sin llamar al modelo. En otra máquina, el mismo código lee el escaneo de GS-07 sin problema (más de 1.500 caracteres).
+
+Tesseract estaba instalado, así que la falla está entre Python y tesseract. `_ocr()` en `agent/ingestion.py` atrapa cualquier error y sigue sin texto, sin dejar aviso. Las causas posibles son tres:
+- el ejecutable no está en el PATH del proceso de Python, algo común en Windows;
+- falta `pytesseract` en el entorno;
+- falta alguno de los idiomas que pide `MEDIFLOW_OCR_LANG`, que por defecto es `spa+por+eng`.
+
+Se confirma antes de la corrida 2. Además conviene que `_ocr()` registre el error en lugar de callarlo.
 
 Consecuencias:
 - **La única urgencia que falta es una imagen:** GS-07 escaneado.
@@ -114,6 +122,7 @@ Agrupados como el informe de `run.py`: la categoría AMB esperada, la urgencia, 
 | Marcar la auditoría en todo lo que va a Revisión humana y mandar ahí la ambigüedad | `agent/nodes/enrutar.py` | N1-07 |
 | Afinar AMB-1, AMB-4 y AMB-5 | `agent/nodes/validar.py` y prompts | N1-05 y N1-13 |
 | Puerta de legibilidad con score real | `agent/nodes/normalizar.py` | N2-08 |
-| Repetir la corrida con tesseract instalado y un modelo multimodal en la cadena de respaldo | `evals/run.py` | N3-01 |
+| Que el OCR avise cuando falla, en lugar de seguir sin texto | `agent/ingestion.py` | N1-01 |
+| Repetir la corrida con el OCR funcionando y un respaldo vigente | `evals/run.py` | N3-01 |
 
 La próxima corrida se publica en su propia carpeta de `evals/resultados/`. Esta queda como línea de base para medir esos cambios.
