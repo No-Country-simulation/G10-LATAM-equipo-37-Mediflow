@@ -36,13 +36,18 @@ contrastamos un campo con el original y enviamos la corrección. Mostramos el re
 actualizamos la cola. Si persiste una ambigüedad, explicamos por qué vuelve a revisión.
 
 **Cierre.** La integración cuenta con pruebas de reanudación, control de versiones e historial,
-y de restauración local del estado. La medición con modelos reales y la validación en OCI
-siguen pendientes. El siguiente paso es completar esas verificaciones y ensayar el recorrido
+y de restauración local del estado. La primera evaluación real ya está publicada, pero debe
+repetirse con los arreglos integrados y las imágenes procesadas correctamente. El siguiente
+paso es completar la validación de esta integración en OCI y ensayar el recorrido
 con el equipo. La demostración no constituye una validación para uso con pacientes reales.
 
 ## Preparación de la demo
 
 - Usar un commit integrado y aceptado por el equipo. Registrar el commit y la configuración.
+- Actualización 13/10: Carlos confirmó que producción todavía usa reglas sin modelo activo.
+  No presentar ese comportamiento como resultado del LLM. Confirmar activación y repetir
+  los tres escenarios antes de fijar los casos; el equipo considera GS-28 como alternativa
+  de rutina y GS-07 como urgencia. Los casos siguientes son candidatos, no resultados verificados.
 - Casos acordados el 12/10: GS-01 en TXT para rutina/Farmacia; GS-10 para urgencia
   con auditoría; GS-06 para AMB-3 y revisión humana. Usar TXT en GS-01 evita que
   la calidad de la fotografía cambie el recorrido esperado.

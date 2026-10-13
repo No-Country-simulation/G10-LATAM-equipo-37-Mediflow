@@ -1,16 +1,19 @@
 import json
+import sqlite3
+from contextlib import closing
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
 
 from agent.revision_runtime import ejecutar, reanudar
-from agent.storage import local, respaldo
+from agent.storage import local, respaldo, triage_results
 from agent.tests.test_revision_humana import decision, estado
 from agent.tests.test_revision_humana import entorno as entorno_base  # noqa: F401
 
 
 @pytest.fixture
-def entorno(entorno_base):  # noqa: F811 - fixture compartida de pytest
+def entorno(entorno_base, monkeypatch):  # noqa: F811 - fixture compartida de pytest
+    monkeypatch.setattr(triage_results, "DB_PATH", entorno_base / "triage_results.sqlite3")
     return entorno_base
 
 
@@ -39,6 +42,21 @@ def test_no_sobrescribe_ni_se_incluye_a_si_mismo(entorno):
         respaldo.crear(archivo)
     with pytest.raises(FileExistsError):
         respaldo.restaurar(archivo, entorno)
+
+
+def test_respaldo_incluye_resultados_de_cola(entorno):
+    ejecutar(estado())
+    resultado = {"documento_id": "COLA-1", "decision_enrutamiento": {
+        "destino_principal": "Cola_Revision_Humana"}, "score_confianza": 0.5}
+    triage_results.guardar_resultado(resultado)
+    archivo = entorno / "backup.zip"
+    manifiesto = respaldo.crear(archivo)
+    assert "triage_results.sqlite3" in manifiesto["archivos"]
+    destino = entorno / "restaurado"
+    respaldo.restaurar(archivo, destino)
+    with closing(sqlite3.connect(destino / "triage_results.sqlite3")) as db:
+        fila = db.execute("SELECT resultado_json FROM triage_results WHERE documento_id='COLA-1'").fetchone()
+    assert json.loads(fila[0]) == resultado
 
 
 @pytest.mark.parametrize("alteracion", ["contenido", "ruta"])

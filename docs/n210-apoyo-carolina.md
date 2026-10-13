@@ -36,3 +36,22 @@ Límites y coordinación con Sabrina:
   campos ni su selección de bucket. Son modificaciones a bloques distintos.
 
 No se cambian los estados de docs/privacidad.md a "Hecho" sin evidencia completa.
+
+## Respaldo de la cola incorporada por #94 (13/10)
+
+La utilidad `python -m agent.storage.respaldo crear --destino respaldo.zip` incluye
+`triage_results.sqlite3` cuando existe en la ruta configurada por `MEDIFLOW_TRIAGE_DB`,
+además de checkpoints y objetos. Usa la API de backup SQLite, registra hashes y
+comprueba integridad de ambas bases al restaurar. Sigue aceptando respaldos v1.
+
+Para un punto de recuperación coherente entre ambas bases, detener la recepción en
+API y worker y esperar a que terminen los trabajos antes de ejecutar el respaldo.
+El mutex del runtime no cubre la escritura posterior de la cola: con tráfico activo
+las copias SQLite son válidas individualmente, pero no constituyen una transacción
+atómica entre ambas bases y los objetos. El job de Sabrina debe respetar esta ventana.
+Si todavía no existe la base de resultados, no se crea una base vacía para respaldarla.
+En el despliegue que ya usa la cola, verificar que el manifiesto la incluya.
+
+Restaurar siempre en un directorio nuevo y configurar MEDIFLOW_CHECKPOINT_DB,
+MEDIFLOW_TRIAGE_DB y la raíz de objetos hacia los archivos restaurados antes de arrancar.
+La prueba local verifica que la fila de cola se recupera idéntica; OCI sigue pendiente.

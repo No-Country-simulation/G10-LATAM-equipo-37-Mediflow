@@ -14,7 +14,7 @@ from pathlib import Path, PurePosixPath
 from tempfile import TemporaryDirectory
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from agent.storage import local
+from agent.storage import local, triage_results
 from agent.storage.backend import storage
 from agent.storage.buckets import bucket_actual
 
@@ -29,7 +29,7 @@ def _ruta_segura(nombre):
 
 
 def crear(destino: Path, subir=False):
-    """Bloquea escritores del runtime mientras captura DB y objetos del bucket."""
+    """Captura SQLite y objetos; detener API/worker para consistencia entre bases."""
     destino = Path(destino)
     if destino.exists():
         raise FileExistsError("El respaldo ya existe")
@@ -42,7 +42,10 @@ def crear(destino: Path, subir=False):
     if destino.resolve().is_relative_to((local.DATA_DIR / bucket).resolve()):
         raise ValueError("El respaldo debe guardarse fuera del bucket local")
     destino.parent.mkdir(parents=True, exist_ok=True)
-    manifiesto = {"version": 1, "bucket": bucket, "fecha": datetime.now(timezone.utc).isoformat(), "archivos": {}}
+    bases = {"checkpoints.sqlite3": db}
+    if triage_results.DB_PATH.is_file():
+        bases["triage_results.sqlite3"] = triage_results.DB_PATH
+    manifiesto = {"version": 2, "bucket": bucket, "fecha": datetime.now(timezone.utc).isoformat(), "archivos": {}}
     with TemporaryDirectory(dir=destino.parent) as temporal:
         raiz = Path(temporal)
         with closing(sqlite3.connect(str(db) + ".lock", timeout=30)) as lock:
@@ -50,15 +53,17 @@ def crear(destino: Path, subir=False):
             lock.commit()
             lock.execute("BEGIN IMMEDIATE")
             try:
-                with (closing(sqlite3.connect(db)) as origen,
-                      closing(sqlite3.connect(raiz / "checkpoints.sqlite3")) as copia):
-                    origen.backup(copia)
+                for nombre, ruta_db in bases.items():
+                    with (closing(sqlite3.connect(ruta_db)) as origen,
+                          closing(sqlite3.connect(raiz / nombre)) as copia):
+                        origen.backup(copia)
                 with ZipFile(raiz / "respaldo.zip", "w", ZIP_DEFLATED) as archivo:
                     def agregar(nombre, contenido):
                         archivo.writestr(nombre, contenido)
                         manifiesto["archivos"][nombre] = hashlib.sha256(contenido).hexdigest()
 
-                    agregar("checkpoints.sqlite3", (raiz / "checkpoints.sqlite3").read_bytes())
+                    for nombre in bases:
+                        agregar(nombre, (raiz / nombre).read_bytes())
                     for clave in storage.list_prefix(bucket, ""):
                         if clave.startswith("respaldos/"):
                             continue
@@ -83,7 +88,7 @@ def restaurar(origen: Path, destino: Path):
     with ZipFile(origen) as archivo:
         manifiesto = json.loads(archivo.read("manifest.json"))
         bucket = manifiesto["bucket"]
-        if manifiesto.get("version") != 1 or len(_ruta_segura(bucket).parts) != 1:
+        if manifiesto.get("version") not in {1, 2} or len(_ruta_segura(bucket).parts) != 1:
             raise ValueError("Formato de respaldo inválido")
         entradas = manifiesto["archivos"]
         if "checkpoints.sqlite3" not in entradas:
@@ -92,19 +97,21 @@ def restaurar(origen: Path, destino: Path):
             raise ValueError("El inventario del respaldo no coincide")
         for nombre, digest in entradas.items():
             _ruta_segura(nombre)
-            if nombre != "checkpoints.sqlite3" and not nombre.startswith("objetos/"):
+            if nombre not in {"checkpoints.sqlite3", "triage_results.sqlite3"} and not nombre.startswith("objetos/"):
                 raise ValueError("Entrada no permitida")
             if hashlib.sha256(archivo.read(nombre)).hexdigest() != digest:
                 raise ValueError("El respaldo está alterado")
         destino.mkdir(parents=True, exist_ok=False)
         for nombre in entradas:
-            ruta = (destino / nombre if nombre == "checkpoints.sqlite3" else
+            ruta = (destino / nombre if nombre in {"checkpoints.sqlite3", "triage_results.sqlite3"} else
                     destino / bucket / nombre.removeprefix("objetos/"))
             ruta.parent.mkdir(parents=True, exist_ok=True)
             ruta.write_bytes(archivo.read(nombre))
-    with closing(sqlite3.connect(destino / "checkpoints.sqlite3")) as db:
-        if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
-            raise ValueError("SQLite no supera la validación de integridad")
+    for nombre in ("checkpoints.sqlite3", "triage_results.sqlite3"):
+        if nombre in entradas:
+            with closing(sqlite3.connect(destino / nombre)) as db:
+                if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+                    raise ValueError("SQLite no supera la validación de integridad")
     return manifiesto
 
 
