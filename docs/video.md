@@ -6,8 +6,8 @@ Paquete **F-01** de `docs/plan.md` (redistribución vigente del 7/10/2026). Issu
 |---|---|
 | Responsable / apoyo | Alessandro / Sabrina |
 | Fechas | 13/10 a 16/10 |
-| Depende de | N1-10 (tres escenarios reproducibles) |
-| Duración objetivo | 3:50 (rango permitido: 3 a 5 minutos) |
+| Depende de | N1-10 (tres escenarios reproducibles); N1-06 (regla A) fusionado y desplegado en la VM |
+| Duración objetivo | 4:00 (rango permitido: 3 a 5 minutos) |
 | Criterio de aceptación | Guion aprobado en la sincronización del viernes 16/10 |
 | Pasos siguientes | F-03 ensayo con persona externa (17/10), F-04 grabación (21/10) |
 
@@ -15,15 +15,15 @@ Regla de producción: todo se muestra **en vivo desde la URL pública en OCI**, 
 
 ## Los tres escenarios elegidos
 
-Son los de mayor riesgo y resiliencia entre los escenarios de demostración del README (sección «Escenarios de demostración»). La rutina se muestra solo como contraste de 15 s en la apertura.
+Son los de mayor riesgo y resiliencia entre los escenarios de demostración del README (sección «Escenarios de demostración»). La rutina se muestra solo como contraste de 20 s al inicio.
 
 | # | Escenario | Qué demuestra | Documento (de `evals/golden/plan_golden.csv`) | Resultado esperado |
 |---|---|---|---|---|
-| 1 | **Urgencia** | Riesgo vital detectado y alertado | `GS-07` (informe de tomografía con tromboembolismo pulmonar agudo; `evals/golden/files/GS-07.txt`, `GS-07.pdf` y `GS-07_escaneado.png`); caso del brief en `docs/examples/triage_request.json` | `Cola_Emergencia_Medica`, prioridad `Urgente`, alerta a Slack vía n8n, objeto en `procesados/urgentes/` |
-| 2 | **Ambigüedad y resiliencia** | El sistema no adivina: duda, deriva a una persona y tolera entradas malas | `M4` (receta manuscrita con dosis dudosa, AMB-4, legibilidad media; `evals/handwritten/M4.jpg`). Respaldo: `M7` (ilegible, severa) y `GS-06` (AMB-3, texto) | `Cola_Revision_Humana`, `requiere_auditoria_humana: true`; el auditor corrige y se reencamina a Farmacia, o rechaza y queda en `rechazados/` |
-| 3 | **Alto riesgo** | El medicamento peligroso se audita, no se confunde con una urgencia | `GS-04` (receta con enoxaparina; `evals/golden/files/GS-04.txt`). Alternativas: `GS-03`, `GS-05` | `Farmacia_Hospitalaria` con `requiere_auditoria_humana: true`; no va a Emergencia (regla A de N1-06) |
+| 1 | **Urgencia** | Riesgo vital detectado y alertado | `GS-07` (informe de tomografía con tromboembolismo pulmonar agudo; `evals/golden/files/GS-07.txt` y `GS-07_escaneado.png`); caso del brief en `docs/examples/triage_request.json` | `Cola_Emergencia_Medica`, prioridad `Urgente`, alerta a Slack vía n8n, objeto en `procesados/urgentes/` |
+| 2 | **Ambigüedad y resiliencia** | El sistema no adivina: duda, deriva a una persona y tolera entradas malas | `M4` (receta manuscrita con dosis dudosa, AMB-4, legibilidad media; `evals/handwritten/M4.jpg`). Respaldo: `M7` (ilegible, severa) y `GS-06` (AMB-3, texto) | `M4`: `Cola_Revision_Humana`, `requiere_auditoria_humana: true`; el auditor corrige y se reencamina a Farmacia, o rechaza y queda en `rechazados/`. `M7`: `Cola_Revision_Humana` con motivo «solicitar nueva captura» |
+| 3 | **Alto riesgo** | El medicamento peligroso se audita, no se confunde con una urgencia | `GS-04` (receta con enoxaparina, en `medicamentos_alto_riesgo`; `evals/golden/files/GS-04.txt`). Alternativas: `GS-03`, `GS-05` | `Farmacia_Hospitalaria` con `requiere_auditoria_humana: true`; no va a Emergencia (regla A de N1-06, que debe ignorar la frase «Consultar de urgencia ante sangrado») |
 
-Contraste de apertura (rutina): `GS-27` (certificado médico; su archivo aún no está en `evals/golden/files/`, pendiente de la autora) → `Historia_Clinica_Electronica`, sin auditoría.
+Contraste de apertura (rutina): `GS-27` (certificado médico; `evals/golden/files/GS-27.txt` y `GS-27_foto.png`) → `Historia_Clinica_Electronica`, sin auditoría. No usar `GS-25` para la rutina: sin N1-06 sale como falsa urgencia.
 
 ## Storyboard y guion
 
@@ -32,7 +32,7 @@ Contraste de apertura (rutina): `GS-27` (certificado médico; su archivo aún no
 | 0:00–0:20 | Título y diagrama del flujo (`docs/flujo-del-dato.png`) | «Cada día llegan miles de documentos clínicos y alguien los clasifica a mano. MediFlow lee, clasifica, puntúa la confianza y enruta, y cuando no está seguro, lo dice.» | Diagrama del flujo |
 | 0:20–0:40 | UI de carga: se sube `GS-27` (rutina) y llega a Historia Clínica | «Un caso rutinario pasa solo: sin auditoría, a su destino.» | Cola de triaje, destino y score |
 | 0:40–1:50 | **Escenario 1.** Subir `GS-07`; seguir el procesamiento en la página de trazas; abrir la alerta en Slack | «Una tomografía con tromboembolismo pulmonar agudo. El sistema lo reconoce como hallazgo crítico, va a Emergencia y la alerta llega a Slack en segundos.» Mostrar la evidencia por campo (frase del informe que justifica el hallazgo) | `status`, `Cola_Emergencia_Medica`, `evidencias`, mensaje de Slack, objeto en `procesados/urgentes/` |
-| 1:50–3:00 | **Escenario 2.** Subir la foto `M4.jpg`; mostrar score bajo y el motivo; entrar al panel del auditor; corregir la dosis y reencaminar. Plano corto: `M7.jpg` (ilegible) rechazada por la puerta de legibilidad | «Esta receta manuscrita tiene una dosis dudosa. El sistema no adivina: baja el score, la envía a Revisión Humana y explica por qué. El auditor corrige y el documento sigue a Farmacia. Si la foto es ilegible, se rechaza.» Si falla el modelo principal, mostrar en la traza el modelo de respaldo usado | Score y componentes en la traza, `modelo_utilizado`, acción del auditor, `rechazados/` |
+| 1:50–3:00 | **Escenario 2.** Subir la foto `M4.jpg`; mostrar score bajo y el motivo; entrar al panel del auditor; corregir la dosis y reencaminar. Plano corto: `M7.jpg` (ilegible) enviada a Revisión Humana con el motivo «solicitar nueva captura» | «Esta receta manuscrita tiene una dosis dudosa. El sistema no adivina: baja el score, la envía a Revisión Humana y explica por qué. El auditor corrige y el documento sigue a Farmacia. Si la foto es ilegible, tampoco la adivina: la deriva a Revisión Humana y pide una nueva captura.» Si falla el modelo principal, mostrar en la traza el modelo de respaldo usado | Score y componentes en la traza, `modelo_utilizado`, acción del auditor, motivo «solicitar nueva captura» en `Cola_Revision_Humana` |
 | 3:00–3:30 | **Escenario 3.** Subir `GS-04` (enoxaparina) | «Un anticoagulante es de alto riesgo, pero no es una urgencia clínica: va a Farmacia Hospitalaria con auditoría obligatoria, no a Emergencia.» | `Farmacia_Hospitalaria`, `requiere_auditoria_humana: true`, medicamento marcado |
 | 3:30–3:50 | Panel de métricas / resultados de `evals/output/` (voz de Sabrina) | «Medimos sobre un conjunto de 45 elementos, sin ajustar prompts mirando el conjunto de prueba: aciertos de clasificación, destino y auditoría.» | Números que coinciden con el README final (F-06) |
 | 3:50–4:00 | Cierre con URL pública y equipo | «MediFlow: automatiza lo rutinario, escala lo urgente y pide ayuda cuando duda.» | URL pública, nombres del equipo |
@@ -49,10 +49,11 @@ Se completa aquí: selección de casos, tiempos, narración, planos y evidencia 
 
 ## Pendientes antes de grabar
 
+- [ ] Confirmar que N1-06 (hoy en #3 / #86) esté fusionado y desplegado en la VM: el Escenario 3 (`GS-04`) depende de la regla A.
 - [ ] Confirmar con Camila que `GS-07`, `M4`, `M7` y `GS-04` dan los resultados esperados en la URL pública de OCI.
 - [ ] Alertas a Slack vía n8n funcionando (N2-09, N3-08); si no estuvieran, mostrar la alerta por correo.
 - [ ] Preparar el caso de modelo de respaldo (`LLM_FALLBACKS`) para mostrarlo en la traza.
-- [ ] Confirmar que `GS-27` (o `GS-25`/`GS-28`) tenga su archivo en `evals/golden/files/` para la apertura de rutina.
+- [ ] Conciliar el tamaño del conjunto de prueba: `plan_golden.csv` tiene 45 elementos (coincide con este guion), pero el README menciona 56 casos. Revisar con Camila en F-06 antes de grabar.
 - [ ] Cronometrar: el total debe quedar entre 3:00 y 5:00.
 
 ## Cómo validar este guion
