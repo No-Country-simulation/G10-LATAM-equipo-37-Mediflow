@@ -1,0 +1,1807 @@
+{
+  "fecha": "2026-10-13T10:53:20",
+  "simulado": false,
+  "metricas": {
+    "casos_evaluados": 76,
+    "casos_con_error": 0,
+    "accuracy_clasificacion": "83% (52/63)",
+    "accuracy_destino": "62% (39/63)",
+    "accuracy_auditoria": "60% (38/63)",
+    "puerta_legibilidad": "46% (6/13)",
+    "recall_urgencias": "94% (16/17)",
+    "falsas_urgencias": 10,
+    "variantes_evaluadas": "63 legibles y 13 degradadas",
+    "fuera_de_alcance": "0% (0/12)",
+    "tasa_revision_humana": "45% (34/76)",
+    "latencia_p50": "3.9 s",
+    "latencia_p95": "5.2 s",
+    "casos_perfectos": "41% (31/76)"
+  },
+  "variantes": [
+    {
+      "id": "GS-01",
+      "archivo": "GS-01.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": false,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Receta Medica",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.925
+      },
+      "segundos": 16.548
+    },
+    {
+      "id": "GS-01",
+      "archivo": "GS-01_foto.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 4.957
+    },
+    {
+      "id": "GS-02",
+      "archivo": "GS-02.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Receta Medica",
+        "destino_principal": "Farmacia_Hospitalaria",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.93
+      },
+      "segundos": 4.066
+    },
+    {
+      "id": "GS-02",
+      "archivo": "GS-02_foto.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.32
+    },
+    {
+      "id": "GS-03",
+      "archivo": "GS-03.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Receta Medica",
+        "destino_principal": "Farmacia_Hospitalaria",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.93
+      },
+      "segundos": 4.508
+    },
+    {
+      "id": "GS-04",
+      "archivo": "GS-04.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": false,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Receta Medica",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.93
+      },
+      "segundos": 4.109
+    },
+    {
+      "id": "GS-05",
+      "archivo": "GS-05.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Receta Medica",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-3",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.855
+      },
+      "segundos": 4.319
+    },
+    {
+      "id": "GS-06",
+      "archivo": "GS-06.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true
+      },
+      "obtenido": {
+        "tipo_documento": "Receta Medica",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-3",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 3.345
+    },
+    {
+      "id": "GS-07",
+      "archivo": "GS-07.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.932
+      },
+      "segundos": 3.996
+    },
+    {
+      "id": "GS-07",
+      "archivo": "GS-07_escaneado.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": false,
+        "tipo": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 1.923
+    },
+    {
+      "id": "GS-08",
+      "archivo": "GS-08.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.932
+      },
+      "segundos": 5.562
+    },
+    {
+      "id": "GS-08",
+      "archivo": "GS-08.pdf",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.992
+      },
+      "segundos": 5.607
+    },
+    {
+      "id": "GS-09",
+      "archivo": "GS-09.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.925
+      },
+      "segundos": 4.375
+    },
+    {
+      "id": "GS-09",
+      "archivo": "GS-09.pdf",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.988
+      },
+      "segundos": 3.853
+    },
+    {
+      "id": "GS-10",
+      "archivo": "GS-10.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.93
+      },
+      "segundos": 4.586
+    },
+    {
+      "id": "GS-10",
+      "archivo": "GS-10.pdf",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.992
+      },
+      "segundos": 3.737
+    },
+    {
+      "id": "GS-11",
+      "archivo": "GS-11.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.925
+      },
+      "segundos": 4.247
+    },
+    {
+      "id": "GS-11",
+      "archivo": "GS-11.pdf",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.992
+      },
+      "segundos": 3.904
+    },
+    {
+      "id": "GS-11",
+      "archivo": "GS-11_escaneado.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.407
+    },
+    {
+      "id": "GS-12",
+      "archivo": "GS-12.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-2",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 4.624
+    },
+    {
+      "id": "GS-12",
+      "archivo": "GS-12.pdf",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-2",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.912
+      },
+      "segundos": 4.871
+    },
+    {
+      "id": "GS-12",
+      "archivo": "GS-12_escaneado.png",
+      "clase": "imagen",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.54
+    },
+    {
+      "id": "GS-13",
+      "archivo": "GS-13.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.932
+      },
+      "segundos": 5.115
+    },
+    {
+      "id": "GS-13",
+      "archivo": "GS-13.json",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.932
+      },
+      "segundos": 5.502
+    },
+    {
+      "id": "GS-14",
+      "archivo": "GS-14.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 5.232
+    },
+    {
+      "id": "GS-14",
+      "archivo": "GS-14.json",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 5.08
+    },
+    {
+      "id": "GS-15",
+      "archivo": "GS-15.json",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.925
+      },
+      "segundos": 3.808
+    },
+    {
+      "id": "GS-16",
+      "archivo": "GS-16.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.93
+      },
+      "segundos": 5.122
+    },
+    {
+      "id": "GS-16",
+      "archivo": "GS-16.json",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.932
+      },
+      "segundos": 5.042
+    },
+    {
+      "id": "GS-16",
+      "archivo": "GS-16_foto.png",
+      "clase": "imagen",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.498
+    },
+    {
+      "id": "GS-17",
+      "archivo": "GS-17.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-2",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 4.431
+    },
+    {
+      "id": "GS-17",
+      "archivo": "GS-17.json",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-2",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.837
+      },
+      "segundos": 4.452
+    },
+    {
+      "id": "GS-18",
+      "archivo": "GS-18.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Orden de Solicitud de Procedimiento",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.857
+      },
+      "segundos": 3.66
+    },
+    {
+      "id": "GS-18",
+      "archivo": "GS-18.json",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Orden de Solicitud de Procedimiento",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.855
+      },
+      "segundos": 4.744
+    },
+    {
+      "id": "GS-19",
+      "archivo": "GS-19.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Orden de Solicitud de Procedimiento",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.855
+      },
+      "segundos": 4.253
+    },
+    {
+      "id": "GS-19",
+      "archivo": "GS-19.pdf",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Orden de Solicitud de Procedimiento",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.917
+      },
+      "segundos": 3.921
+    },
+    {
+      "id": "GS-20",
+      "archivo": "GS-20.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Orden de Solicitud de Procedimiento",
+        "destino_principal": "Auditoria_Autorizaciones",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 3.662
+    },
+    {
+      "id": "GS-20",
+      "archivo": "GS-20.pdf",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Orden de Solicitud de Procedimiento",
+        "destino_principal": "Auditoria_Autorizaciones",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.912
+      },
+      "segundos": 3.533
+    },
+    {
+      "id": "GS-20",
+      "archivo": "GS-20_escaneado.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.65
+    },
+    {
+      "id": "GS-21",
+      "archivo": "GS-21.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": false,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Orden de Solicitud de Procedimiento",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.855
+      },
+      "segundos": 3.599
+    },
+    {
+      "id": "GS-21",
+      "archivo": "GS-21_foto.png",
+      "clase": "imagen",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.236
+    },
+    {
+      "id": "GS-22",
+      "archivo": "GS-22.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true
+      },
+      "obtenido": {
+        "tipo_documento": "Orden de Solicitud de Procedimiento",
+        "destino_principal": "Auditoria_Autorizaciones",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.775
+      },
+      "segundos": 3.447
+    },
+    {
+      "id": "GS-23",
+      "archivo": "GS-23.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": false,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Epicrisis",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 4.257
+    },
+    {
+      "id": "GS-23",
+      "archivo": "GS-23_escaneado.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 1.534
+    },
+    {
+      "id": "GS-24",
+      "archivo": "GS-24.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": false,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Epicrisis",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.855
+      },
+      "segundos": 4.527
+    },
+    {
+      "id": "GS-24",
+      "archivo": "GS-24.pdf",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": false,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Epicrisis",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.917
+      },
+      "segundos": 4.589
+    },
+    {
+      "id": "GS-24",
+      "archivo": "GS-24_escaneado.png",
+      "clase": "imagen",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.651
+    },
+    {
+      "id": "GS-25",
+      "archivo": "GS-25.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": false,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Epicrisis",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 3.682
+    },
+    {
+      "id": "GS-26",
+      "archivo": "GS-26.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "Epicrisis",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.85
+      },
+      "segundos": 4.338
+    },
+    {
+      "id": "GS-27",
+      "archivo": "GS-27.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Certificado Medico",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.782
+      },
+      "segundos": 3.344
+    },
+    {
+      "id": "GS-27",
+      "archivo": "GS-27_foto.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.521
+    },
+    {
+      "id": "GS-28",
+      "archivo": "GS-28.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Certificado Medico",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.925
+      },
+      "segundos": 3.943
+    },
+    {
+      "id": "GS-28",
+      "archivo": "GS-28_foto.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.234
+    },
+    {
+      "id": "GS-29",
+      "archivo": "GS-29.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true
+      },
+      "obtenido": {
+        "tipo_documento": "Certificado Medico",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-1",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.855
+      },
+      "segundos": 3.718
+    },
+    {
+      "id": "GS-30",
+      "archivo": "GS-30.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "Certificado Medico",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.825
+      },
+      "segundos": 4.045
+    },
+    {
+      "id": "FA-01",
+      "archivo": "FA-01.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true,
+        "motivo_fuera_de_alcance": true
+      },
+      "obtenido": {
+        "tipo_documento": "Otro",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-6",
+        "motivo_fuera_de_alcance": "no_clinico",
+        "score": 0.925
+      },
+      "segundos": 4.159
+    },
+    {
+      "id": "FA-01",
+      "archivo": "FA-01.pdf",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true,
+        "motivo_fuera_de_alcance": true
+      },
+      "obtenido": {
+        "tipo_documento": "Otro",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-6",
+        "motivo_fuera_de_alcance": "no_clinico",
+        "score": 0.995
+      },
+      "segundos": 3.211
+    },
+    {
+      "id": "FA-02",
+      "archivo": "FA-02.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": false,
+        "tipo": true,
+        "categoria_amb": true,
+        "motivo_fuera_de_alcance": true
+      },
+      "obtenido": {
+        "tipo_documento": "Otro",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-6",
+        "motivo_fuera_de_alcance": "tipo_no_soportado",
+        "score": 0.925
+      },
+      "segundos": 3.612
+    },
+    {
+      "id": "FA-02",
+      "archivo": "FA-02.pdf",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": false,
+        "tipo": true,
+        "categoria_amb": true,
+        "motivo_fuera_de_alcance": true
+      },
+      "obtenido": {
+        "tipo_documento": "Otro",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "AMB-6",
+        "motivo_fuera_de_alcance": "tipo_no_soportado",
+        "score": 0.988
+      },
+      "segundos": 3.678
+    },
+    {
+      "id": "FA-03",
+      "archivo": "FA-03.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true,
+        "motivo_fuera_de_alcance": true
+      },
+      "obtenido": {
+        "tipo_documento": "Otro",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-6",
+        "motivo_fuera_de_alcance": "no_clinico",
+        "score": 0.925
+      },
+      "segundos": 3.34
+    },
+    {
+      "id": "FA-03",
+      "archivo": "FA-03_foto.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false,
+        "motivo_fuera_de_alcance": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.32
+    },
+    {
+      "id": "FA-04",
+      "archivo": "FA-04.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": false,
+        "tipo": false,
+        "categoria_amb": false,
+        "motivo_fuera_de_alcance": false
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.925
+      },
+      "segundos": 4.639
+    },
+    {
+      "id": "FA-04",
+      "archivo": "FA-04.pdf",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false,
+        "motivo_fuera_de_alcance": false
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Estudio por Imagenes",
+        "destino_principal": "Historia_Clinica_Electronica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.988
+      },
+      "segundos": 4.509
+    },
+    {
+      "id": "FA-05",
+      "archivo": "FA-05.txt",
+      "clase": "base",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": true
+      },
+      "obtenido": {
+        "tipo_documento": "Informe de Laboratorio",
+        "destino_principal": "Cola_Emergencia_Medica",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": true,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": 0.925
+      },
+      "segundos": 4.172
+    },
+    {
+      "id": "FA-06",
+      "archivo": "FA-06.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true,
+        "motivo_fuera_de_alcance": true
+      },
+      "obtenido": {
+        "tipo_documento": "Otro",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-6",
+        "motivo_fuera_de_alcance": "pide_diagnostico",
+        "score": 0.913
+      },
+      "segundos": 3.858
+    },
+    {
+      "id": "FA-06",
+      "archivo": "FA-06_foto.png",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false,
+        "motivo_fuera_de_alcance": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.997
+    },
+    {
+      "id": "FA-07",
+      "archivo": "FA-07.txt",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true,
+        "motivo_fuera_de_alcance": true
+      },
+      "obtenido": {
+        "tipo_documento": "Otro",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-6",
+        "motivo_fuera_de_alcance": "paciente_no_humano",
+        "score": 0.932
+      },
+      "segundos": 4.22
+    },
+    {
+      "id": "FA-07",
+      "archivo": "FA-07.pdf",
+      "clase": "base",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": true,
+        "categoria_amb": true,
+        "motivo_fuera_de_alcance": true
+      },
+      "obtenido": {
+        "tipo_documento": "Otro",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": false,
+        "urgencia_detectada": false,
+        "categoria_amb": "AMB-6",
+        "motivo_fuera_de_alcance": "paciente_no_humano",
+        "score": 0.988
+      },
+      "segundos": 4.387
+    },
+    {
+      "id": "M1",
+      "archivo": "M1.jpg",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": false,
+        "urgencia": true,
+        "tipo": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 1.598
+    },
+    {
+      "id": "M2",
+      "archivo": "M2.jpg",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": false,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 2.409
+    },
+    {
+      "id": "M3",
+      "archivo": "M3.jpg",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 1.689
+    },
+    {
+      "id": "M4",
+      "archivo": "M4.jpg",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 1.11
+    },
+    {
+      "id": "M5",
+      "archivo": "M5.jpg",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 0.5
+    },
+    {
+      "id": "M6",
+      "archivo": "M6.jpg",
+      "clase": "imagen",
+      "ok": false,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true,
+        "tipo": false,
+        "categoria_amb": false
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 1.378
+    },
+    {
+      "id": "M7",
+      "archivo": "M7.jpg",
+      "clase": "imagen",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 1.018
+    },
+    {
+      "id": "M8",
+      "archivo": "M8.jpg",
+      "clase": "imagen",
+      "ok": true,
+      "error": "",
+      "aciertos": {
+        "destino": true,
+        "auditoria": true,
+        "urgencia": true
+      },
+      "obtenido": {
+        "tipo_documento": "",
+        "destino_principal": "Cola_Revision_Humana",
+        "requiere_auditoria_humana": true,
+        "urgencia_detectada": false,
+        "categoria_amb": "",
+        "motivo_fuera_de_alcance": "",
+        "score": null
+      },
+      "segundos": 1.339
+    }
+  ]
+}
