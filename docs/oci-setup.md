@@ -286,6 +286,13 @@ RULES_ADMIN_TOKEN=<TOKEN>
 - **Workaround:** Los contenedores se levantan manualmente con `podman run`.
 - **Fix:** Instalar Python 3.11+ en la VM.
 
+#### Alertas (N2-09)
+
+- **OCI Notifications (correo):** ✅ Configurado y funcionando en la VM. Es el **canal activo para H3**.
+- **Discord directo:** Configurado en el `.env` de la VM, pero el código del PR #83 aún no está mergeado.
+- **Slack vía n8n (N3-08):** Es de Alessandro y Sabrina.
+- **Canal activo:** OCI Notifications (correo).
+
 ### Historial de cambios
 
 | Fecha | Cambio |
