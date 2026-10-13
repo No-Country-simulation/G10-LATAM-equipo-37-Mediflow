@@ -12,37 +12,44 @@ resolviendo los **3 escenarios del brief de mayor riesgo y resiliencia**.
 
 ## 2. Fuentes y documentos utilizados
 
-Evidencia previa revisada (13/10/2026): en la rama base solo existe `README.md` (vacío). No existían `docs/video.md`,
-`docs/plan.md` ni `plan_golden.csv`. El único PR relacionado es #104 (borrador de este mismo trabajo); no hay material que reutilizar.
+Verificado el 13/10/2026 contra la rama `develop` y la rama `copilot/n1-10-tres-escenarios-reproducibles` (N1-10, issue #53).
+No existía `docs/video.md` ni otro guion previo; el único PR relacionado es #104 (este trabajo).
 
-| Fuente | Uso | Por qué / cómo |
+| Fuente | Rol | Qué se toma de ella |
 |---|---|---|
-| `docs/plan.md` (redistribución vigente del 7/10/2026) | **Fuente principal** | Es la fuente declarada en el issue #73 (fechas, responsables, dependencia N1-10). Define qué escenarios y flujos se priorizan. **No está en el repositorio**: debe incorporarse o enlazarse antes de aprobar. |
-| Brief del proyecto | Fuente de los 3 escenarios | El issue pide los 3 escenarios del brief de mayor riesgo/resiliencia. |
-| `plan_golden.csv` | **Descartado como fuente principal; opcional como apoyo** | El issue no lo menciona y no existe en el repo. Solo se usaría como datos de ejemplo (casos "golden") para la demo si el equipo confirma que existe; el guion no depende de él. |
+| `docs/plan.md` (v1.0, redistribución vigente) | **Fuente principal** | Paquete F-01 (fechas 13/10–16/10, dependencia N1-10, criterio de aceptación), hito H5 (video en YouTube) y definición de los tres escenarios del brief: rutina, urgencia y ambigüedad (N1-10). |
+| `docs/demo.md` y `evals/semilla/` (`rutina.json`, `urgencia.json`, `ambiguedad.json`, `README.md`) | **Fuente de la demo en vivo** (entregable de N1-10) | Comandos, solicitudes `POST /triage` y tabla de resultado esperado de cada escenario. **Hoy solo existen en la rama `copilot/n1-10-tres-escenarios-reproducibles`, no en `develop`**: F-01 depende de que se integren. |
+| `evals/golden/plan_golden.csv` | **Usado como apoyo (no como fuente principal)** | Fuente de verdad del conjunto de prueba: sirve para citar casos equivalentes y su resultado esperado (ver tabla de casos). El guion se basa en `docs/plan.md`; el CSV valida que lo narrado coincide con el resultado esperado. |
+| `docs/api-contract.md`, `docs/examples/triage_request.json` | Apoyo | Contrato de `POST /triage` mostrado en pantalla. |
+| `docs/guardarrailes.md`, `docs/privacidad.md`, `docs/alcance-y-limites.md` | Apoyo | Mensajes sobre límites del agente y auditoría humana. |
 
-## 3. Escenarios de mayor riesgo y resiliencia
+## 3. Los tres escenarios (rutina, urgencia, ambigüedad)
 
-> Los títulos siguientes son una **propuesta** a confirmar contra el brief y `docs/plan.md` en la sync del viernes 16.
-> Si el brief define otros, se reemplazan manteniendo la estructura.
+Resultado esperado según `docs/demo.md`.
 
-### Escenario A — Flujo crítico de punta a punta (turno/atención) con datos sensibles
-- **Contexto:** un paciente solicita/gestiona una atención y el personal la procesa en el producto en vivo.
-- **Riesgo principal:** error o pérdida de datos clínicos/personales en el flujo central.
-- **Resiliencia/mitigación:** validaciones, control de acceso por rol y registro de auditoría.
-- **Evidencia en demo:** flujo completado en vivo; registro de auditoría visible; acceso denegado a un rol no autorizado.
+| Escenario | Archivo de demo | Destino esperado | Auditoría | Casos equivalentes en `plan_golden.csv` |
+|---|---|---|---|---|
+| 1. Rutina | `evals/semilla/rutina.json` | `Historia_Clinica_Electronica` | No | GS-27, GS-28 (certificado médico), GS-15 |
+| 2. Urgencia | `evals/semilla/urgencia.json` | `Cola_Emergencia_Medica` + alerta | No | GS-07 (TEP, el caso del brief), GS-13, GS-18 |
+| 3. Ambigüedad | `evals/semilla/ambiguedad.json` | `Cola_Revision_Humana` | Sí | GS-06 (dosis fuera de rango), GS-14, GS-22 |
 
-### Escenario B — Falla de un componente/servicio dependiente
-- **Contexto:** durante la operación se cae o demora un servicio externo/interno.
-- **Riesgo principal:** interrupción del servicio o pérdida de operaciones en curso.
-- **Resiliencia/mitigación:** reintentos, degradación controlada y mensajes claros al usuario; sin pérdida de datos.
-- **Evidencia en demo:** falla provocada en vivo, el sistema sigue operando y se recupera; logs/estado de salud.
+### Escenario 1 — Rutina (certificado médico)
+- **Contexto:** documento clínico simple y completo que llega por `POST /triage`.
+- **Riesgo principal:** sobre-escalar (falsa urgencia, saturar emergencias) o dejarlo sin extraer y mandarlo a revisión innecesariamente.
+- **Resiliencia/mitigación:** clasificación y extracción; enruta a la historia clínica sin intervención humana.
+- **Evidencia en demo:** `rutina.json` → destino `Historia_Clinica_Electronica`, auditoría "No", objeto en `procesados/historia_clinica/`.
 
-### Escenario C — Concurrencia y consistencia (conflictos/duplicados)
-- **Contexto:** dos usuarios intentan operar sobre el mismo recurso (p. ej. mismo turno) a la vez.
-- **Riesgo principal:** doble reserva o estado inconsistente.
-- **Resiliencia/mitigación:** control de concurrencia/idempotencia; el segundo intento recibe un rechazo claro.
-- **Evidencia en demo:** dos sesiones en paralelo; solo una operación se confirma, la otra se rechaza sin corrupción.
+### Escenario 2 — Urgencia (TEP agudo)
+- **Contexto:** informe con tromboembolismo pulmonar agudo (caso del brief, GS-07).
+- **Riesgo principal:** un falso negativo retrasa la atención de una urgencia vital.
+- **Resiliencia/mitigación:** regla de urgencia que se mantiene aun sin clave de modelo (fallback por reglas, según `docs/demo.md`); envío a emergencia y alerta.
+- **Evidencia en demo:** `urgencia.json` → `Cola_Emergencia_Medica`, alerta generada, objeto en `procesados/urgentes/`.
+
+### Escenario 3 — Ambigüedad (dosis dudosa)
+- **Contexto:** receta con dosis dudosa o fuera de rango (GS-06).
+- **Riesgo principal:** que el agente decida solo sobre un dato incierto y cause un daño al paciente.
+- **Resiliencia/mitigación:** el agente no adivina: deriva a la cola de revisión humana con auditoría.
+- **Evidencia en demo:** `ambiguedad.json` → `Cola_Revision_Humana`, auditoría "Sí", objeto en `auditoria_humana/`.
 
 ## 4. Guion por tiempos
 
@@ -59,7 +66,7 @@ Evidencia previa revisada (13/10/2026): en la rama base solo existe `README.md` 
 | Escena | Visual | Narración | Acción de producto/demo | Riesgo | Mitigación | Evidencia / fuente |
 |---|---|---|---|---|---|---|
 | 1. Intro | Logo + pantalla de inicio | "Mediflow: gestión de atención con resiliencia." | Abrir app en vivo | — | — | Brief |
-| 2. Flujo crítico | Pantalla completa de la app | "Un paciente gestiona su atención." | Completar el flujo y mostrar auditoría | Pérdida/exposición de datos | Validación, roles, auditoría | Escenario A · `docs/plan.md` |
+| 2. Flujo crítico | Pantalla completa de la app | "Un paciente gestiona su atención." | Completar el flujo y mostrar auditoría | Pérdida/exposición de datos | Validación, roles, auditoría | Escenario 1 · `evals/semilla/rutina.json` |
 | 3. Falla | App + panel de logs/estado | "Si un servicio falla, el sistema no se cae." | Provocar la falla y recuperar | Caída del servicio | Reintentos, degradación controlada | Escenario B · `docs/plan.md` |
 | 4. Concurrencia | Pantalla dividida, 2 sesiones | "Dos usuarios, un solo turno." | Operar a la vez sobre el mismo recurso | Doble reserva | Control de concurrencia | Escenario C · `docs/plan.md` |
 | 5. Cierre | Resumen en pantalla | "Tres riesgos, tres mitigaciones, en vivo." | — | — | — | Issue #73 |
