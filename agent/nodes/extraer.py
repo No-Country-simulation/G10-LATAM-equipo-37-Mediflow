@@ -50,6 +50,15 @@ def _extraer_por_regex(texto: str) -> dict:
     medico = _buscar(
         r"M[eé]dic[oa] Solicitante:\s*(.+?)(?:\s+MP|\s+Matr|\n|$)", texto
     )
+    if not medico:
+        # Fallback: el médico firma al pie (certificados)
+        medico = _buscar(
+            r"(?:Dr\.|Dra\.|Doctor|Doctora)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)",
+            texto,
+        )
+    if not medico:
+        # Fallback: después de "Firma:"
+        medico = _buscar(r"Firma:\s*([^\n,]+)", texto)
 
     matricula = _buscar(r"(?:MP|Matr[ií]cula)\s*:?\s*(\d+)", texto)
     fecha = _buscar(r"Fecha(?: del estudio| de ingreso| de egreso)?:\s*([^\n]+)", texto)
