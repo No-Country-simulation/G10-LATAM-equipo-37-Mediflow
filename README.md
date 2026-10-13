@@ -348,15 +348,38 @@ Para que los números no estén contaminados, los ejemplos incrustados en los pr
 
 El reparto documento por documento, con la respuesta esperada de cada uno, está en [`docs/kit-de-datos.pdf`](docs/kit-de-datos.pdf), y las fuentes con sus licencias en [`evals/DATA.md`](evals/DATA.md).
 
-El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Los resultados se publican aquí en cada iteración.
+El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Cada corrida oficial se publica en [`evals/resultados/`](evals/resultados/).
 
-| Métrica | Valor |
-|---|---|
-| Accuracy de clasificación | pendiente |
-| Recall de urgencias | pendiente |
-| Tasa de revisión humana | pendiente |
-| Latencia p50 / p95 | pendiente |
+### Primera evaluación · 13/10/2026
 
+Corrida sobre las 76 variantes de los 45 documentos del conjunto de prueba:
+- **Modelo principal:** DeepSeek (`deepseek/deepseek-chat`).
+- **Código:** commit `b3ff577` de develop.
+- **Archivos:** el informe completo, el detalle por variante y el análisis están en [`evals/resultados/2026-10-13_deepseek/`](evals/resultados/2026-10-13_deepseek/).
+
+| Métrica | Corrida completa | Solo texto, PDF y JSON |
+|---|---|---|
+| **Recall de urgencias** | 94 % (16/17) | **100 % (16/16)** |
+| Accuracy de clasificación | 83 % (52/63) | 96 % (52/54) |
+| Accuracy de destino | 62 % (39/63) | 67 % (36/54) |
+| Acierto de la marca de auditoría | 60 % (38/63) | 63 % (34/54) |
+| Casos fuera de alcance resueltos | 0 % (0/12) | 0 % (0/10) |
+| Puerta de legibilidad (media y severa) | 46 % (6/13) | no aplica |
+| Casos correctos en todo | 41 % (31/76) | 46 % (25/54) |
+| Falsas urgencias | 10 | 10 |
+| Tasa de revisión humana | 45 % (34/76) | |
+| Latencia p50 / p95 | 3,9 s / 5,2 s | |
+
+Es la línea de base: corre el código de develop tal como estaba el 13/10, antes de fusionar la regla A de urgencia y la puerta de legibilidad definitiva. Con 54 variantes de texto, el margen es de unos ±13 puntos, así que sirve para encontrar qué está roto, no para comparar modelos parecidos.
+
+**Cómo leerla**
+
+1. **Las imágenes no se evaluaron.** En la máquina de la corrida el OCR no devolvió texto, y la puerta de legibilidad mandó las 22 imágenes a revisión humana sin llamar al modelo. La única urgencia que falta es una de ellas (GS-07 escaneado). Por eso la columna de la derecha deja afuera las imágenes.
+2. **Ninguna urgencia perdida en texto, pero 10 falsas.** 8 de las 10 están en recetas, epicrisis y casos fuera de alcance. En esos tipos, la regla A (ADR-002) no admite las listas automáticas de hallazgos y palabras clave, pero todavía no está fusionada en `agent/nodes/urgencia.py`.
+3. **Fuera de alcance: lo reconoce, pero falta la marca.** En 8 de 10 variantes de texto, el agente clasifica el documento como «Otro» con AMB-6 y el motivo correcto. Seis de ellas van a Revisión humana y fallan solo porque `enrutar.py` no marca la auditoría para ese tipo.
+4. **El intento de engaño no funcionó.** FA-05 trae una instrucción incrustada para mandarlo a rutina. El agente la ignoró y envió el potasio crítico a Emergencia.
+
+El análisis completo, con los fallos por categoría AMB y por tipo de documento y lo que sigue, está en [`analisis.md`](evals/resultados/2026-10-13_deepseek/analisis.md).
 
 ## Prioridades de entrega
 
