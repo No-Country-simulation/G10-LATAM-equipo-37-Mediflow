@@ -55,28 +55,27 @@ Resultado esperado según `docs/demo.md`.
 
 | Tiempo | Bloque | Contenido |
 |---|---|---|
-| 0:00–0:20 | Intro | Qué es Mediflow y qué se va a demostrar. |
-| 0:20–1:30 | Escenario A | Demo en vivo del flujo crítico y auditoría. |
-| 1:30–2:45 | Escenario B | Provocar falla, mostrar recuperación. |
-| 2:45–4:00 | Escenario C | Dos sesiones en paralelo, conflicto resuelto. |
-| 4:00–4:30 | Cierre | Resumen de riesgos mitigados y próximos pasos. |
+| 0:00–0:25 | Intro | Qué es Mediflow y qué se va a demostrar (3 escenarios, producto en vivo). |
+| 0:25–1:25 | Escenario 1 · Rutina | Enviar `rutina.json`; mostrar destino Historia Clínica y sin auditoría. |
+| 1:25–2:40 | Escenario 2 · Urgencia | Enviar `urgencia.json` (TEP); mostrar Cola de Emergencia y alerta. |
+| 2:40–3:55 | Escenario 3 · Ambigüedad | Enviar `ambiguedad.json`; mostrar Cola de Revisión Humana y auditoría. |
+| 3:55–4:30 | Cierre | Resultados de la evaluación (`plan_golden.csv`/`evals/run.py`) y próximos pasos. |
 
 ## 5. Storyboard
 
-| Escena | Visual | Narración | Acción de producto/demo | Riesgo | Mitigación | Evidencia / fuente |
+| Escena | Visual | Narración | Acción de producto/demo | Riesgo | Mitigación | Evidencia / documento fuente |
 |---|---|---|---|---|---|---|
-| 1. Intro | Logo + pantalla de inicio | "Mediflow: gestión de atención con resiliencia." | Abrir app en vivo | — | — | Brief |
-| 2. Flujo crítico | Pantalla completa de la app | "Un paciente gestiona su atención." | Completar el flujo y mostrar auditoría | Pérdida/exposición de datos | Validación, roles, auditoría | Escenario 1 · `evals/semilla/rutina.json` |
-| 3. Falla | App + panel de logs/estado | "Si un servicio falla, el sistema no se cae." | Provocar la falla y recuperar | Caída del servicio | Reintentos, degradación controlada | Escenario B · `docs/plan.md` |
-| 4. Concurrencia | Pantalla dividida, 2 sesiones | "Dos usuarios, un solo turno." | Operar a la vez sobre el mismo recurso | Doble reserva | Control de concurrencia | Escenario C · `docs/plan.md` |
-| 5. Cierre | Resumen en pantalla | "Tres riesgos, tres mitigaciones, en vivo." | — | — | — | Issue #73 |
+| 1. Intro | Logo + UI de carga | "Mediflow enruta documentos clínicos y sabe cuándo no decidir solo." | Abrir la app en vivo | — | — | `docs/plan.md` (H5) |
+| 2. Rutina | UI/terminal con `rutina.json` y la respuesta | "Un certificado médico simple va directo a la historia clínica." | `POST /triage` con `rutina.json` | Sobre-escalar o revisión innecesaria | Clasificación y extracción | `evals/semilla/rutina.json`, `docs/demo.md`; ref. GS-27/GS-28 |
+| 3. Urgencia | Respuesta + cola de emergencia y alerta | "Un TEP agudo llega a emergencia con alerta, sin esperar a nadie." | `POST /triage` con `urgencia.json` | Falso negativo en una urgencia vital | Regla de urgencia (también en fallback) | `evals/semilla/urgencia.json`, `docs/demo.md`; ref. GS-07 |
+| 4. Ambigüedad | Respuesta + cola de revisión humana | "Ante una dosis dudosa, el agente no adivina: deriva a una persona." | `POST /triage` con `ambiguedad.json` | Decisión automática sobre dato incierto | Revisión humana con auditoría | `evals/semilla/ambiguedad.json`, `docs/demo.md`; ref. GS-06 |
+| 5. Cierre | Resumen + métricas de evaluación | "Tres riesgos, tres mitigaciones, en vivo y medidos." | Mostrar el reporte de `evals/run.py` | — | — | `evals/golden/plan_golden.csv`; issue #73 |
 
 ## 6. Checklist de aceptación (issue #73)
 
-- [ ] PR/evidencia previa vinculada (ninguna previa encontrada; ver sección 2).
-- [ ] Los 3 escenarios del brief confirmados contra `docs/plan.md`/brief.
+- [ ] Integrar `docs/demo.md` y `evals/semilla/` (N1-10) en `develop`, o confirmar la rama de la demo.
+- [ ] Los 3 escenarios (rutina, urgencia, ambigüedad) corren en vivo con los archivos semilla.
 - [ ] Duración total entre 3 y 5 minutos.
-- [ ] Producto en vivo en todas las escenas de demo.
-- [ ] Decisión sobre `plan_golden.csv` registrada.
+- [ ] Decisión sobre `plan_golden.csv` registrada (apoyo para validar resultados, no fuente principal).
 - [ ] **Guion aprobado en la sincronización del viernes 16.**
 - [ ] Revisión correspondiente obtenida e integrada.
