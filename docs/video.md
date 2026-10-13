@@ -25,6 +25,10 @@ Son los de mayor riesgo y resiliencia entre los escenarios de demostración del 
 
 Contraste de apertura (rutina): `GS-27` (certificado médico; `evals/golden/files/GS-27.txt` y `GS-27_foto.png`) → `Historia_Clinica_Electronica`, sin auditoría. No usar `GS-25` para la rutina: sin N1-06 sale como falsa urgencia.
 
+## Rutina / apertura alternativa
+
+Como contraste de apertura para la rutina, también puede usarse `GS-28` (`evals/golden/files/GS-28.txt` y `GS-28_foto.png`), que corresponde a un certificado médico y va a `Historia_Clinica_Electronica`, sin auditoría.
+
 ## Storyboard y guion
 
 | Tiempo | Plano / pantalla en vivo | Narración (voz de Alessandro salvo indicación) | Evidencia a la vista |
