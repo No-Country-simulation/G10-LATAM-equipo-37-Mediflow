@@ -72,7 +72,8 @@ def _valores_criticos(texto: str, reglas: dict) -> list[str]:
             limite = float(regla.get("valor", 0))
             if (operador == ">=" and valor >= limite) or (operador == "<=" and valor <= limite):
                 unidad = regla.get("unidad", "")
-                motivos.append(f"valor critico de laboratorio: {analito} {encontrado.group(1).rstrip('.,')} {unidad}".strip())
+                numero = encontrado.group(1).rstrip(".,")
+                motivos.append(f"valor critico de laboratorio: {analito} {numero} {unidad}".strip())
                 break  # una mención por analito alcanza
     return motivos
 

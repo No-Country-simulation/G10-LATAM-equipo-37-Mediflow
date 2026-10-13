@@ -156,8 +156,10 @@ def test_traza_registra_el_nodo():
 
 
 def test_valor_critico_al_final_de_la_oracion():
-    reglas = {"valores_criticos_laboratorio": [{"analito": "potasio", "operador": ">=", "valor": 6.5, "unidad": "mEq/L"}]}
-    assert _valores_criticos("potasio 7,2. paciente estable", reglas) == ["valor critico de laboratorio: potasio 7,2 mEq/L"]
+    regla = {"analito": "potasio", "operador": ">=", "valor": 6.5, "unidad": "mEq/L"}
+    reglas = {"valores_criticos_laboratorio": [regla]}
+    esperado = ["valor critico de laboratorio: potasio 7,2 mEq/L"]
+    assert _valores_criticos("potasio 7,2. paciente estable", reglas) == esperado
     assert _valores_criticos("potasio 4,1. paciente estable", reglas) == []
     assert _a_numero("7,2,") == 7.2
     assert _a_numero("15.000.") == 15000.0
