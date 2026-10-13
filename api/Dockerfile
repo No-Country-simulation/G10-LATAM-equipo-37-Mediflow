@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY agent /app/agent
 COPY api /app/api
 COPY docs/examples /app/docs/examples
+COPY evals/generator/data /app/evals/generator/data
 RUN mkdir -p /app/data
 ENV PYTHONPATH=/app
 EXPOSE 8000
