@@ -13,6 +13,10 @@ from agent.rules.loader import load_rules
 from agent.schemas.contrato import NivelPrioridad, TipoDocumento
 
 
+class DestinoNoOperativo(ValueError):
+    """La aprobación requiere corregir el tipo o rechazar el documento."""
+
+
 class DecisionHumana(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     accion: Literal["aprobar", "corregir", "rechazar"]
@@ -87,7 +91,7 @@ def aplicar_decision(state, entrada):
             tipo = nuevo.get("clasificacion", {}).get("tipo_documento", "Otro")
             destino = load_rules()["destinos"]["por_tipo"].get(tipo)
             if not destino or destino == "Cola_Revision_Humana":
-                raise ValueError("Documento sin destino operativo: corrija el tipo o rechace")
+                raise DestinoNoOperativo("Documento sin destino operativo: corrija el tipo o rechace")
             decision["destino_principal"] = destino
         decision["requiere_auditoria_humana"] = False
         decision["justificacion_enrutamiento"] = "Extracción aprobada por revisión humana"

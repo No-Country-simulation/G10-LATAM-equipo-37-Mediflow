@@ -306,6 +306,10 @@ urgencias, después lo prioritario, después el resto.
 | `motivo` | Por qué. Obligatorio y no vacío; al aprobar sin escribir nada, el panel manda "Extracción verificada contra el documento original." |
 | `correcciones` | Solo con `corregir`, y solo los campos que cambiaron, con su valor nuevo. Con las otras dos acciones va `null` |
 
+La API devuelve 422 al aprobar un documento sin destino operativo (por ejemplo, tipo `Otro`),
+con el mensaje «Documento sin destino operativo: corrija el tipo o rechace». La revisión sigue
+pendiente y puede corregirse o rechazarse; los errores internos no se convierten en 422.
+
 La API rechaza con 422 un `revisor` o un `motivo` vacíos, y `correcciones` con una acción que no sea
 `corregir`. Las acciones sin correcciones conservan `null`. El panel envía `revision_version`
 con la versión de la extracción mostrada. Una versión desactualizada devuelve 409 y exige recargar la cola.

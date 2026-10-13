@@ -17,7 +17,7 @@ from api.main import app
 client = TestClient(app)
 
 
-def preparar_checkpoint(tmp_path, monkeypatch, documento_id):
+def preparar_checkpoint(tmp_path, monkeypatch, documento_id, tipo="Receta Medica"):
     """La API N2-05 requiere un grafo pausado, no solo un JSON de muestra."""
     monkeypatch.setattr(local, "DATA_DIR", tmp_path)
     monkeypatch.setenv("ENV", "dev")
@@ -28,7 +28,7 @@ def preparar_checkpoint(tmp_path, monkeypatch, documento_id):
         monkeypatch.setattr(graph, nombre, lambda s: {})
     ejecutar({"documento_id": documento_id, "tipo_archivo": "TEXTO", "texto": "Ejemplo",
               "legibilidad": 1.0, "trace": [],
-              "clasificacion": {"tipo_documento": "Receta Medica", "score_confianza_clasificacion": 0.5},
+              "clasificacion": {"tipo_documento": tipo, "score_confianza_clasificacion": 0.5},
               "datos_extraidos": {"paciente": {"nombre": "Ana"}, "medicamentos": []}})
 
 
@@ -190,6 +190,21 @@ def test_original_no_guardado_devuelve_404(tmp_path, monkeypatch):
     local_audit.guardar_extraccion("DOC-022", {"tipo_documento": "Receta Medica"}, base=tmp_path)
     r = client.get("/audit/DOC-022/original")
     assert r.status_code == 404
+
+def test_aprobar_otro_devuelve_422_y_conserva_revision(tmp_path, monkeypatch):
+    preparar_checkpoint(tmp_path, monkeypatch, "DOC-OTRO", tipo="Otro")
+    respuesta = client.post("/audit/DOC-OTRO", json={
+        "accion": "aprobar", "revisor": "Auditor", "motivo": "Revisado"
+    })
+    assert respuesta.status_code == 422
+    assert respuesta.json()["detail"] == "Documento sin destino operativo: corrija el tipo o rechace"
+    assert not (carpeta("DOC-OTRO") / "resolucion.json").exists()
+    assert any(item["documento_id"] == "DOC-OTRO" for item in client.get("/queue/human").json()["items"])
+    respuesta = client.post("/audit/DOC-OTRO", json={
+        "accion": "rechazar", "revisor": "Auditor", "motivo": "Fuera de alcance"
+    })
+    assert respuesta.status_code == 200
+
 
 def test_error_interno_no_se_presenta_como_decision_invalida(monkeypatch):
     import api.main as api

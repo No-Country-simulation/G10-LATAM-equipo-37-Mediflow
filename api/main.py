@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
-from agent.nodes.revision_humana import DecisionHumana
+from agent.nodes.revision_humana import DecisionHumana, DestinoNoOperativo
 from agent.revision_runtime import RevisionConflicto, RevisionNoExiste, reanudar
 from agent.rules.loader import ReglasInvalidas, guardar_reglas, load_rules, toca_umbrales
 from agent.schemas.contrato import TriageRequest, TriageResponse
@@ -151,6 +151,8 @@ def auditar(documento_id: str, decision: DecisionAuditor):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except (ResolucionYaExiste, RevisionConflicto) as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except DestinoNoOperativo as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except (AccionInvalida, ValidationError) as exc:
         raise HTTPException(status_code=422, detail="Decisión o identificador no válido") from exc
     except OSError as exc:
