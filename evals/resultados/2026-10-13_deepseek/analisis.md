@@ -1,7 +1,7 @@
 # Análisis de la primera evaluación · 13/10/2026
 
 Corrida oficial de `evals/run.py`:
-- **Qué se evaluó:** las 76 variantes de los 45 documentos del conjunto de prueba.
+- **Qué se evaluó:** las 76 variantes de los 45 elementos del conjunto de prueba.
 - **Modelo principal:** DeepSeek (`deepseek/deepseek-chat`).
 - **Código:** commit `b3ff577` de develop, con #103, #98 y #10 ya fusionados.
 - **Archivos:** `report.md` y `resultados.json` son la salida del harness sin editar. Este análisis se escribió después, a partir de ellos.
