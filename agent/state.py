@@ -19,6 +19,7 @@ class TriageState(TypedDict, total=False):
     decision: dict[str, Any]
     almacenamiento: dict[str, Any]
     modelo_utilizado: str
+    consumo: list[dict[str, Any]]   # una entrada por llamada al modelo: tokens, costo y latencia
     trace: list[dict[str, Any]]     # un registro por nodo
     error: Optional[str]
     evidencias: list[dict[str, Any]]
