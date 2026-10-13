@@ -28,6 +28,10 @@ from datetime import datetime
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
+# La ejecución directa (python evals/run.py) pone evals/, no el repo, en sys.path.
+# Usar la ubicación del archivo permite importar agent desde cualquier directorio.
+if str(RAIZ) not in sys.path:
+    sys.path.insert(0, str(RAIZ))
 PLAN = RAIZ / "evals" / "golden" / "plan_golden.csv"
 DIR_DOCS = RAIZ / "evals" / "golden" / "files"
 DIR_MANUSCRITAS = RAIZ / "evals" / "handwritten"
