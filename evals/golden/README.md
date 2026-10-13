@@ -1,6 +1,6 @@
 # Conjunto de prueba (golden set)
 
-`evals/run.py` compara contra este plan. `plan_golden.csv` es la lista de los 45 elementos con su etiqueta esperada: tipo, resultado, destino, auditoría, categoría AMB, nivel de legibilidad, formato y las columnas `revision_1` y `revision_2`. Un elemento no cuenta hasta que tiene las dos revisiones.
+`evals/run.py` compara contra este plan. `plan_golden.csv` es la lista de los 45 elementos con su etiqueta esperada: tipo, resultado, destino, auditoría, categoría AMB, nivel de legibilidad, formato, quién lo escribió (`autor`) y quién revisó su etiqueta (`revisor_1`, con sus iniciales en `revision_1`). Cada elemento lleva una sola revisión, de alguien distinto de quien lo escribió (ADR-012), y no cuenta hasta tenerla.
 
 ## Archivos en `files/`, uno por elemento y formato
 

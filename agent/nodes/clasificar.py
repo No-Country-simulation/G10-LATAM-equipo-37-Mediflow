@@ -196,6 +196,7 @@ def clasificar(state: TriageState) -> dict:
 
     # Camino con LLM.
     modelo = "stub"
+    consumo = list(state.get("consumo", []))
     try:
         if not PROMPT_PATH.exists():
             logger.warning("No existe prompts/clasificar.md, usando reglas.")
@@ -205,6 +206,7 @@ def clasificar(state: TriageState) -> dict:
             resultado_llm = adapter.complete(prompt, json_mode=False, timeout=15)
             clasificacion = _normalizar_respuesta(_parsear_json(resultado_llm.text))
             modelo = resultado_llm.model
+            consumo.append(resultado_llm.consumo("clasificar"))
     except Exception as e:  # noqa: BLE001
         logger.warning("LLM falló en clasificar (%s), usando reglas.", type(e).__name__)
         clasificacion = _clasificar_por_reglas(texto)
@@ -215,5 +217,6 @@ def clasificar(state: TriageState) -> dict:
     return {
         "clasificacion": clasificacion,
         "modelo_utilizado": modelo,
+        "consumo": consumo,
         "trace": step(state, "clasificar", clasificacion, modelo=modelo),
     }

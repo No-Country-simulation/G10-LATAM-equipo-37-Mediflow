@@ -23,11 +23,16 @@ import os
 import statistics
 import sys
 import time
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
+# La ejecución directa (python evals/run.py) pone evals/, no el repo, en sys.path.
+# Usar la ubicación del archivo permite importar agent desde cualquier directorio.
+if str(RAIZ) not in sys.path:
+    sys.path.insert(0, str(RAIZ))
 PLAN = RAIZ / "evals" / "golden" / "plan_golden.csv"
 DIR_DOCS = RAIZ / "evals" / "golden" / "files"
 DIR_MANUSCRITAS = RAIZ / "evals" / "handwritten"
@@ -188,6 +193,20 @@ class Resultado:
         return f"{self.caso.id} ({self.caso.nivel_legibilidad or 'imagen'})"
 
 
+def _consumo(estado: dict) -> dict:
+    """Modelo, llamadas, tokens y costo del documento, sumando las llamadas de clasificar y extraer."""
+    llamadas = [c for c in estado.get("consumo") or [] if isinstance(c, dict)]
+    costos = [c.get("costo_usd") for c in llamadas]
+    return {
+        "modelo": estado.get("modelo_utilizado") or "",
+        "llamadas_modelo": len(llamadas),
+        "tokens_entrada": sum(int(c.get("tokens_entrada") or 0) for c in llamadas),
+        "tokens_salida": sum(int(c.get("tokens_salida") or 0) for c in llamadas),
+        # None si alguna llamada no tiene precio conocido: mejor sin dato que un costo incompleto
+        "costo_usd": round(sum(costos), 6) if llamadas and all(c is not None for c in costos) else None,
+    }
+
+
 def comparar(caso: Caso, clase: str, archivo: str, estado: dict, segundos: float) -> Resultado:
     clasificacion = estado.get("clasificacion") or {}
     decision = estado.get("decision") or {}
@@ -201,6 +220,7 @@ def comparar(caso: Caso, clase: str, archivo: str, estado: dict, segundos: float
         "categoria_amb": validacion.get("categoria_amb", "") or "",
         "motivo_fuera_de_alcance": validacion.get("motivo_fuera_de_alcance", "") or "",
         "score": estado.get("score"),
+        **_consumo(estado),
     }
     e = expectativa(caso, clase)
     aciertos = {
@@ -246,6 +266,30 @@ def metricas(resultados: list[Resultado]) -> dict:
         "latencia_p50": f"{statistics.median(tiempos):.1f} s",
         "latencia_p95": f"{tiempos[int(len(tiempos) * 0.95) - 1]:.1f} s" if len(tiempos) > 1 else "sin datos",
         "casos_perfectos": _porcentaje(sum(r.ok for r in hechos), len(hechos)),
+        **_metricas_consumo(hechos),
+    }
+
+
+def _metricas_consumo(hechos: list[Resultado]) -> dict:
+    """Tokens y costo por documento, para estimar cuánto cuesta el agente según el volumen diario."""
+    con_modelo = [r for r in hechos if r.obtenido.get("llamadas_modelo")]
+    if not con_modelo:
+        return {"documentos_con_modelo": 0, "tokens_por_documento": "sin datos", "costo_por_documento": "sin datos",
+                "costo_total_usd": "sin datos", "modelos_usados": {}}
+    n = len(con_modelo)
+    entrada = sum(r.obtenido["tokens_entrada"] for r in con_modelo)
+    salida = sum(r.obtenido["tokens_salida"] for r in con_modelo)
+    costos = [r.obtenido.get("costo_usd") for r in con_modelo]
+    con_precio = [c for c in costos if c is not None]
+    modelos = Counter(r.obtenido.get("modelo") or "sin modelo" for r in con_modelo)
+    costo_total = sum(con_precio)
+    return {
+        "documentos_con_modelo": n,
+        "tokens_por_documento": f"{entrada / n:.0f} de entrada y {salida / n:.0f} de salida",
+        "costo_por_documento": (f"US$ {costo_total / len(con_precio):.5f}" if con_precio else "sin precio conocido")
+        + ("" if len(con_precio) == n else f" ({len(con_precio)} de {n} con precio)"),
+        "costo_total_usd": f"US$ {costo_total:.4f}" if con_precio else "sin precio conocido",
+        "modelos_usados": dict(modelos.most_common()),
     }
 
 
@@ -267,8 +311,14 @@ def informe(resultados: list[Resultado], pendientes: list[Caso], sin_revisar: li
         ("latencia_p50", "Latencia p50"),
         ("latencia_p95", "Latencia p95"),
         ("casos_perfectos", "Casos correctos en todo"),
+        ("tokens_por_documento", "Tokens por documento (promedio)"),
+        ("costo_por_documento", "Costo por documento (promedio)"),
+        ("costo_total_usd", "Costo total de la corrida"),
     ]:
         L.append(f"| {etiqueta} | {m[clave]} |")
+    if m.get("modelos_usados"):
+        L += ["", "Modelo que respondió en cada documento: "
+              + ", ".join(f"{k} ({v})" for k, v in m["modelos_usados"].items()) + "."]
     L += ["", f"Variantes evaluadas: {m['variantes_evaluadas']}. Falsas urgencias: {m['falsas_urgencias']}. "
           f"Errores de ejecución: {m['casos_con_error']}.", "",
           "Las métricas de clasificación y destino se calculan sobre los documentos legibles. Las imágenes "

@@ -244,6 +244,7 @@ def extraer(state: TriageState) -> dict:
 
     # Camino con LLM.
     modelo = "stub"
+    consumo = list(state.get("consumo", []))
     hallazgo_critico = None
     ambiguedad = None
 
@@ -262,6 +263,7 @@ def extraer(state: TriageState) -> dict:
             hallazgo_critico = payload.get("hallazgo_critico_detectado")
             ambiguedad = payload.get("ambiguedad_detectada")
             modelo = resultado_llm.model
+            consumo.append(resultado_llm.consumo("extraer"))
     except Exception as e:  # noqa: BLE001
         logger.warning("LLM falló en extraer (%s), usando regex.", type(e).__name__)
         datos = _normalizar_datos(_extraer_por_regex(texto))
@@ -271,6 +273,7 @@ def extraer(state: TriageState) -> dict:
         "datos_extraidos": datos,
         "evidencias": evidencias,
         "modelo_utilizado": modelo,
+        "consumo": consumo,
         "trace": step(state, "extraer", {"campos": list(datos)}, modelo=modelo),
     }
 

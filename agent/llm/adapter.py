@@ -7,7 +7,9 @@ Estrategia:
 3. Si sigue fallando, se pasa al siguiente modelo de FALLBACKS.
 4. Si todos los modelos fallan, se levanta RuntimeError con el detalle.
 
-Devuelve el texto y el modelo que respondió, para registrarlo en la traza.
+Devuelve el texto y el modelo que respondió, para registrarlo en la traza, junto con los tokens
+de entrada y salida y el costo estimado de esa llamada. Con eso se calcula cuánto cuesta procesar
+un documento y cuántos documentos por día entran en el límite gratuito de cada proveedor.
 """
 import base64
 import logging
@@ -33,6 +35,20 @@ class LLMResult:
     model: str
     latency_ms: int
     intentos: int = 1  # cuántos intentos se hicieron en total (incluye reintentos)
+    tokens_entrada: int = 0  # los que informa el proveedor para la llamada que respondió
+    tokens_salida: int = 0
+    costo_usd: float | None = None  # None si LiteLLM no conoce el precio del modelo
+
+    def consumo(self, nodo: str) -> dict:
+        """Registro de consumo de esta llamada, para el estado y para la evaluación."""
+        return {
+            "nodo": nodo,
+            "modelo": self.model,
+            "tokens_entrada": self.tokens_entrada,
+            "tokens_salida": self.tokens_salida,
+            "costo_usd": self.costo_usd,
+            "latencia_ms": self.latency_ms,
+        }
 
 
 def _to_data_url(path: str) -> str:
@@ -75,8 +91,8 @@ def _llamar_modelo(
     content: list[dict],
     json_mode: bool,
     timeout: int,
-) -> str:
-    """Hace UNA llamada al modelo. Devuelve el texto de la respuesta."""
+):
+    """Hace UNA llamada al modelo. Devuelve la respuesta completa de LiteLLM."""
     import litellm  # se importa acá para que los tests sin claves no lo necesiten
 
     kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
@@ -86,7 +102,28 @@ def _llamar_modelo(
         timeout=timeout,
         **kwargs,
     )
-    return resp.choices[0].message.content
+    return resp
+
+
+def _uso(resp, model: str) -> tuple[int, int, float | None]:
+    """Tokens de entrada y salida y costo en dólares de una respuesta. Nunca falla: si el proveedor
+    no informa el uso o LiteLLM no conoce el precio, devuelve ceros o None."""
+    usage = getattr(resp, "usage", None)
+    if isinstance(usage, dict):
+        entrada, salida = usage.get("prompt_tokens"), usage.get("completion_tokens")
+    else:
+        entrada, salida = getattr(usage, "prompt_tokens", None), getattr(usage, "completion_tokens", None)
+    entrada = entrada if isinstance(entrada, int) else 0
+    salida = salida if isinstance(salida, int) else 0
+    costo = None
+    try:
+        import litellm
+
+        valor = litellm.completion_cost(completion_response=resp, model=model)
+        costo = float(valor) if valor is not None else None
+    except Exception:  # noqa: BLE001 - modelo sin precio en LiteLLM o respuesta incompleta
+        costo = None
+    return entrada, salida, costo
 
 
 def complete(
@@ -124,12 +161,16 @@ def complete(
             intentos_totales += 1
             try:
                 logger.debug("Intento %d/%d con %s", intento, REINTENTOS_POR_MODELO, model)
-                texto = _llamar_modelo(model, content, json_mode, timeout)
+                resp = _llamar_modelo(model, content, json_mode, timeout)
+                entrada, salida, costo = _uso(resp, model)
                 return LLMResult(
-                    text=texto,
+                    text=resp.choices[0].message.content,
                     model=model,
                     latency_ms=int((time.time() - t0_total) * 1000),
                     intentos=intentos_totales,
+                    tokens_entrada=entrada,
+                    tokens_salida=salida,
+                    costo_usd=costo,
                 )
             except Exception as e:  # noqa: BLE001
                 recuperable = _es_error_recuperable(e)
