@@ -8,6 +8,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY agent /app/agent
 COPY api /app/api
 COPY docs/examples /app/docs/examples
+# Dashboard (N3-04): corridas oficiales de la evaluación y el plan del conjunto de prueba
+COPY evals/resultados /app/evals/resultados
+COPY evals/golden/plan_golden.csv /app/evals/golden/plan_golden.csv
 RUN mkdir -p /app/data
 ENV PYTHONPATH=/app
 EXPOSE 8000

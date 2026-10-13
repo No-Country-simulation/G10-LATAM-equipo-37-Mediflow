@@ -75,6 +75,28 @@ def listar_resultados(db_path: Path | None = None) -> list[dict]:
     return [dict(fila) for fila in filas]
 
 
+def listar_completos(db_path: Path | None = None) -> list[dict]:
+    """Todos los resultados con su JSON completo, para las métricas del dashboard."""
+    with closing(_conectar(db_path)) as conn:
+        with conn:
+            filas = conn.execute(
+                """
+                SELECT documento_id, created_at, resultado_json
+                FROM triage_results
+                ORDER BY created_at DESC, documento_id
+                """
+            ).fetchall()
+
+    return [
+        {
+            "documento_id": fila["documento_id"],
+            "created_at": fila["created_at"],
+            "resultado": json.loads(fila["resultado_json"]),
+        }
+        for fila in filas
+    ]
+
+
 def obtener_resultado(
     documento_id: str, db_path: Path | None = None
 ) -> dict | None:

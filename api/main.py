@@ -17,6 +17,7 @@ from agent.storage.local_audit import (
     OriginalNoDisponible,
     ResolucionYaExiste,
 )
+from api import metricas as metricas_dashboard
 
 app = FastAPI(title="MediFlow", version="0.1.0")
 
@@ -187,4 +188,20 @@ def actualizar_reglas(
 
 @app.get("/metrics")
 def metricas():
-    return {"documentos_hoy": 0, "urgencias_hoy": 0, "en_revision": 0, "confianza_media": None}
+    """Operación: documentos procesados, urgencias, cola del auditor, confianza y alertas (N3-04)."""
+    filas = triage_results.listar_completos()
+    en_revision = len(local_audit.listar_cola_humana(base=local_audit.DATA_DIR))
+    umbrales = (load_rules() or {}).get("umbrales", {})
+    return metricas_dashboard.metricas_operacion(filas, en_revision, umbrales)
+
+
+@app.get("/metrics/evaluacion")
+def metricas_evaluacion(corrida: Optional[str] = None):
+    """Evaluación: la corrida oficial del conjunto de prueba, la más reciente salvo que se pida otra."""
+    cargada = metricas_dashboard.cargar_corrida(corrida)
+    if cargada is None:
+        raise HTTPException(status_code=404, detail="No hay una corrida de evaluación con ese nombre")
+    nombre, datos = cargada
+    return metricas_dashboard.resumen_evaluacion(
+        nombre, datos, metricas_dashboard.cargar_plan(), metricas_dashboard.listar_corridas()
+    )
