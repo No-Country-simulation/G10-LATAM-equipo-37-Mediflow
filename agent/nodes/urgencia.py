@@ -26,7 +26,8 @@ TIPO_RECETA = "Receta Medica"
 
 
 def _mencion_afirmativa(texto: str, termino: str) -> bool:
-    """Filtra solo negaciones directas; no resuelve contexto clínico general.
+    """Filtra solo negaciones directas ("sin", "no hay", "no urgente", "no es urgente");
+    no resuelve contexto clínico general.
 
     No suprime incertidumbre ("no se descarta") ni menciones afirmativas posteriores.
     """
@@ -34,7 +35,8 @@ def _mencion_afirmativa(texto: str, termino: str) -> bool:
         prefijo = texto[max(0, m.start() - 80):m.start()]
         negada = re.search(
             r"\b(?:sin(?:\s+(?:evidencia|signos|datos)\s+de)?|"
-            r"no\s+(?:hay|presenta|se\s+observa|se\s+detecta))\s*$",
+            r"no\s+(?:hay|presenta|se\s+observa|se\s+detecta)|"
+            r"no(?:\s+es)?)\s*$",
             prefijo,
         )
         if not negada:
