@@ -219,6 +219,7 @@ def comparar(caso: Caso, clase: str, archivo: str, estado: dict, segundos: float
         "urgencia_detectada": bool(urgencia.get("detectada")),
         "categoria_amb": validacion.get("categoria_amb", "") or "",
         "motivo_fuera_de_alcance": validacion.get("motivo_fuera_de_alcance", "") or "",
+        "cie10_sugerido": (estado.get("datos_extraidos") or {}).get("cie10_sugerido") or "",
         "score": estado.get("score"),
         **_consumo(estado),
     }
