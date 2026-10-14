@@ -31,8 +31,10 @@ class DecisionHumana(BaseModel):
             if not self.correcciones:
                 raise ValueError("Corregir requiere al menos un campo")
             validar_correcciones(self.correcciones)
-        elif self.correcciones is not None:
+        elif self.correcciones:
             raise ValueError("Solo corregir admite correcciones")
+        else:
+            self.correcciones = None
         return self
 
 

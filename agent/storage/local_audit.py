@@ -128,7 +128,8 @@ def guardar_resolucion(documento_id, accion, revisor, motivo, correcciones=None,
     if f"{documento_id}/resolucion.json" in archivos:
         raise ResolucionYaExiste("El documento ya tiene una resolución registrada")
     resolucion = {"revisor": revisor, "fecha": datetime.now(timezone.utc).isoformat(),
-                  "accion": accion, "motivo": motivo, "correcciones": correcciones or {}}
+                  "accion": accion, "motivo": motivo,
+                  "correcciones": correcciones if accion == "corregir" else None}
     escribir_json(documento_id, "resolucion.json", resolucion, base)
     return resolucion
 

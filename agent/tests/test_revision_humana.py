@@ -151,7 +151,7 @@ def test_correcciones_invalidas_no_consumen_revision(entorno, cambios):
 
 
 @pytest.mark.parametrize("campos", [{"revisor": " "}, {"motivo": " "},
-    {"accion": "aprobar", "correcciones": {}}, {"accion": "corregir"}])
+    {"accion": "aprobar", "correcciones": {"paciente.nombre": "Ana"}}, {"accion": "corregir"}])
 def test_contrato_decision(campos):
     with pytest.raises(ValidationError):
         DecisionHumana.model_validate({**decision(), **campos})
