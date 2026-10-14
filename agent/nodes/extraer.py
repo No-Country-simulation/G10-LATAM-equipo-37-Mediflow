@@ -19,6 +19,7 @@ from pathlib import Path
 from agent.llm import adapter
 from agent.nodes.common import step
 from agent.state import TriageState
+from agent.schemas.contrato import TipoDocumento
 
 logger = logging.getLogger(__name__)
 
@@ -50,13 +51,13 @@ def _extraer_por_regex(texto: str, tipo_documento: str = "Otro") -> dict:
     medico = _buscar(
         r"M[eé]dic[oa] Solicitante:\s*(.+?)(?:\s+MP|\s+Matr|\n|$)", texto
     )
-    if not medico and tipo_documento == "Certificado Médico":
+    if not medico and tipo_documento == TipoDocumento.CERTIFICADO_MEDICO:
         # Fallback: el médico firma al pie (certificados)
         medico = _buscar(
             r"(?:Dr\.|Dra\.|Doctor|Doctora)[ \t]+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:[ \t]+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)",
             texto,
         )
-    if not medico and tipo_documento == "Certificado Médico":
+    if not medico and tipo_documento == TipoDocumento.CERTIFICADO_MEDICO:
         # Fallback: después de "Firma:"
         medico = _buscar(r"Firma:[ \t]*([^\n,]+)", texto)
 
