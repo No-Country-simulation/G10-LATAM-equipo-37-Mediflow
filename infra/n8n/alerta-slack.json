@@ -1,0 +1,57 @@
+{
+  "name": "MediFlow - Alertas urgentes a Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mediflow-alert",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        260,
+        300
+      ],
+      "id": "c5cc6e24-3ce9-4f3d-aac9-3a3267060d69",
+      "name": "Recibir alerta",
+      "webhookId": "mediflow-alert"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { text: `*${$json.body.titulo || 'Alerta MediFlow'}*\\n${$json.body.cuerpo || 'Urgencia detectada'}` } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        300
+      ],
+      "id": "e97aecda-a841-49f7-aa55-34f8ace3160c",
+      "name": "Publicar en Slack"
+    }
+  ],
+  "connections": {
+    "Recibir alerta": {
+      "main": [
+        [
+          {
+            "node": "Publicar en Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
