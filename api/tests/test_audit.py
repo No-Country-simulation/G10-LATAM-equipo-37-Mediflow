@@ -6,6 +6,8 @@ directorio base de agent.storage.local_audit para no tocar ./data/ real.
 Sigue el mismo patrón que api/tests/test_api.py (TestClient(app)).
 """
 
+import json
+
 from fastapi.testclient import TestClient
 
 from agent.storage import local_audit
@@ -175,3 +177,20 @@ def test_original_no_guardado_devuelve_404(tmp_path, monkeypatch):
     local_audit.guardar_extraccion("DOC-022", {"tipo_documento": "Receta Medica"}, base=tmp_path)
     r = client.get("/audit/DOC-022/original")
     assert r.status_code == 404
+
+def test_auditar_sin_correcciones_guarda_null(tmp_path, monkeypatch):
+    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
+    for doc_id, accion, correcciones in [
+        ("DOC-020", "aprobar", None),
+        ("DOC-021", "aprobar", {}),
+        ("DOC-022", "rechazar", None),
+    ]:
+        local_audit.guardar_extraccion(doc_id, {"tipo_documento": "Receta Medica"}, base=tmp_path)
+        r = client.post(
+            f"/audit/{doc_id}",
+            json={"accion": accion, "revisor": "Ana", "motivo": "ok", "correcciones": correcciones},
+        )
+        assert r.status_code == 200
+        assert r.json()["resolucion"]["correcciones"] is None
+        guardada = json.loads((tmp_path / doc_id / "resolucion.json").read_text(encoding="utf-8"))
+        assert guardada["correcciones"] is None
