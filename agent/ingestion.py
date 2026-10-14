@@ -17,8 +17,11 @@ import base64
 import io
 import json
 import os
+import platform
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
+
 
 MAX_BYTES = int(os.getenv("MEDIFLOW_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
 MAX_PDF_PAGES = int(os.getenv("MEDIFLOW_MAX_PDF_PAGES", "50"))
@@ -156,6 +159,13 @@ def _ocr(imagen) -> str:
         import pytesseract
     except ImportError:
         return ""
+
+    # Fallback para Windows: si tesseract no está en el PATH, usar la ruta por defecto.
+    if platform.system() == "Windows" and not shutil.which("tesseract"):
+        ruta_default = r"C:\Archivos de programa\Tesseract-OCR\tesseract.exe"
+        if os.path.exists(ruta_default):
+            pytesseract.pytesseract.tesseract_cmd = ruta_default
+
     try:
         return pytesseract.image_to_string(imagen, lang=OCR_LANG)[:MAX_TEXT_CHARS].strip()
     except Exception:  # noqa: BLE001 - binario ausente, idioma faltante o imagen rara
