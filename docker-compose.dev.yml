@@ -4,8 +4,9 @@ services:
       context: .
       dockerfile: api/Dockerfile
     env_file: .env
+    environment:
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/mediflow-alert
     ports: ["8000:8000"]
-    extra_hosts: ["host.docker.internal:host-gateway"]
     volumes:
       - ./agent:/app/agent
       - ./api:/app/api
@@ -32,3 +33,11 @@ services:
       - ./worker:/app/worker
       - ./wallet:/app/wallet:ro
     depends_on: [api]
+  # Reutiliza la definición de infra; no levantar junto con el stack de infra (puerto 5678).
+  n8n:
+    extends:
+      file: infra/docker-compose.yml
+      service: n8n
+
+volumes:
+  n8n-data:
