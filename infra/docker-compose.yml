@@ -47,6 +47,14 @@ services:
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - GENERIC_TIMEZONE=America/Argentina/Buenos_Aires
       - TZ=America/Argentina/Buenos_Aires
+    # Importa y activa el workflow en cada arranque; el id fijo evita duplicados.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        n8n import:workflow --input=/home/node/workflow.json;
+        n8n publish:workflow --id=mediflow-alert-slack;
+        exec /docker-entrypoint.sh
     ports: ["127.0.0.1:5678:5678"]
     volumes:
       - n8n-data:/home/node/.n8n
