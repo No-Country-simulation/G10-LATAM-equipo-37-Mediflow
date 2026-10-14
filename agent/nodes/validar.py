@@ -52,8 +52,11 @@ from agent.nodes.common import step
 from agent.rules.loader import RULES_PATH, load_rules
 from agent.state import TriageState
 
-MEDICAMENTOS_PATH = Path("evals/generator/data/medicamentos.csv")
-CIE10_PATH = Path("evals/generator/data/cie10.csv")
+# Rutas absolutas desde la raíz del repo, no desde el directorio de trabajo: así el nodo
+# funciona igual en Docker (/app), en pytest y al lanzarlo desde otra carpeta.
+RAIZ_REPO = Path(__file__).resolve().parents[2]
+MEDICAMENTOS_PATH = RAIZ_REPO / "evals" / "generator" / "data" / "medicamentos.csv"
+CIE10_PATH = RAIZ_REPO / "evals" / "generator" / "data" / "cie10.csv"
 
 
 _medicamentos_cache: list[dict] | None = None
