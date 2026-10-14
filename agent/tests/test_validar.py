@@ -351,7 +351,7 @@ def test_gs06_coincide_con_plan_golden():
 def test_validar_amb5_dos_documentos_en_un_archivo():
     state = _estado_gs06()
     state["datos_extraidos"]["medicamentos"] = [{"nombre": "amoxicilina", "dosis": "500 mg"}]
-    state["datos_extraidos"]["_multiples_documentos"] = True
+    state["ambiguedad"] = "AMB-5"
     assert validar(state)["validacion"]["categoria_amb"] == "AMB-5"
 
 
@@ -476,7 +476,8 @@ def test_fuera_de_alcance_con_multiples_documentos_conserva_amb6_y_motivo():
 
     for motivo in ("paciente_no_humano", "no_clinico"):
         state = {
-            "datos_extraidos": {"_multiples_documentos": True},
+            "datos_extraidos": {},
+            "ambiguedad": "AMB-5",
             "clasificacion": {"tipo_documento": "Otro", "motivo_fuera_de_alcance": motivo},
             "trace": [],
         }
@@ -489,7 +490,8 @@ def test_multiples_documentos_en_tipo_clinico_sigue_siendo_amb5():
     from agent.nodes.validar import validar
 
     state = {
-        "datos_extraidos": {"_multiples_documentos": True},
+        "datos_extraidos": {},
+        "ambiguedad": "AMB-5",
         "clasificacion": {"tipo_documento": "Receta Medica"},
         "trace": [],
     }
