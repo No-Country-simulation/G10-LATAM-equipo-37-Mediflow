@@ -292,7 +292,7 @@ RULES_ADMIN_TOKEN=<TOKEN>
 - **OCI Notifications (correo):** Configurado y funcionando en la VM. Es el **canal activo para H3**.
 - **Discord directo:** Configurado en el `.env` de la VM, pero el código del PR #83 aún no está mergeado.
 - **Slack vía n8n (N3-08):** Es de Alessandro y Sabrina.
-- **Al desplegar el #83, el canal activo pasa a Discord.** Para seguir con correo, quitar `DISCORD_WEBHOOK_URL` del `.env`.
+- **Al desplegar el #83, el canal activo pasa a Discord** (prioridad N8N > Discord > OCI, un solo canal). Para seguir con correo, quitar `DISCORD_WEBHOOK_URL` del `.env`.
 
 ### Historial de cambios
 
