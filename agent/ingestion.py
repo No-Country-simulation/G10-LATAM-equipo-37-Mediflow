@@ -22,7 +22,6 @@ import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
-
 MAX_BYTES = int(os.getenv("MEDIFLOW_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
 MAX_PDF_PAGES = int(os.getenv("MEDIFLOW_MAX_PDF_PAGES", "50"))
 MAX_TEXT_CHARS = int(os.getenv("MEDIFLOW_MAX_TEXT_CHARS", "2000000"))

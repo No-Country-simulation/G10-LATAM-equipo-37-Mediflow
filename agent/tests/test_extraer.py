@@ -1,9 +1,7 @@
 """Tests para el fallback por regex de extraer.py (GS-27 y certificados)."""
 
-import pytest
 
 from agent.nodes.extraer import _extraer_por_regex
-
 
 # --- Test 1: GS-27 (certificado) → Paula Soria sin saltos de línea ---
 
