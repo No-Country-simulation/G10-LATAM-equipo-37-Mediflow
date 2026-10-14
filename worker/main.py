@@ -37,6 +37,19 @@ def listar_recibidos() -> list[str]:
     return storage.list_prefix(bucket_actual(), "recibidos/")
 
 
+def mover_archivo(ruta: str, carpeta_destino: str) -> None:
+    """Mueve un archivo entre carpetas del almacenamiento."""
+    bucket = bucket_actual()
+    nombre = ruta.rsplit("/", 1)[-1]
+    destino = f"{carpeta_destino.rstrip('/')}/{nombre}"
+
+    contenido = storage.download(bucket, ruta)
+    storage.upload_bytes(bucket, destino, contenido)
+    storage.borrar(bucket, ruta)
+
+    log.info("Archivo movido de %s a %s", ruta, destino)
+
+
 def preparar_resultado_sqlite(resultado: dict) -> dict:
     """Adapta la salida del grafo al formato que espera SQLite."""
     decision = resultado["decision"]
@@ -92,8 +105,9 @@ def procesar_archivo(ruta: str) -> None:
     log.info("Documento procesado y registrado en SQLite: %s", documento_id)
 
 
+
 def procesar_pendientes() -> None:
-    """Procesa los archivos recibidos, con reintentos ante fallos temporales."""
+    """Procesa archivos recibidos y gestiona los fallos."""
     archivos = listar_recibidos()
 
     if not archivos:
@@ -106,17 +120,41 @@ def procesar_pendientes() -> None:
         nombre = ruta.rsplit("/", 1)[-1]
         documento_id = nombre.rsplit(".", 1)[0]
 
+        # Si ya está registrado, solo intentamos completar la
+        # movimentación, sin volver a ejecutar el grafo.
         if triage_results.obtener_resultado(documento_id) is not None:
-            log.info("Documento ya registrado en SQLite; se omite: %s", documento_id)
+            log.info(
+                "Documento ya registrado en SQLite; se moverá: %s",
+                documento_id,
+            )
+            try:
+                mover_archivo(ruta, "procesados/entrada")
+            except Exception:
+                log.exception(
+                    "No se pudo mover el documento ya registrado: %s",
+                    ruta,
+                )
             continue
+
+        procesado = False
 
         for intento in range(1, 4):
             try:
                 procesar_archivo(ruta)
+                procesado = True
                 break
+
             except IngestionError as exc:
                 log.error("Archivo no válido: %s. Motivo: %s", ruta, exc)
+                try:
+                    mover_archivo(ruta, "rechazados")
+                except Exception:
+                    log.exception(
+                        "No se pudo mover el archivo inválido: %s",
+                        ruta,
+                    )
                 break
+
             except Exception:
                 log.exception(
                     "Fallo al procesar %s (intento %d de 3)",
@@ -131,9 +169,26 @@ def procesar_pendientes() -> None:
                 else:
                     log.error(
                         "Se agotaron los intentos para %s; "
-                        "se conservará para el siguiente ciclo",
+                        "se moverá a rechazados/",
                         ruta,
                     )
+                    try:
+                        mover_archivo(ruta, "rechazados")
+                    except Exception:
+                        log.exception(
+                            "No se pudo mover el archivo rechazado: %s",
+                            ruta,
+                        )
+
+        if procesado:
+            try:
+                mover_archivo(ruta, "procesados/entrada")
+            except Exception:
+                log.exception(
+                    "El documento se procesó, pero no se pudo mover. "
+                    "Se intentará completar la operación en el próximo ciclo: %s",
+                    ruta,
+                )
 
 
 def reporte_diario() -> None:
