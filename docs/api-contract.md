@@ -304,7 +304,8 @@ urgencias, después lo prioritario, después el resto.
 | `accion` | `aprobar`, `corregir` o `rechazar`. Rechazar es una acción del auditor, no un destino (ADR-004) |
 | `revisor` | Quién decide. Obligatorio y no vacío |
 | `motivo` | Por qué. Obligatorio y no vacío; al aprobar sin escribir nada, el panel manda "Extracción verificada contra el documento original." |
-| `correcciones` | Solo con `corregir`, y solo los campos que cambiaron, con su valor nuevo. Con las otras dos acciones va `null` |
+| `correcciones` | Con `corregir` requiere al menos un campo válido; solo los campos que cambiaron, con su valor nuevo. Con las otras dos acciones va `null` |
+| `revision_version` | `int` o `null`, opcional. El panel envía la versión mostrada para detectar cambios concurrentes |
 
 La API devuelve 422 al aprobar un documento sin destino operativo (por ejemplo, tipo `Otro`),
 con el mensaje «Documento sin destino operativo: corrija el tipo o rechace». La revisión sigue
@@ -313,6 +314,10 @@ pendiente y puede corregirse o rechazarse; los errores internos no se convierten
 La API rechaza con 422 un `revisor` o un `motivo` vacíos, y `correcciones` con una acción que no sea
 `corregir`. Las acciones sin correcciones conservan `null`. El panel envía `revision_version`
 con la versión de la extracción mostrada. Una versión desactualizada devuelve 409 y exige recargar la cola.
+Si se omite o es `null`, no se comprueba la versión de manera optimista. Los clientes deben
+enviarla para protegerse de decisiones basadas en una extracción desactualizada.
+El cuerpo usa `extra="forbid"`: cualquier campo desconocido devuelve 422.
+Una acción `corregir` sin al menos un campo válido también devuelve 422.
 
 Cómo se escriben las correcciones:
 

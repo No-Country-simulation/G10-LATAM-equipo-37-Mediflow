@@ -1,73 +1,58 @@
-# DemoDay: borrador de guion de 5 minutos
+# DemoDay: borrador de 5 minutos — Carolina y Diana
 
-Carolina con Diana. Preparado el 9/10/2026. Presentación preliminar; el criterio de F-08 se cumple
-con dos ensayos cronometrados de la demo integrada, aún pendientes para el 22–26/10.
+Actualizado 14/10/2026 tras el mensaje de María. Propuesta para acordar con Diana,
+no ensayo realizado ni evidencia de producción. Proyecto listo el viernes 16/10;
+fin de semana solo ajustes. María prepara README final y entregables; no subir aún
+nada a la plataforma. Completar al menos un ensayo previo; F-08 pide dos.
 
-| Tiempo | Diapositiva / acción | Responsable propuesto |
+| Tiempo | Qué mostramos | Responsable propuesto |
 |---|---|---|
-| 0:00–0:35 | Presentación de MediFlow | Carolina |
-| 0:35–1:15 | Problema documental | Carolina |
-| 1:15–1:55 | Intervención del auditor | Carolina |
-| 1:55–2:30 | Demo: documento de rutina | Diana opera; Carolina explica |
-| 2:30–3:10 | Demo: urgencia y revisión si corresponde | Diana opera; Carolina explica |
-| 3:10–4:10 | Demo: ambigüedad, corrección y reanudación | Diana opera; Carolina explica |
-| 4:10–5:00 | Validación, límites y siguiente paso | Carolina |
+| 0:00–0:40 | Problema: documentos clínicos heterogéneos y revisión manual | Diana |
+| 0:40–1:20 | Agente: clasificación, extracción con evidencia, reglas y revisión humana | Carolina |
+| 1:20–2:00 | Rutina: GS-28 y destino operativo | Diana opera, Carolina explica |
+| 2:00–2:50 | Urgencia: GS-07, prioridad y alerta n8n → Slack | Carolina opera, Diana explica |
+| 2:50–3:50 | Ambigüedad: GS-06, revisión/corrección y reanudación | Carolina opera y explica |
+| 3:50–4:35 | Evaluación final: modelo elegido, métricas y límites medidos | Diana |
+| 4:35–5:00 | Cierre: revisión humana y alcance del prototipo | Ambas |
 
 ## Texto de apoyo
 
-**Inicio.** Hola, soy Carolina y presento MediFlow con el equipo 37. Trabajamos sobre el recorrido
-de un documento clínico: leerlo, extraer la información y encaminarlo al destino correspondiente.
-Cuando falta información o aparece una ambigüedad, el auditor puede intervenir. Hoy mostramos
-ese recorrido con documentos sintéticos.
+Diana: «MediFlow organiza el recorrido de documentos clínicos. El desafío es
+reconocer qué documento llegó, extraer lo que realmente dice y saber cuándo
+necesita intervención humana. Usamos documentos sintéticos para esta demo».
 
-**Problema.** Una receta puede omitir un dato, contener una ambigüedad o llegar como una imagen
-que no se puede leer. El sistema necesita reconocer esa incertidumbre. MediFlow separa la
-extracción, la validación y el enrutamiento para que el caso quede disponible para revisión
-cuando no hay evidencia suficiente.
+Carolina: «El agente separa clasificación, extracción, validación y enrutamiento.
+Cada dato se apoya en evidencia del documento. Si falta información o existe una
+ambigüedad, interviene un revisor. No reemplaza el diagnóstico ni la decisión
+clínica del profesional».
 
-**Revisión.** El grafo conserva el estado antes de esperar al auditor. El panel permite comparar
-el original con la extracción. Aprobar continúa el recorrido. Corregir vuelve a validar los datos.
-Rechazar registra el motivo y cierra el caso. Si queda otro problema, el documento vuelve a la
-cola con una nueva versión y conserva el historial.
+Rutina: mostrar el identificador sintético, tipo y destino. Urgencia: mostrar la
+prioridad, destino y recepción real de la alerta sin datos del paciente. Ambigüedad:
+contrastar el campo con el documento, corregir y mostrar la nueva validación.
+GS-04 queda como respaldo adicional de alto riesgo, coordinado con el video #105.
 
-**Demo.** Primero mostramos un documento de rutina y su destino. Después, un caso urgente:
-verificamos la prioridad y si también necesita revisión. Finalmente abrimos un caso ambiguo,
-contrastamos un campo con el original y enviamos la corrección. Mostramos el resultado y
-actualizamos la cola. Si persiste una ambigüedad, explicamos por qué vuelve a revisión.
+Resultados: insertar únicamente las métricas publicadas de N3-01 y su commit/modelo.
+No confundir tests de software con precisión del modelo. Si la corrida no está,
+decir «evaluación pendiente» y no presentar cifras preliminares como finales.
 
-**Cierre.** La integración cuenta con pruebas de reanudación, control de versiones e historial,
-y de restauración local del estado. La primera evaluación real ya está publicada, pero debe
-repetirse con los arreglos integrados y las imágenes procesadas correctamente. El siguiente
-paso es completar la validación de esta integración en OCI y ensayar el recorrido
-con el equipo. La demostración no constituye una validación para uso con pacientes reales.
+## Verificación antes del ensayo
 
-## Preparación de la demo
+- Confirmar versión desplegada y modelo activo con Carlos. Cadena acordada para
+  demo: Groq Qwen Vision → Groq gpt-oss → Gemini Flash. DeepSeek/Mistral solo se
+  comparan en costos; no anunciar una cadena como desplegada sin comprobarla.
+- Probar una vez cada escenario en la URL pública con el equipo; guardar resultado,
+  fecha, commit y modelo. Evitar pruebas masivas y cuidar el cupo.
+- Confirmar que #35/#120 y revisión humana están integrados antes de prometerlos.
+- Verificar alerta n8n → Slack en menos de un minuto con Alessandro/Sabrina y
+  Carlos/Néstor; falla del webhook no debe detener el documento.
+- Verificar ausencia de datos del paciente en pantalla, límite de pedidos y caída
+  a reglas al agotar cupo. Si se usa fallback, identificarlo claramente.
+- Coordinar con Diana horario de ensayo y quién comparte pantalla. Registrar duración,
+  incidentes y ajustes en dos ensayos; todavía no se realizaron.
 
-- Usar un commit integrado y aceptado por el equipo. Registrar el commit y la configuración.
-- Actualización 13/10: Carlos confirmó que producción todavía usa reglas sin modelo activo.
-  No presentar ese comportamiento como resultado del LLM. Confirmar activación y repetir
-  los tres escenarios antes de fijar los casos; el equipo considera GS-28 como alternativa
-  de rutina y GS-07 como urgencia. Los casos siguientes son candidatos, no resultados verificados.
-- Casos acordados el 12/10: GS-01 en TXT para rutina/Farmacia; GS-10 para urgencia
-  con auditoría; GS-06 para AMB-3 y revisión humana. Usar TXT en GS-01 evita que
-  la calidad de la fotografía cambie el recorrido esperado.
-- Validar esos recorridos en el despliegue integrado con Diana antes de los ensayos;
-  no improvisar correcciones clínicas ni presentar estas expectativas como resultados medidos.
-- Usar IDs nuevos por ensayo: un ID existente recupera su checkpoint en vez de crear otro caso.
-- Comprobar API, panel, original y destinos antes de presentar. El archivo
-  `ui/pages/3_Auditoria.py` puede ejecutarse con `streamlit run` para verificar el panel.
-- La API se inicia con `uvicorn api.main:app`. Configurar las variables del entorno de prueba
-  y el volumen de SQLite. `USE_LLM=false` permite pruebas deterministas, pero no mide el modelo.
-- Mostrar notificaciones externas solamente si el despliegue ya está verificado.
-- Como contingencia, el panel tiene modo demostración. Indicar que ese modo no envía decisiones
-  a la API ni prueba la reanudación real. No presentarlo como sustituto de la demo integrada.
+## Plan B
 
-## Registro de ensayos pendiente
-
-| Ensayo | Fecha / commit | Duración total | Incidencias | Resultado |
-|---|---|---|---|---|
-| 1 | Pendiente | Pendiente | Pendiente | No realizado |
-| 2 | Pendiente | Pendiente | Pendiente | No realizado |
-
-Actualizar la diapositiva de validación después de la evaluación real. No sustituir métricas
-de exactitud por el número de pruebas de software.
+Tener abierto el video #105 de Alessandro y Sabrina, o capturas de una corrida
+verificada. Identificarlas como grabación y explicar el fallo en vivo. Si a los
+15 segundos no hay respuesta o se agota el cupo, pasar a esa evidencia. El video,
+las capturas y su funcionamiento están pendientes de confirmación del equipo.

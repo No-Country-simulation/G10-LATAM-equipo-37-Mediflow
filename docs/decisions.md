@@ -78,3 +78,10 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 - Decisión: cada documento lleva una sola revisión, de alguien distinto de quien lo escribió, anotada como `revisor_1` y `revision_1` en `plan_golden.csv`. Si un documento ya estaba revisado, por el revisor 1, el revisor 2 o la coordinación del conjunto, esa revisión cuenta y esa persona queda como revisor 1. Las segundas revisiones ya completas se conservan (GS-26 y GS-30), y las pendientes de quien no había revisado se cancelan. Con esto, la mañana del 6 de octubre quedaron 17 documentos aprobados y 6 revisados a la espera de correcciones de sus autores. `evals/run.py` cuenta un elemento como oficial con una revisión.
 - Alternativa descartada: mantener dos revisiones y evaluar con el conjunto incompleto. Medir con la mitad de los documentos sin revisar daría números menos confiables que medir con todos revisados una vez.
 - Consecuencia: baja la verificación de cada etiqueta. Para compensar, cuando la evaluación marca un fallo, antes de contarlo como error del agente se vuelve a mirar la etiqueta, y si estaba mal se corrige. La segunda mirada se concentra donde agente y etiqueta no coinciden, que es donde un error de etiqueta cambiaría los números.
+
+## ADR-013 · El CIE-10 se valida por categoría de 3 caracteres
+- Fecha: 13 de octubre de 2026
+- Contexto: `validar.py` exigía coincidencia exacta con `cie10.csv`. El catálogo sigue la CIE-10 de la OMS (ADR-008), donde `R91` e `I10` no tienen subcódigos y `I26.9` sí. Un modelo que escribe `R91.1` (CIE-10-CM) o `I26` en vez de `I26.9` dejaba un diagnóstico correcto como código inexistente y el caso caía en AMB-2.
+- Decisión: se acepta el código si su categoría de 3 caracteres está en el catálogo. Una categoría ausente (`Z99`) sigue marcándose. El código se conserva tal como lo devolvió el modelo.
+- Alternativa descartada: ampliar `cie10.csv` con subcódigos, porque el catálogo debe quedar fiel a la OMS.
+- Consecuencia: ya no se detecta un subcódigo inventado dentro de una categoría real (`I26.7`), y `K35.2` pasa por la categoría `K35`; ADR-008 lo trataba como inexistente. Está documentado en los tests.
