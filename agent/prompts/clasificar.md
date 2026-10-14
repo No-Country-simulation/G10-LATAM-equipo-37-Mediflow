@@ -22,7 +22,6 @@ Devuelve SOLO un JSON con esta estructura:
   "nivel_prioridad": "Rutina | Prioritario | Urgente",
   "idioma": "es | pt | en",
   "legible": true,
-  "multiples_documentos": false,
   "confianza": 0.0,
   "justificacion": "una frase",
   "motivo_fuera_de_alcance": "uno de los 5 motivos de fuera_de_alcance, o null"
@@ -34,8 +33,6 @@ Reglas adicionales:
 - Si el texto es ilegible o incompleto, legible es false y confianza baja.
 - No inventes datos. Si no estás seguro, baja la confianza.
 - Si tipo_documento es "Otro", motivo_fuera_de_alcance DEBE ser uno de los 5 motivos. En cualquier otro caso, es null.
-
-- Si hay dos documentos clínicos independientes en el mismo archivo, devuelve multiples_documentos: true. No confundas páginas sucesivas, anexos ni referencias a otra clase de documento con un segundo documento. Usa un booleano, no texto.
 
 Documento:
 

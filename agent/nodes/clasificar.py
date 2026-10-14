@@ -174,7 +174,6 @@ def _normalizar_respuesta(datos: dict) -> dict:
         "idioma": datos.get("idioma", "es"),
         "legible": bool(datos.get("legible", True)),
         "justificacion": datos.get("justificacion"),
-        "multiples_documentos": datos.get("multiples_documentos") is True,
         "motivo_fuera_de_alcance": motivo,
     }
 
@@ -211,9 +210,6 @@ def clasificar(state: TriageState) -> dict:
         logger.warning("LLM falló en clasificar (%s), usando reglas.", e)
         clasificacion = _clasificar_por_reglas(texto)
 
-    clasificacion["multiples_documentos"] = (
-        clasificacion.get("multiples_documentos") is True or detectar_documentos_multiples(texto)
-    )
     return {
         "clasificacion": clasificacion,
         "modelo_utilizado": modelo,

@@ -1,24 +1,8 @@
-"""Regresiones de los dos fallos informados por Diana, sin duplicar su suite."""
+"""Heurística de respaldo AMB-5; validación e integración pertenecen a #120."""
 import pytest
-from fastapi.testclient import TestClient
 
-from agent.nodes.clasificar import _normalizar_respuesta, clasificar
+from agent.nodes.clasificar import _clasificar_por_reglas, _normalizar_respuesta
 from agent.nodes.documentos_multiples import detectar_documentos_multiples
-from agent.nodes.enrutar import enrutar
-from agent.nodes.validar import validar
-from api.main import app
-
-
-@pytest.mark.parametrize("tipo", ["TEXTO", "JSON"])
-@pytest.mark.parametrize("texto", ["", "   ", "\t\n", None])
-def test_entrada_vacia_422_sin_ejecutar_grafo(monkeypatch, tipo, texto):
-    import api.main as modulo
-    def no_ejecutar(*args, **kwargs):
-        pytest.fail("Una entrada vacía no debe ejecutar el agente")
-    monkeypatch.setattr(modulo, "run_triage", no_ejecutar)
-    r = TestClient(app).post("/triage", json={"documento_id": "CB", "tipo_archivo": tipo,
-                                               "documento_texto": texto})
-    assert r.status_code == 422
 
 
 @pytest.mark.parametrize("texto,esperado", [
@@ -32,16 +16,11 @@ def test_encabezados_independientes(texto, esperado):
     assert detectar_documentos_multiples(texto) is esperado
 
 
-def test_fallback_produce_amb5_y_revision():
-    s = {"texto": "RECETA MÉDICA\nPaciente: Ana\nCERTIFICADO MÉDICO\nPaciente: Ana",
-         "datos_extraidos": {}, "legibilidad": 1.0, "score": 0.99, "trace": []}
-    s.update(clasificar(s))
-    s.update(validar(s))
-    assert s["validacion"]["categoria_amb"] == "AMB-5"
-    assert enrutar(s)["decision"]["destino_principal"] == "Cola_Revision_Humana"
+
+def test_fallback_marca_documentos_multiples():
+    texto = "RECETA MÉDICA\nPaciente: Ana\nCERTIFICADO MÉDICO\nPaciente: Ana"
+    assert _clasificar_por_reglas(texto)["multiples_documentos"] is True
 
 
-@pytest.mark.parametrize("valor,esperado", [
-    (True, True), (False, False), ("false", False), ("true", False), (None, False)])
-def test_senal_llm_es_booleano_estricto(valor, esperado):
-    assert _normalizar_respuesta({"multiples_documentos": valor})["multiples_documentos"] is esperado
+def test_clasificador_llm_no_produce_segunda_senal_amb5():
+    assert "multiples_documentos" not in _normalizar_respuesta({"multiples_documentos": True})
