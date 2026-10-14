@@ -18,8 +18,8 @@ from pathlib import Path
 
 from agent.llm import adapter
 from agent.nodes.common import step
-from agent.state import TriageState
 from agent.schemas.contrato import TipoDocumento
+from agent.state import TriageState
 
 logger = logging.getLogger(__name__)
 
