@@ -1,0 +1,91 @@
+"""Pruebas de la puerta de legibilidad de la imagen (N2-08, issue #62).
+
+Los scores se calculan con métricas determinísticas de calidad de imagen (resolución,
+contraste y nitidez) en Pillow, sin llamar al modelo. Por eso se pueden correr siempre: no
+necesitan red, secretos ni imágenes clínicas reales.
+
+El criterio de aceptación (issue #62) usa tres niveles para las fotos manuscritas:
+- leve   -> score >= 0.70 (pasa)
+- media  -> 0.40 <= score < 0.70 (pasa)
+- severa -> score < 0.40 (pasa a revisión humana)
+
+El score de un documento con `legibilidad` ya precargada no se recalcula (contrato del grafo).
+"""
+from __future__ import annotations
+
+import base64
+from io import BytesIO
+
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
+
+from agent.nodes.normalizar import _score_de_imagen, normalizar
+
+
+def _pagina(fondo: int = 255, texto: int = 0, ancho: int = 1600, alto: int = 1200,
+            blur: float = 0.0, dark: float = 1.0, paso: int = 30, tam: int = 16) -> Image.Image:
+    """Página sintética: bloques oscuros sobre fondo claro, como líneas de texto."""
+    img = Image.new("RGB", (ancho, alto), (fondo, fondo, fondo))
+    d = ImageDraw.Draw(img)
+    for y in range(0, alto - 24, paso):
+        for x in range(0, ancho - 24, paso):
+            d.rectangle([x, y, x + tam, y + 16], fill=(texto, texto, texto))
+    if blur:
+        img = img.filter(ImageFilter.GaussianBlur(radius=blur))
+    if dark != 1.0:
+        img = ImageEnhance.Brightness(img).enhance(dark)
+    return img
+
+
+def _b64(img: Image.Image) -> str:
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode("ascii")
+
+
+def test_pagina_nitida_pasa():
+    assert _score_de_imagen(_pagina()) >= 0.70
+
+
+def test_pagina_media_800x600_pasa():
+    score = _score_de_imagen(_pagina(ancho=800, alto=600))
+    assert 0.40 <= score < 0.70
+
+
+def test_pagina_borrosa_oscura_ilegible():
+    assert _score_de_imagen(_pagina(blur=8, dark=0.4)) < 0.40
+
+
+def test_pagina_casi_blanca_no_pasa():
+    assert _score_de_imagen(_pagina(texto=255)) < 0.40
+
+
+def test_pagina_borrosa_pequena_ilegible():
+    assert _score_de_imagen(_pagina(ancho=600, alto=450, blur=8, dark=0.4)) < 0.40
+
+
+def test_score_siempre_en_rango():
+    imagenes = (
+        _pagina(),
+        _pagina(texto=255),
+        _pagina(ancho=800, alto=600),
+        _pagina(blur=8, dark=0.4),
+    )
+    for img in imagenes:
+        assert 0.0 <= _score_de_imagen(img) <= 1.0
+
+
+def test_legibilidad_precargada_no_se_recalcula():
+    out = normalizar({"texto": "hola", "tipo_archivo": "TEXTO", "legibilidad": 0.9, "trace": []})
+    assert out["legibilidad"] == 0.9
+    assert out["trace"][-1]["detalle"]["legibilidad_provisional"] is False
+
+
+def test_normalizar_con_imagen_borrosa_deriva_a_revision():
+    out = normalizar({
+        "texto": "",
+        "tipo_archivo": "IMAGEN",
+        "imagenes": [_b64(_pagina(blur=8, dark=0.4))],
+        "trace": [],
+    })
+    assert out["legibilidad"] < 0.40
+    assert out["trace"][-1]["detalle"]["fuente"] == "imagen"
