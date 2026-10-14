@@ -124,17 +124,33 @@ def _a_numero(texto: Any) -> float | None:
     return float(s)
 
 
+# Número que lleva su unidad pegada: "15 mg", "0,25 mg", "1.000 mg", "2 g".
+_NUMERO_CON_UNIDAD = re.compile(
+    r"(\d{1,3}(?:\.\d{3})+(?!\d)|\d+(?:[.,]\d+)?)\s*(mg|g|mcg|µg|ug)\b", re.IGNORECASE
+)
+
+
 def _dosis_en_unidad_catalogo(texto: Any, unidad_catalogo: str) -> float | None:
-    """Convierte la dosis del documento a la unidad del catálogo. None si no se puede."""
-    valor = _a_numero(texto)
+    """Convierte la dosis del documento a la unidad del catálogo. None si no se puede.
+
+    Si el texto trae una cantidad con su unidad ("3 comprimidos (15 mg)"), la dosis es esa cantidad
+    y no el primer número del texto: leer el 3 compararía 3 mg contra el rango y marcaría AMB-3
+    en una dosis correcta (GS-05, metotrexato 15 mg por semana). Sin unidad en el texto se
+    conserva el primer número y se asume la unidad del catálogo.
+    """
+    if texto is None:
+        return None
+    m = _NUMERO_CON_UNIDAD.search(str(texto))
+    if not m:
+        return _a_numero(texto)  # sin unidad: se asume la del catálogo
+    valor = _a_numero(m.group(1))
     if valor is None:
         return None
-    m = re.search(r"\d\s*(mg|g|mcg|µg|ug)\b", str(texto).lower())
-    if not m:
-        return valor  # sin unidad: se asume la del catálogo
+    unidad = m.group(2).lower()
     if unidad_catalogo.lower() == "mg":
-        return valor * _FACTOR_MG[m.group(1)]
-    return valor if m.group(1) == unidad_catalogo.lower() else None
+        return valor * _FACTOR_MG[unidad]
+    return valor if unidad == unidad_catalogo.lower() else None
+
 
 def _norm(s: str) -> str:
     s = unicodedata.normalize("NFD", s.lower().strip())
