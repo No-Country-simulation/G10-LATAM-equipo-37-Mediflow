@@ -158,11 +158,15 @@ def _ocr(imagen) -> str:
         import pytesseract
     except ImportError:
         return ""
-    # Fallback para Windows: si tesseract no está en el PATH, usar la ruta por defecto.
+    # Fallback para Windows: si tesseract no está en el PATH, buscar en las rutas típicas.
     if platform.system() == "Windows" and not shutil.which("tesseract"):
-        ruta_default = r"C:\Archivos de programa\Tesseract-OCR\tesseract.exe"
-        if os.path.exists(ruta_default):
-            pytesseract.pytesseract.tesseract_cmd = ruta_default
+        for ruta in (
+            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+        ):
+            if os.path.exists(ruta):
+                pytesseract.pytesseract.tesseract_cmd = ruta
+                break
     try:
         return pytesseract.image_to_string(imagen, lang=OCR_LANG)[:MAX_TEXT_CHARS].strip()
     except Exception:  # noqa: BLE001 - binario ausente, idioma faltante o imagen rara
