@@ -85,3 +85,13 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 - Decisión: se acepta el código si su categoría de 3 caracteres está en el catálogo. Una categoría ausente (`Z99`) sigue marcándose. El código se conserva tal como lo devolvió el modelo.
 - Alternativa descartada: ampliar `cie10.csv` con subcódigos, porque el catálogo debe quedar fiel a la OMS.
 - Consecuencia: ya no se detecta un subcódigo inventado dentro de una categoría real (`I26.7`), y `K35.2` pasa por la categoría `K35`; ADR-008 lo trataba como inexistente. Está documentado en los tests.
+
+## ADR-014 · Cadena de modelos gratuitos para producción: Groq principal, Gemini respaldo, Mistral último recurso
+
+- Fecha: 15 de octubre de 2026
+- Contexto: el modelo en producción estaba apagado (`USE_LLM` no seteado). El ADR-010 mencionaba Qwen y Mistral como respaldos, pero Gemini 2.5 Flash daba 404 y Qwen 3.6 fue retirado para cuentas gratuitas. Los casos con campos faltantes caían en revisión humana (75% en modo reglas). El hackathon exige que todo funcione sin costo.
+- Decisión: se activa el modelo en producción con una cadena 100% gratuita: Groq Qwen como principal (`groq/qwen/qwen3.8-27b`, multimodal), Gemini Flash como respaldo 1 (`gemini/gemini-3.8-flash`, multimodal) y Mistral Small como respaldo 2 (`mistral/mistral-small-latest`, solo texto). DeepSeek queda afuera porque solo procesa texto y no recibe imágenes.
+- Configuración en la VM: `USE_LLM=true`, `LLM_PRIMARY=groq/qwen/qwen3.8-27b`, `LLM_FALLBACKS=gemini/gemini-3.8-flash,mistral/mistral-small-latest`.
+- Claves: Groq y Gemini son planes gratuitos del correo del equipo. Mistral es plan gratuito Experiment.
+- Alternativa descartada: usar DeepSeek como principal, porque no recibe imágenes y los casos M4/M7 (manuscritos) daban 0 caracteres.
+- Consecuencia: los casos con imágenes se procesan desde el primer intento (Groq Qwen es multimodal). Si Groq agota cupo, Gemini Flash releva con la misma capacidad. Mistral Small queda como texto puro. Como todos son planes gratuitos, solo se usan con documentos sintéticos (ADR-010).
