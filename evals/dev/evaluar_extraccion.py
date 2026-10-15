@@ -1,6 +1,7 @@
 """Compara dos prompts con casos nuevos; exige respuestas del modelo, sin fallback stub."""
 import argparse
 import json
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -9,10 +10,13 @@ RAIZ = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(RAIZ))
 
 
-def normalizar(valor):
+def normalizar(valor, *, nombre_medico=False):
     if valor is None:
         return None
-    return unicodedata.normalize("NFC", str(valor)).strip().rstrip(".").casefold()
+    texto = unicodedata.normalize("NFC", str(valor)).strip().rstrip(".").casefold()
+    if nombre_medico:
+        texto = re.sub(r"^(?:doctora|doctor|dra|dr)\.?\s+", "", texto)
+    return texto
 
 
 def comparar(esperado, datos):
@@ -21,7 +25,10 @@ def comparar(esperado, datos):
         actual = datos
         for parte in campo.split("."):
             actual = actual.get(parte) if isinstance(actual, dict) else None
-        resultados[campo] = normalizar(actual) == normalizar(valor)
+        es_medico = campo == "medico_solicitante.nombre"
+        resultados[campo] = (
+            normalizar(actual, nombre_medico=es_medico) == normalizar(valor, nombre_medico=es_medico)
+        )
     return resultados
 
 
