@@ -41,3 +41,7 @@ def list_prefix(bucket: str, prefijo: str) -> list[str]:
 
 def download(bucket: str, ruta: str) -> bytes:
     return _client().get_object(namespace(), bucket, ruta).data.content
+
+
+def borrar(bucket: str, ruta: str) -> None:
+    _client().delete_object(namespace(), bucket, ruta)

@@ -18,6 +18,7 @@ from pathlib import Path
 
 from agent.llm import adapter
 from agent.nodes.common import step
+from agent.schemas.contrato import TipoDocumento
 from agent.state import TriageState
 
 logger = logging.getLogger(__name__)
@@ -43,13 +44,22 @@ def _convertir_a_iso(fecha: str | None) -> str | None:
     except (ValueError, AttributeError):
         return None
 
-def _extraer_por_regex(texto: str) -> dict:
+def _extraer_por_regex(texto: str, tipo_documento: str = "Otro") -> dict:
     """Fallback: extracción con expresiones regulares."""
     paciente = _buscar(r"Paciente:\s*([^,\.\n]+)", texto)
     edad = _buscar(r"(\d{1,3})\s*a[nñ]os", texto)
     medico = _buscar(
         r"M[eé]dic[oa] Solicitante:\s*(.+?)(?:\s+MP|\s+Matr|\n|$)", texto
     )
+    if not medico and tipo_documento == TipoDocumento.CERTIFICADO_MEDICO:
+        # Fallback: el médico firma al pie (certificados)
+        medico = _buscar(
+            r"(?:Dr\.|Dra\.|Doctor|Doctora)[ \t]+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:[ \t]+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*)",
+            texto,
+        )
+    if not medico and tipo_documento == TipoDocumento.CERTIFICADO_MEDICO:
+        # Fallback: después de "Firma:"
+        medico = _buscar(r"Firma:[ \t]*([^\n,]+)", texto)
 
     matricula = _buscar(r"(?:MP|Matr[ií]cula)\s*:?\s*(\d+)", texto)
     fecha = _buscar(r"Fecha(?: del estudio| de ingreso| de egreso)?:\s*([^\n]+)", texto)
@@ -71,6 +81,7 @@ def _extraer_por_regex(texto: str) -> dict:
 
 
 # --- LLM ---
+
 
 def _parsear_json(texto: str) -> dict:
     """Parsea JSON tolerando bloques markdown ```json ... ```."""
@@ -234,7 +245,7 @@ def extraer(state: TriageState) -> dict:
     # Camino rápido: sin LLM.
     if not USE_LLM:
         # Envolver con _normalizar_datos para que devuelva la misma forma que el modelo.
-        datos = _normalizar_datos(_extraer_por_regex(texto))
+        datos = _normalizar_datos(_extraer_por_regex(texto, tipo_documento))
         return {
             "datos_extraidos": datos,
             "evidencias": [],
@@ -251,7 +262,7 @@ def extraer(state: TriageState) -> dict:
     try:
         if not PROMPT_PATH.exists():
             logger.warning("No existe prompts/extraer.md, usando regex.")
-            datos = _normalizar_datos(_extraer_por_regex(texto))
+            datos = _normalizar_datos(_extraer_por_regex(texto, tipo_documento))
             evidencias = []
         else:
             prompt = _construir_prompt(texto, tipo_documento)
@@ -266,7 +277,7 @@ def extraer(state: TriageState) -> dict:
             consumo.append(resultado_llm.consumo("extraer"))
     except Exception as e:  # noqa: BLE001
         logger.warning("LLM falló en extraer (%s), usando regex.", type(e).__name__)
-        datos = _normalizar_datos(_extraer_por_regex(texto))
+        datos = _normalizar_datos(_extraer_por_regex(texto, tipo_documento))
         evidencias = []
 
     salida: dict = {

@@ -14,7 +14,7 @@ DB_PATH = Path(
 
 
 def _conectar(db_path: Path | None = None) -> sqlite3.Connection:
-    """Abre a base de dados e garante que a tabela existe."""
+    """Abre la base de datos y garantiza que la tabla existe."""
     caminho = Path(db_path) if db_path is not None else DB_PATH
     caminho.parent.mkdir(parents=True, exist_ok=True)
 
@@ -37,7 +37,7 @@ def _conectar(db_path: Path | None = None) -> sqlite3.Connection:
 def guardar_resultado(
     resultado: dict, db_path: Path | None = None
 ) -> None:
-    """Guarda ou atualiza o resultado de um documento."""
+    """Guarda o actualiza el resultado de un documento."""
     documento_id = resultado["documento_id"]
     destino = resultado["decision_enrutamiento"]["destino_principal"]
     score = resultado["score_confianza"]
@@ -61,7 +61,7 @@ def guardar_resultado(
 
 
 def listar_resultados(db_path: Path | None = None) -> list[dict]:
-    """Lista os resultados com os campos necessários para a fila."""
+    """Lista los resultados con los campos necesarios para la cola."""
     with closing(_conectar(db_path)) as conn:
         with conn:
             filas = conn.execute(
