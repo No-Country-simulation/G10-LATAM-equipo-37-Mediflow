@@ -9,6 +9,7 @@ services:
       - ./agent:/app/agent
       - ./api:/app/api
       - ./wallet:/app/wallet:ro
+      - ./data:/app/data
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
   ui:
     build:
@@ -30,4 +31,5 @@ services:
       - ./agent:/app/agent
       - ./worker:/app/worker
       - ./wallet:/app/wallet:ro
+      - ./data:/app/data
     depends_on: [api]
