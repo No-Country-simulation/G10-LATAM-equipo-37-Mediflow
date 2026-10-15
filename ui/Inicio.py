@@ -14,10 +14,10 @@ st.info("Usa el menú lateral para cargar documentos, consultar la cola de audit
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.metric("Formatos soportados", "PDF · imagen · texto · JSON")
+    st.metric("Formatos soportados", "PDF, imagen, texto")
 with col2:
     st.metric("Revisión humana", "AMB-1 a AMB-6")
 with col3:
-    st.metric("Procesamiento", "API + grafo MediFlow")
+    st.metric("Procesamiento", "API + grafo")
 
 st.caption("MediFlow realiza triaje documental; no interpreta imágenes médicas ni emite diagnósticos.")
