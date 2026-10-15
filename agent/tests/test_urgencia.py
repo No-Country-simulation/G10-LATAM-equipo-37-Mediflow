@@ -164,3 +164,38 @@ def test_valor_critico_al_final_de_la_oracion():
     assert _a_numero("7,2,") == 7.2
     assert _a_numero("15.000.") == 15000.0
     assert _a_numero("7,2") == 7.2
+
+
+# --------------------------------------------------------------------------- negación simple
+def test_prioridad_no_urgente_en_una_orden_no_dispara_urgencia():
+    """Patrón de GS-21: «Prioritario (no urgente)» es lo contrario de una urgencia."""
+    u = _urgencia(
+        "Prioridad: Prioritario (no urgente). Estudio de alta complejidad.",
+        tipo="Orden de Solicitud de Procedimiento",
+    )
+    assert u["detectada"] is False
+
+
+def test_no_es_urgente_no_dispara_urgencia():
+    u = _urgencia(
+        "El estudio no es urgente; se programa en las próximas semanas.",
+        tipo="Orden de Solicitud de Procedimiento",
+    )
+    assert u["detectada"] is False
+
+
+def test_una_urgencia_afirmativa_posterior_sigue_disparando():
+    """La negación de una mención no tapa otra mención afirmativa en el mismo texto."""
+    u = _urgencia(
+        "Prioridad: no urgente. Pero el hallazgo requiere estudio de urgencia.",
+        tipo="Orden de Solicitud de Procedimiento",
+    )
+    assert u["detectada"] is True
+
+
+def test_no_se_descarta_sigue_contando_como_urgencia():
+    u = _urgencia(
+        "No se descarta urgente intervención por la evolución.",
+        tipo="Orden de Solicitud de Procedimiento",
+    )
+    assert u["detectada"] is True

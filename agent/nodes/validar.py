@@ -23,9 +23,11 @@ hay que resolverlas antes de que esto sea definitivo):
     la fecha del documento o es ilegible) y un CIE-10 que no existe en el catálogo
     (AMB-2 tiene prioridad sobre AMB-3). Falta la regla de "diagnóstico no coincide con
     el tipo de estudio" que menciona el contrato.
-  - AMB-5 (dos documentos en un archivo): este nodo asume que llega marcado en
-    `datos_extraidos["_multiples_documentos"]`, pero no sé todavía qué nodo (¿normalizar?
-    ¿clasificar?) es el que realmente detecta y escribe esa marca. Confirmar con Kevin/Carlos.
+  - AMB-5 (dos documentos en un archivo): la señal principal es `state["ambiguedad"]`, que
+    informa `extraer` con el modelo. Si el modelo no informó AMB-4 ni AMB-5 (modo reglas, sin
+    modelo), se usa de respaldo `clasificacion["multiples_documentos"]`, que escribe la
+    heurística de `clasificar.py`. La marca vieja `datos_extraidos["_multiples_documentos"]`
+    se eliminó: ningún nodo la escribía.
   - AMB-6 (fuera de alcance): el contrato dice que "validar.py lo escribe en el estado", pero
     el motivo (uno de los 5 de `fuera_de_alcance.motivos` en rules.yaml) parece un juicio que
     hace el modelo de clasificación, no una regla determinística de este nodo. Acá simplemente
@@ -420,7 +422,9 @@ def validar(state: TriageState) -> dict:
     conflictos_contradiccion = validar_contradiccion_interna(datos)
     ambiguedad_modelo = categoria_ambiguedad_del_modelo(state.get("ambiguedad"))
     es_ilegible_medio = evaluar_legibilidad(legibilidad, rules) or ambiguedad_modelo == "AMB-4"
-    es_multiples_documentos = bool(datos.get("_multiples_documentos")) or ambiguedad_modelo == "AMB-5"
+    es_multiples_documentos = ambiguedad_modelo == "AMB-5" or (
+        ambiguedad_modelo is None and clasificacion.get("multiples_documentos") is True
+    )
 
     categoria = asignar_categoria_amb(
         campos_faltantes,
