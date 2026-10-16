@@ -1,4 +1,6 @@
 """Decide el destino, si requiere auditoría humana y la notificación."""
+import os
+
 from agent.nodes.common import step
 from agent.rules.loader import load_rules
 from agent.state import TriageState
@@ -7,6 +9,8 @@ from agent.state import TriageState
 def _nombre_paciente(state: TriageState) -> str:
     """Usa exclusivamente el campo nombre acordado por el equipo."""
     paciente = state.get("datos_extraidos", {}).get("paciente", {}) or {}
+    if os.getenv("ALERTA_OCULTAR_PACIENTE", "").lower() in ("1", "true", "yes"):
+        return "paciente (nombre omitido)"
     return paciente.get("nombre") or "paciente sin identificar"
 
 

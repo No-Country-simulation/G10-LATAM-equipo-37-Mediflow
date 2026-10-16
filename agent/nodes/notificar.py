@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def notificar(state: TriageState) -> dict:
     """
-    Publica la alerta en OCI Notifications si hay urgencia.
+    Publica la alerta (n8n, Discord u OCI, con respaldo entre canales) si hay urgencia.
 
     Si no hay notificación generada (no hay urgencia), no hace nada.
     Si falla la publicación, no rompe el flujo (solo loguea el error).
