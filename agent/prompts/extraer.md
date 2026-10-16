@@ -77,6 +77,12 @@ Reglas adicionales:
    No uses otras categorías (AMB-1, AMB-2, AMB-3, AMB-6); esas las deciden las reglas y la clasificación.
 9. En órdenes, el estudio o procedimiento que se pide va en `procedimiento_solicitado`. No lo confundas con un estudio ya realizado. En epicrisis, copia el diagnóstico explícito de alta en `diagnostico_egreso`; no lo sustituyas por el diagnóstico de ingreso ni deduzcas uno nuevo.
 10. En certificados, `medico_solicitante` identifica al profesional que firma o emite el certificado, aunque esté al pie como «Dr.», «Dra.» o «Firma». Copia su nombre y matrícula solo si están escritos. No confundas al paciente con el profesional. Si solo hay una firma ilegible, el nombre queda null.
+11. Medicamentos: separa el nombre de la dosis. Para cada medicamento, el campo `nombre` debe contener solo el nombre del medicamento (sin dosis, sin frecuencia, sin duración). Los campos `dosis`, `frecuencia` y `duracion` van por separado:
+   - `nombre`: "Metformina" (no "Metformina 850 mg")
+   - `dosis`: "850 mg" (no "850", no "Metformina 850 mg")
+   - `frecuencia`: "cada 12 horas" (no "cada 12 hs", no "12 horas")
+   - `duracion`: "5 días" (no "5", no "durante 5 días")
+Si el documento no especifica alguno de estos campos, va en `null`. No los inventes ni los mezcles con el nombre.
 
 Ejemplo:
 
