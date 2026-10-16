@@ -6,7 +6,7 @@ STATE = {
     "score": 0.9,
     "legibilidad": 0.9,
     "urgencia": {"detectada": True, "motivos": ["TEP agudo"]},
-    "datos_extraidos": {"paciente": {"nome": "Juan Pérez"}},
+    "datos_extraidos": {"paciente": {"nombre": "Juan Pérez"}},
 }
 
 
