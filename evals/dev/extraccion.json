@@ -1,0 +1,8 @@
+[
+  {"id":"DEV-ORDEN-01","tipo":"Orden de Solicitud de Procedimiento","texto":"ORDEN. Fecha: 12/10/2026. Paciente: Lucía Prado. Médico Solicitante: Dr. Raúl Vega. Matrícula: 58231. Procedimiento solicitado: Ecografía de hombro derecho.","esperado":{"procedimiento_solicitado":"Ecografía de hombro derecho"}},
+  {"id":"DEV-ALTA-01","tipo":"Epicrisis","texto":"EPICRISIS. Paciente: Tomás Leiva. Diagnóstico de ingreso: dolor abdominal en estudio. Diagnóstico de egreso: gastroenteritis. Alta: 12/10/2026.","esperado":{"diagnostico_egreso":"gastroenteritis"}},
+  {"id":"DEV-CERT-01","tipo":"Certificado Medico","texto":"CERTIFICADO MÉDICO. Fecha: 12/10/2026. Paciente: Julia Ledesma. Se certifica asistencia a consulta. Firma: Dra. Inés Cabrera. Matrícula: 68432.","esperado":{"paciente.nombre":"Julia Ledesma","medico_solicitante.nombre":"Dra. Inés Cabrera","medico_solicitante.matricula":"68432"}},
+  {"id":"DEV-ALTA-02","tipo":"Epicrisis","texto":"EPICRISIS. Paciente: Matías Correa. Diagnóstico de ingreso: dolor abdominal. Se indica alta y control ambulatorio. No consta diagnóstico de egreso.","esperado":{"diagnostico_egreso":null}},
+  {"id":"DEV-CERT-02","tipo":"Certificado Medico","texto":"CERTIFICADO MÉDICO. Fecha: 12/10/2026. Paciente: Clara Rivas. Asistió a consulta. Firma ilegible. Matrícula: 71546.","esperado":{"medico_solicitante.nombre":null,"medico_solicitante.matricula":"71546"}},
+  {"id":"DEV-ORDEN-02","tipo":"Orden de Solicitud de Procedimiento","texto":"ORDEN. Paciente: Mario Solís. Médico Solicitante: Dra. Eva Toledo. Matrícula: 82341. Procedimiento solicitado: [campo vacío]. Antecedente: radiografía de tórax realizada el mes pasado.","esperado":{"procedimiento_solicitado":null}}
+]
