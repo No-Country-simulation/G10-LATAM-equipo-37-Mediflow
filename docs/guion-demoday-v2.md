@@ -22,10 +22,10 @@ Propuesta de reparto en 7 bloques. Las partes de Carolina son un borrador para q
 
 ## 1:10-1:50 · Demo rutina GS-28
 - Diana: "Primer caso: un documento de rutina. Veamos a dónde lo manda."
-- Carolina: "Lo reconoce como certificado médico y lo envía a Historia Clínica Electrónica, sin revisión humana, en unos 4 segundos, y lo guarda en OCI Object Storage."
+- Carolina: "Lo reconoce como certificado médico y lo envía a Historia Clínica Electrónica, sin revisión humana, en segundos, y lo guarda en OCI Object Storage."
 
 ## 1:50-2:35 · Demo urgencia GS-07
-- Diana: "Ahora un caso crítico: un informe con hallazgo de tromboembolismo pulmonar. El agente detecta la urgencia, lo manda directo a la cola de urgencias, sin pasar por revisión, y avisa a la guardia. Todo en unos cuatro segundos."
+- Diana: "Ahora un caso crítico: un informe con hallazgo de tromboembolismo pulmonar. El agente detecta la urgencia, lo manda directo a la cola de urgencias, sin pasar por revisión [y avisa a la guardia: solo si el #119 está desplegado]. Todo en segundos."
 
 ## 2:35-3:20 · Demo GS-06, revisión humana (Carolina)
 "Tercer caso: una receta de amoxicilina con una dosis que el agente no puede dar por buena. No la deja pasar: la manda a revisión humana. Un auditor la revisa, la corrige y el flujo sigue."
