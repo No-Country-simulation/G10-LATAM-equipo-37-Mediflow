@@ -89,9 +89,17 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 ## ADR-014 · Cadena de modelos gratuitos para producción: Groq principal, Gemini respaldo, Mistral último recurso
 
 - Fecha: 15 de octubre de 2026
-- Contexto: el modelo en producción estaba apagado (`USE_LLM` no seteado). El ADR-010 mencionaba Qwen y Mistral como respaldos, pero Gemini 2.5 Flash daba 404 y Qwen 3.6 fue retirado para cuentas gratuitas. Los casos con campos faltantes caían en revisión humana (75% en modo reglas). El hackathon exige que todo funcione sin costo.
+- Contexto: el modelo en producción estaba apagado (`USE_LLM` no seteado). El ADR-010 mencionaba Qwen y Mistral como respaldos, pero Gemini 2.5 Flash daba 404 y Qwen 3.6 fue retirado para cuentas gratuitas. Los casos con campos faltantes caían en revisión humana (71% en modo reglas según la corrida limpia de Cristian del 15/10; el 75% previo era una estimación informal). El hackathon exige que todo funcione sin costo.
 - Decisión: se activa el modelo en producción con una cadena 100% gratuita: Groq Qwen como principal (`groq/qwen/qwen3.8-27b`, multimodal), Gemini Flash como respaldo 1 (`gemini/gemini-3.8-flash`, multimodal) y Mistral Small como respaldo 2 (`mistral/mistral-small-latest`, solo texto). DeepSeek queda afuera porque solo procesa texto y no recibe imágenes.
 - Configuración en la VM: `USE_LLM=true`, `LLM_PRIMARY=groq/qwen/qwen3.8-27b`, `LLM_FALLBACKS=gemini/gemini-3.8-flash,mistral/mistral-small-latest`.
-- Claves: Groq y Gemini son planes gratuitos del correo del equipo. Mistral es plan gratuito Experiment.
+- Claves: Groq y Gemini son planes gratuitos del correo del equipo (`mediflow.equipo37@gmail.com`). Mistral es plan gratuito Experiment (requiere optar por data training).
+- **Evidencia de prueba real (15/10):**
+  - `groq/qwen/qwen3.8-27b`: llamada de texto OK (clasificación de triage), respuesta JSON válida. Multimodal confirmado por documentación y por la corrida del triaje en producción.
+  - `gemini/gemini-3.8-flash`: llamada de texto OK (clasificación de triage), respuesta JSON válida. La documentación previa decía "no indicado" para imágenes, pero la prueba de clasificación funcionó. Queda pendiente probar extracción con imagen antes de la corrida final.
+  - `mistral/mistral-small-latest`: **solo texto**. No lee imágenes. Si una imagen llega a ese nivel, la cadena ya falló en Groq (multimodal) y Gemini (multimodal), así que Mistral no la recibiría. En la práctica, la imagen se procesa antes con OCR (Tesseract) o el modelo multimodal de turno.
+- **Límite de Groq:** 3 imágenes por solicitud, PDF de varias páginas. La cuota gratuita es de ~30 req/min y ~8K tokens/min. Para la demo del 27/10 alcanza, pero hay que monitorear el cupo si se hacen muchas pruebas.
+- **Por qué Groq antes que Gemini:** Gemini 2.5 Flash daba 404 y el cupo gratuito de Gemini es de 20 requests/día (insuficiente para la corrida final de N3-01). Groq Qwen es multimodal, tiene mejor cuota y es más rápido. El ADR-010 menciona Gemini como principal, pero esta decisión lo actualiza.
 - Alternativa descartada: usar DeepSeek como principal, porque no recibe imágenes y los casos M4/M7 (manuscritos) daban 0 caracteres.
 - Consecuencia: los casos con imágenes se procesan desde el primer intento (Groq Qwen es multimodal). Si Groq agota cupo, Gemini Flash releva con la misma capacidad. Mistral Small queda como texto puro. Como todos son planes gratuitos, solo se usan con documentos sintéticos (ADR-010).
+- **Nota:** el ADR-010 (datos sintéticos y límite del proveedor) queda vigente. Esta decisión lo complementa y actualiza la cadena de modelos. Ver ADR-010 para el contexto de uso con datos sintéticos.
+- **Numeración:** los ADRs 012 y 013 ya existen (una sola revisión por documento del conjunto de prueba; CIE-10 por categoría de 3 caracteres). El próximo libre es el 014.
