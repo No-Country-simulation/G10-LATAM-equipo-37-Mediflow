@@ -292,7 +292,9 @@ RULES_ADMIN_TOKEN=<TOKEN>
 - **OCI Notifications (correo):** Configurado y funcionando en la VM. Es el **canal activo para H3**.
 - **Discord directo:** Configurado en el `.env` de la VM, pero el código del PR #83 aún no está mergeado.
 - **Slack vía n8n (N3-08):** Es de Alessandro y Sabrina.
+- **Configuración en la VM:** incluir `N8N_WEBHOOK_URL` en `/opt/mediflow/.env`; tanto `api` como `worker` cargan ese archivo (`env_file` en Compose y `--env-file` en el despliegue manual).
 - **Al desplegar el #83, el canal activo pasa a Discord** (prioridad N8N > Discord > OCI, un solo canal). Para seguir con correo, quitar `DISCORD_WEBHOOK_URL` del `.env`.
+- [ ] **Antes del Demo Day:** confirmar que n8n está ejecutándose y accesible para el servicio que envía la alerta. Si n8n no responde, el webhook puede esperar unos 10 segundos antes de continuar con el fallback a Discord/OCI.
 
 ### Historial de cambios
 
