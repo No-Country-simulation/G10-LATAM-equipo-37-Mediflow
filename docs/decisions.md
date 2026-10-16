@@ -105,6 +105,7 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 - **Prueba con script `probar_modelos.py` (16/10, clave del equipo):**
   - `groq/qwen/qwen3.8-27b`: texto+JSON OK, 1 imagen OK, 4 imágenes ERROR ("Too many images provided. This model supports up to 3 images"). Confirma multimodal y límite de 3 imágenes.
   - `gemini/gemini-3.8-flash`: 503 ServiceUnavailable en las 3 pruebas (modelo saturado). No se pudo confirmar imagen hoy, pero funcionó con texto ayer.
-  - `mistral/mistral-small-latest`: RateLimitError en las 3 pruebas (clave en rate limit). No se pudo confirmar si lee imágenes. Pendiente reintentar con la clave del equipo.  
+  - `mistral/mistral-small-latest`: RateLimitError en las 3 pruebas (clave en rate limit). No se pudo confirmar si lee imágenes. Pendiente reintentar con la clave del equipo.
+- **Estado de Mistral (16/10):** La clave del equipo ya está cargada en la VM, pero la API de Mistral devuelve `RateLimitError` (429) en todas las llamadas. El plan gratuito Experiment tiene límites muy bajos para cuentas nuevas. Mientras tanto, la cadena efectiva en producción sigue siendo Groq + Gemini. Si Groq y Gemini fallan y Mistral también da rate limit, la cadena cae a reglas.
 - **Nota:** el ADR-010 (datos sintéticos y límite del proveedor) queda vigente. Esta decisión lo complementa y actualiza la cadena de modelos. Ver ADR-010 para el contexto de uso con datos sintéticos.
 - **Numeración:** los ADRs 012 y 013 ya existen (una sola revisión por documento del conjunto de prueba; CIE-10 por categoría de 3 caracteres). El próximo libre es el 014.
