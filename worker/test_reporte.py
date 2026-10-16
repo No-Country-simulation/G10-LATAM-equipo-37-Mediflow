@@ -105,7 +105,7 @@ def _con_llm(monkeypatch, texto=None, error=None):
 def test_plantilla_tiene_cinco_lineas_y_las_cifras():
     texto = reporte.resumen_plantilla(KPIS)
     assert len(texto.splitlines()) == 5
-    assert "4 documentos" in texto and "25%" in texto
+    assert "procesados: 4" in texto and "25%" in texto
 
 
 def test_plantilla_sin_documentos():

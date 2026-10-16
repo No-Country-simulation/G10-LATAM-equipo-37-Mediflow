@@ -103,7 +103,7 @@ def resumen_plantilla(kpis: dict) -> str:
     else:
         destinos = ", ".join(f"{d} {n}" for d, n in kpis["por_destino"].items())
         lineas = [
-            f"Reporte del {fecha}: se procesaron {total} documentos.",
+            f"Reporte del {fecha}: documentos procesados: {total}.",
             f"Urgencias detectadas: {kpis['urgencias']}.",
             f"En revisión humana: {kpis['en_revision']} ({kpis['tasa_revision']:.0%} del total); "
             f"requieren auditoría: {kpis['requieren_auditoria']}.",
