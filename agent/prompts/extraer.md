@@ -48,7 +48,15 @@ El JSON debe tener esta estructura exacta:
   "diagnostico_egreso": "diagnóstico escrito al alta o null",
   "evidencia_diagnostico_egreso": "fragmento del documento o null",
   "cie10_sugerido": "codigo CIE-10 o null",
-  "medicamentos": [],
+  "medicamentos": [
+    {
+      "nombre": "string o null",
+      "dosis": "string o null",
+      "frecuencia": "string o null",
+      "duracion": "string o null",
+      "alto_riesgo": false
+    }
+  ],
   "estudios_solicitados": [],
   "ambiguedad_detectada": null
 }
