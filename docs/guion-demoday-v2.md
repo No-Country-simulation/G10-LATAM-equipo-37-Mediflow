@@ -28,7 +28,7 @@ Propuesta de reparto en 7 bloques. Las partes de Carolina son un borrador para q
 - Diana: "Ahora un caso crítico: un informe con hallazgo de tromboembolismo pulmonar. El agente detecta la urgencia, lo manda directo a la cola de urgencias, sin pasar por revisión, y avisa a la guardia. Todo en unos cuatro segundos."
 
 ## 2:35-3:20 · Demo GS-06, revisión humana (Carolina)
-"Tercer caso: una receta con amoxicilina 5000 mg, una dosis fuera de rango. El agente no la deja pasar: la manda a revisión humana. Un auditor la revisa, la corrige y el flujo sigue."
+"Tercer caso: una receta de amoxicilina con una dosis que el agente no puede dar por buena. No la deja pasar: la manda a revisión humana. Un auditor la revisa, la corrige y el flujo sigue."
 
 ## 3:20-3:55 · Resultados (Diana)
 "Para medirlo armamos un conjunto de prueba: 45 documentos etiquetados a mano, evaluados en 76 variantes. [Con las cifras finales de N3-01: detectamos [__] de [__] urgencias y acertamos el destino en el [__] % de los casos.] La demo corre con modelos gratuitos."
