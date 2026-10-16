@@ -102,7 +102,7 @@ Una entrada por decisión, el mismo día. Formato: contexto, decisión, alternat
 - **Por qué Groq antes que Gemini:** Gemini 2.5 Flash daba 404 y el cupo gratuito de Gemini es de 20 requests/día (insuficiente para la corrida final de N3-01). Groq Qwen es multimodal, tiene mejor cuota y es más rápido. El ADR-010 menciona Gemini como principal, pero esta decisión lo actualiza.
 - Alternativa descartada: usar DeepSeek como principal, porque no recibe imágenes y los casos M4/M7 (manuscritos) daban 0 caracteres.
 - Consecuencia: los casos con imágenes se procesan desde el primer intento (Groq Qwen es multimodal). Si Groq agota cupo, Gemini Flash releva con la misma capacidad. Mistral Small queda como texto puro. Como todos son planes gratuitos, solo se usan con documentos sintéticos (ADR-010).
-- **Prueba con script `probar_modelos.py` (16/10, clave personal de Mistral):**
+- **Prueba con script `probar_modelos.py` (16/10, clave del equipo):**
   - `groq/qwen/qwen3.8-27b`: texto+JSON OK, 1 imagen OK, 4 imágenes ERROR ("Too many images provided. This model supports up to 3 images"). Confirma multimodal y límite de 3 imágenes.
   - `gemini/gemini-3.8-flash`: 503 ServiceUnavailable en las 3 pruebas (modelo saturado). No se pudo confirmar imagen hoy, pero funcionó con texto ayer.
   - `mistral/mistral-small-latest`: RateLimitError en las 3 pruebas (clave en rate limit). No se pudo confirmar si lee imágenes. Pendiente reintentar con la clave del equipo.  
