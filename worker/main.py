@@ -6,11 +6,13 @@ registra los resultados en SQLite y aplica reintentos ante fallos temporales.
 import logging
 import os
 import time
+from datetime import date, datetime, timezone
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
 from agent.storage import triage_results
 from agent.storage.buckets import bucket_actual
+from worker import reporte
 
 logging.basicConfig(
     level=logging.INFO,
@@ -191,9 +193,27 @@ def procesar_pendientes() -> None:
                 )
 
 
+MAX_INTENTOS_REPORTE = 3
+_estado_reporte: dict = {"dia": None, "intentos": 0, "listo": False}
+
+
 def reporte_diario() -> None:
-    # Sprint 3: implementación del reporte diario.
-    log.info("Reporte diario pendiente de implementación")
+    """Genera el reporte del día anterior a la hora REPORTE_HORA, una sola vez por día (N3-05)."""
+    ahora = datetime.now(timezone.utc)
+    hoy: date = ahora.astimezone(reporte.zona_horaria()).date()
+    if _estado_reporte["dia"] != hoy:
+        _estado_reporte.update(dia=hoy, intentos=0, listo=False)
+    if _estado_reporte["listo"] or _estado_reporte["intentos"] >= MAX_INTENTOS_REPORTE:
+        return
+
+    try:
+        estado = reporte.generar_reporte_diario(ahora, storage, bucket_actual())
+    except Exception:
+        _estado_reporte["intentos"] += 1
+        raise
+    if estado != "temprano":
+        _estado_reporte["listo"] = True
+        log.info("Reporte diario: %s", estado)
 
 
 if __name__ == "__main__":
@@ -204,5 +224,10 @@ if __name__ == "__main__":
             procesar_pendientes()
         except Exception:
             log.exception("Fallo al revisar recibidos/")
+
+        try:
+            reporte_diario()
+        except Exception:
+            log.exception("Fallo al generar el reporte diario")
 
         time.sleep(INTERVALO)
