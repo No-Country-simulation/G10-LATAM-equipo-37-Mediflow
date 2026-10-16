@@ -263,6 +263,8 @@ Salida: el mismo contrato del brief, con `status`, `clasificacion`, `datos_extra
 
 El contrato completo, con los campos obligatorios por tipo de documento, las reglas de enrutamiento y las categorías de ambigüedad, está en [`docs/api-contract.md`](docs/api-contract.md).
 
+La configuración y verificación de alertas urgentes por n8n y Slack está en [`docs/n8n-alertas.md`](docs/n8n-alertas.md).
+
 ## Estructura del repositorio
 
 ```

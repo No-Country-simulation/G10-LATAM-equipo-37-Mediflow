@@ -51,6 +51,19 @@ class LLMResult:
         }
 
 
+def modelos_disponibles() -> list[str]:
+    """La cadena configurada, en el orden normal de intento (principal primero)."""
+    return [PRIMARY, *FALLBACKS]
+
+
+def _cadena(modelo: str | None = None) -> list[str]:
+    """Orden de intentos. Con `modelo`, ese va primero y el resto sigue de respaldo."""
+    cadena = [PRIMARY, *FALLBACKS]
+    if not modelo:
+        return cadena
+    return [modelo, *(m for m in cadena if m != modelo)]
+
+
 def _to_data_url(path: str) -> str:
     """Convierte un archivo de imagen local a un data URL base64."""
     mime = mimetypes.guess_type(path)[0] or "image/png"
@@ -96,13 +109,12 @@ def _llamar_modelo(
     import litellm  # se importa acá para que los tests sin claves no lo necesiten
 
     kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
-    resp = litellm.completion(
+    return litellm.completion(
         model=model,
         messages=[{"role": "user", "content": content}],
         timeout=timeout,
         **kwargs,
     )
-    return resp
 
 
 def _uso(resp, model: str) -> tuple[int, int, float | None]:
@@ -131,18 +143,24 @@ def complete(
     images: list[str] | None = None,
     json_mode: bool = True,
     timeout: int = 60,
+    modelo: str | None = None,
 ) -> LLMResult:
     """
     Llama al LLM con cadena de respaldo y reintentos con backoff.
+
+    `modelo` no agrega ni quita nada de la cadena: solo le cambia el orden, poniéndolo primero. El
+    resto sigue disponible como respaldo, así que pedir un modelo puntual nunca es menos resiliente
+    que la llamada normal.
 
     Args:
         prompt: texto del prompt.
         images: lista de rutas a imágenes (opcional).
         json_mode: si True, pide JSON al modelo.
         timeout: timeout en segundos por intento.
+        modelo: si se especifica, se prueba primero (y el resto queda de respaldo).
 
     Returns:
-        LLMResult con texto, modelo, latencia e intentos.
+        LLMResult con texto, modelo, latencia, intentos y uso.
 
     Raises:
         RuntimeError: si todos los modelos fallan tras agotar los reintentos.
@@ -156,7 +174,7 @@ def complete(
     t0_total = time.time()
     intentos_totales = 0
 
-    for model in [PRIMARY, *FALLBACKS]:
+    for model in _cadena(modelo):
         for intento in range(1, REINTENTOS_POR_MODELO + 1):
             intentos_totales += 1
             try:
@@ -195,4 +213,4 @@ def complete(
     )
 
 
-__all__ = ["complete", "LLMResult", "PRIMARY", "FALLBACKS"]
+__all__ = ["complete", "LLMResult", "PRIMARY", "FALLBACKS", "modelos_disponibles"]

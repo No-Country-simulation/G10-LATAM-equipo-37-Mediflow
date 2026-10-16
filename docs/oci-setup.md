@@ -292,7 +292,9 @@ RULES_ADMIN_TOKEN=<TOKEN>
 - **OCI Notifications (correo):** Configurado y funcionando en la VM. Es el **canal activo para H3**.
 - **Discord directo:** Configurado en el `.env` de la VM, pero el código del PR #83 aún no está mergeado.
 - **Slack vía n8n (N3-08):** Es de Alessandro y Sabrina.
+- **Configuración en la VM:** incluir `N8N_WEBHOOK_URL` en `/opt/mediflow/.env`; tanto `api` como `worker` cargan ese archivo (`env_file` en Compose y `--env-file` en el despliegue manual).
 - **Al desplegar el #83, el canal activo pasa a Discord** (prioridad N8N > Discord > OCI, un solo canal). Para seguir con correo, quitar `DISCORD_WEBHOOK_URL` del `.env`.
+- [ ] **Antes del Demo Day:** confirmar que n8n está ejecutándose y accesible para el servicio que envía la alerta. Si n8n no responde, el webhook puede esperar unos 10 segundos antes de continuar con el fallback a Discord/OCI.
 
 ### Historial de cambios
 
@@ -300,3 +302,36 @@ RULES_ADMIN_TOKEN=<TOKEN>
 | :--- | :--- |
 | 9 oct 2026 | Deploy inicial en VM ARM. 3 contenedores corriendo (api, ui, worker). |
 | 12 oct 2026 | Deploy con HTTPS y dominio (DuckDNS + Let's Encrypt + nginx). 4 contenedores en stack `infra`. Bloque `/openapi.json` para Swagger. |
+
+## 8. Alertas en tiempo real (N2-09)
+
+### Topic de OCI Notifications
+
+- **Nombre:** `mediflow-alertas`
+- **OCID:** `ocid1.onstopic.oc1.sa-saopaulo-1.amaaaaaaof3op2aa77wg5xnuyc4cxw2wqahukas2shrzamxyg2jhdrlenx2q`
+- **Variable de entorno:** `ONS_TOPIC_OCID`
+
+### Suscripciones
+
+| Protocolo | Endpoint | Estado | Notas |
+|---|---|---|---|
+| EMAIL | `zunino.cau@gmail.com` | ✅ ACTIVE | Recibe alertas de urgencia |
+| CUSTOM_HTTPS | Discord webhook | ⚠️ PENDING | OCI no valida webhooks de Discord |
+
+### Cómo funciona
+
+El nodo `notificar` lee `notificacion_generada` del state y llama a `publicar()`. Esta función elige el canal según las variables de entorno:
+
+| Prioridad | Variable | Destino |
+|---|---|---|
+| 1 | `N8N_WEBHOOK_URL` | n8n (Nivel 3, N3-08) |
+| 2 | `DISCORD_WEBHOOK_URL` | Discord/Slack directo |
+| 3 | `ONS_TOPIC_OCID` | OCI Notifications (correo) |
+
+### Variables de entorno
+
+```bash
+# Alertas (N2-09): prioridad N8N > DISCORD > OCI
+# N8N_WEBHOOK_URL=           # (Nivel 3, N3-08)
+DISCORD_WEBHOOK_URL=         # URL del webhook de Discord
+ONS_TOPIC_OCID=              # OCID del topic de OCI Notifications
