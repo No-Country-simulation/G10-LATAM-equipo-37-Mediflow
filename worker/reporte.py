@@ -3,6 +3,7 @@
 Paso 1: KPIs del día desde SQLite. Solo conteos y porcentajes, sin datos de pacientes
 (docs/privacidad.md: los reportes son agregados).
 Paso 2: resumen de cinco líneas redactado por el agente, con una plantilla de respaldo.
+Paso 3: copia en reportes/diario/{fecha}.json y generación a la hora configurada (REPORTE_HORA).
 """
 import json
 import logging
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 LINEAS_RESUMEN = 5
 REPORTE_TZ = os.getenv("REPORTE_TZ", "America/Argentina/Buenos_Aires")
+REPORTE_HORA = os.getenv("REPORTE_HORA", "07:00")
 DESTINO_URGENCIA = "Cola_Emergencia_Medica"
 DESTINO_REVISION = "Cola_Revision_Humana"
 
@@ -139,3 +141,45 @@ def redactar_resumen(kpis: dict) -> tuple[str, str]:
         logger.warning("El resumen del modelo no cumple el formato; se usa la plantilla")
         return resumen_plantilla(kpis), "plantilla"
     return "\n".join(lineas), resultado.model
+
+
+def ruta_reporte(dia: date) -> str:
+    return f"reportes/diario/{dia.isoformat()}.json"
+
+
+def armar_reporte(
+    dia: date, tz: tzinfo | None = None, db_path: Path | None = None, ahora: datetime | None = None
+) -> dict:
+    """KPIs y resumen del día `dia`, listos para guardar."""
+    kpis = kpis_del_dia(dia, tz, db_path)
+    resumen, redactado_por = redactar_resumen(kpis)
+    return {
+        "fecha": dia.isoformat(),
+        "resumen": resumen,
+        "redactado_por": redactado_por,
+        "kpis": kpis,
+        "generado_en": (ahora or datetime.now(timezone.utc)).isoformat(),
+    }
+
+
+def generar_reporte_diario(
+    ahora: datetime, storage, bucket: str, db_path: Path | None = None, hora: str | None = None
+) -> str:
+    """Genera el reporte del día anterior si ya pasó la hora y todavía no existe.
+
+    `ahora` es un instante con zona. `storage` es el módulo de almacenamiento (local u OCI).
+    Devuelve "temprano", "ya_existia" o "generado".
+    """
+    tz = zona_horaria()
+    local = ahora.astimezone(tz)
+    horas, minutos = (int(x) for x in (hora or REPORTE_HORA).split(":"))
+    if (local.hour, local.minute) < (horas, minutos):
+        return "temprano"
+
+    dia = local.date() - timedelta(days=1)
+    ruta = ruta_reporte(dia)
+    if ruta in storage.list_prefix(bucket, ruta):
+        return "ya_existia"
+
+    storage.upload_json(bucket, ruta, armar_reporte(dia, tz, db_path, ahora))
+    return "generado"

@@ -2,10 +2,11 @@
 
 import json
 import sqlite3
-from datetime import date, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from agent.llm.adapter import LLMResult
 from agent.storage import triage_results
+from worker import main as worker
 from worker import reporte
 
 TZ = timezone(timedelta(hours=-3))  # el día local 15/10 va de 03:00 UTC del 15 a 03:00 UTC del 16
@@ -137,3 +138,86 @@ def test_cae_a_la_plantilla_si_no_son_cinco_lineas(monkeypatch):
 def test_cae_a_la_plantilla_si_no_menciona_el_total(monkeypatch):
     _con_llm(monkeypatch, texto="a\nb\nc\nd\ne")
     assert reporte.redactar_resumen(KPIS)[1] == "plantilla"
+
+
+class AlmacenFalso:
+    """Imita el módulo de almacenamiento (local u OCI) con un diccionario."""
+
+    def __init__(self):
+        self.archivos = {}
+
+    def list_prefix(self, bucket, prefijo):
+        return [r for (b, r) in self.archivos if b == bucket and r.startswith(prefijo)]
+
+    def upload_json(self, bucket, ruta, obj):
+        self.archivos[(bucket, ruta)] = obj
+
+
+UTC = timezone.utc
+
+
+def test_antes_de_la_hora_no_genera(tmp_path, monkeypatch):
+    monkeypatch.setenv("USE_LLM", "false")
+    almacen = AlmacenFalso()
+    ahora = datetime(2026, 10, 16, 9, 59, tzinfo=UTC)  # 06:59 en UTC-3
+    assert reporte.generar_reporte_diario(ahora, almacen, "b", tmp_path / "x.sqlite3", "07:00") == "temprano"
+    assert almacen.archivos == {}
+
+
+def test_genera_el_reporte_del_dia_anterior(tmp_path, monkeypatch):
+    monkeypatch.setenv("USE_LLM", "false")
+    almacen = AlmacenFalso()
+    ahora = datetime(2026, 10, 16, 10, 0, tzinfo=UTC)  # 07:00 en UTC-3
+    assert reporte.generar_reporte_diario(ahora, almacen, "b", tmp_path / "x.sqlite3", "07:00") == "generado"
+    guardado = almacen.archivos[("b", "reportes/diario/2026-10-15.json")]
+    assert guardado["fecha"] == "2026-10-15"
+    assert guardado["redactado_por"] == "plantilla"
+    assert len(guardado["resumen"].splitlines()) == 5
+
+
+def test_no_repite_un_reporte_que_ya_existe(tmp_path, monkeypatch):
+    monkeypatch.setenv("USE_LLM", "false")
+    almacen = AlmacenFalso()
+    ahora = datetime(2026, 10, 16, 12, 0, tzinfo=UTC)
+    reporte.generar_reporte_diario(ahora, almacen, "b", tmp_path / "x.sqlite3", "07:00")
+    assert reporte.generar_reporte_diario(ahora, almacen, "b", tmp_path / "x.sqlite3", "07:00") == "ya_existia"
+    assert len(almacen.archivos) == 1
+
+
+def _reiniciar_worker():
+    worker._estado_reporte.update(dia=None, intentos=0, listo=False)
+
+
+def test_worker_marca_el_dia_como_listo_y_no_repite(monkeypatch):
+    _reiniciar_worker()
+    llamadas = []
+    monkeypatch.setattr(worker.reporte, "generar_reporte_diario", lambda *a, **k: llamadas.append(1) or "generado")
+    worker.reporte_diario()
+    worker.reporte_diario()
+    assert len(llamadas) == 1
+
+
+def test_worker_no_marca_listo_si_aun_es_temprano(monkeypatch):
+    _reiniciar_worker()
+    llamadas = []
+    monkeypatch.setattr(worker.reporte, "generar_reporte_diario", lambda *a, **k: llamadas.append(1) or "temprano")
+    worker.reporte_diario()
+    worker.reporte_diario()
+    assert len(llamadas) == 2
+
+
+def test_worker_deja_de_reintentar_tras_tres_fallos(monkeypatch):
+    _reiniciar_worker()
+    llamadas = []
+
+    def falla(*a, **k):
+        llamadas.append(1)
+        raise RuntimeError("storage caído")
+
+    monkeypatch.setattr(worker.reporte, "generar_reporte_diario", falla)
+    for _ in range(5):
+        try:
+            worker.reporte_diario()
+        except RuntimeError:
+            pass
+    assert len(llamadas) == worker.MAX_INTENTOS_REPORTE
