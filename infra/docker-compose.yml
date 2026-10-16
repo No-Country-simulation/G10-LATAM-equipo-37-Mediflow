@@ -12,6 +12,8 @@ services:
       context: ..
       dockerfile: api/Dockerfile
     env_file: ../.env
+    environment:
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/mediflow-alert
     volumes:
       - ../wallet:/app/wallet:ro
       - mediflow-data:/app/data
@@ -33,6 +35,35 @@ services:
       - ../wallet:/app/wallet:ro
       - mediflow-data:/app/data
     restart: unless-stopped
+  n8n:
+    # Versión fija: el entrypoint depende de publish:workflow (n8n 2.x). Actualizar a propósito.
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-2.43.6}
+    # No usar env_file: el contenedor solo recibe SLACK_WEBHOOK_URL, no el resto del .env.
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_EDITOR_BASE_URL=http://localhost:5678/
+      - N8N_SECURE_COOKIE=false
+      # El workflow lee $env.SLACK_WEBHOOK_URL; es la única variable sensible del contenedor.
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-America/Argentina/Buenos_Aires}
+      - TZ=${GENERIC_TIMEZONE:-America/Argentina/Buenos_Aires}
+    # Importa y publica el workflow en cada arranque; el id fijo evita duplicados.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        n8n import:workflow --input=/home/node/workflow.json;
+        n8n publish:workflow --id=mediflow-alert-slack;
+        exec /docker-entrypoint.sh
+    ports: ["127.0.0.1:5678:5678"]
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./n8n/alerta-slack.json:/home/node/workflow.json:ro
+    restart: unless-stopped
 
 volumes:
   mediflow-data:
+  n8n-data:

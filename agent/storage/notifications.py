@@ -14,23 +14,35 @@ logger = logging.getLogger(__name__)
 
 
 def publicar(titulo: str, cuerpo: str) -> None:
-    """Publica una alerta usando el primer método configurado."""
+    """Publica la alerta en el primer canal que funcione, según la prioridad.
+
+    Si un canal configurado falla, se intenta el siguiente (n8n → Discord → OCI).
+    Si todos los configurados fallan, relanza el último error.
+    """
+    canales = []
     n8n = os.getenv("N8N_WEBHOOK_URL")
     if n8n:
-        _publicar_webhook(n8n, titulo, cuerpo, formato="n8n")
-        return
-
+        canales.append(("n8n", lambda: _publicar_webhook(n8n, titulo, cuerpo, formato="n8n")))
     discord = os.getenv("DISCORD_WEBHOOK_URL")
     if discord:
-        _publicar_webhook(discord, titulo, cuerpo, formato="discord")
-        return
-
+        canales.append(("discord", lambda: _publicar_webhook(discord, titulo, cuerpo, formato="discord")))
     topic = os.getenv("ONS_TOPIC_OCID")
     if topic:
-        _publicar_oci(topic, titulo, cuerpo)
+        canales.append(("oci", lambda: _publicar_oci(topic, titulo, cuerpo)))
+
+    if not canales:
+        logger.warning("No hay N8N_WEBHOOK_URL, DISCORD_WEBHOOK_URL ni ONS_TOPIC_OCID configurados.")
         return
 
-    logger.warning("No hay N8N_WEBHOOK_URL, DISCORD_WEBHOOK_URL ni ONS_TOPIC_OCID configurados.")
+    ultimo_error: Exception | None = None
+    for nombre, enviar in canales:
+        try:
+            enviar()
+            return
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Falló el canal de alertas %s: %s", nombre, exc)
+            ultimo_error = exc
+    raise ultimo_error
 
 
 def _publicar_webhook(url: str, titulo: str, cuerpo: str, formato: str) -> None:
