@@ -29,6 +29,8 @@ services:
       context: .
       dockerfile: worker/Dockerfile
     env_file: .env
+    environment:
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/mediflow-alert
     volumes:
       - ./agent:/app/agent
       - ./worker:/app/worker
