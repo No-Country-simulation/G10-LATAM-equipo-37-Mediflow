@@ -276,7 +276,7 @@ def extraer(state: TriageState) -> dict:
             modelo = resultado_llm.model
             consumo.append(resultado_llm.consumo("extraer"))
     except Exception as e:  # noqa: BLE001
-        logger.warning("LLM falló en extraer (%s), usando regex.", e)
+        logger.warning("LLM falló en extraer (%s), usando regex.", type(e).__name__)
         datos = _normalizar_datos(_extraer_por_regex(texto, tipo_documento))
         evidencias = []
 

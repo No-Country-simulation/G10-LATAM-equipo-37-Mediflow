@@ -46,7 +46,14 @@ def _tras_urgencia(state: TriageState) -> str:
     return "enrutar"
 
 
-def build_graph():
+def _persistir_durable(state):
+    resultado = persistir(state)
+    if resultado["almacenamiento"]["status_backup"] != "exito":
+        raise OSError("No se pudo persistir el documento y su auditoría")
+    return resultado
+
+
+def build_graph(checkpointer=None):
     g = StateGraph(TriageState)
     g.add_node("normalizar", normalizar)
     g.add_node("clasificar", clasificar)
@@ -56,7 +63,7 @@ def build_graph():
     g.add_node("detectar_urgencia", detectar_urgencia)
     g.add_node("segunda_opinion", segunda_opinion)
     g.add_node("enrutar", enrutar)
-    g.add_node("persistir", persistir)
+    g.add_node("persistir", _persistir_durable if checkpointer is not None else persistir)
     g.add_node("notificar", notificar)
 
     g.set_entry_point("normalizar")
@@ -71,8 +78,20 @@ def build_graph():
     g.add_edge("segunda_opinion", "puntuar")
     g.add_edge("enrutar", "persistir")
     g.add_edge("persistir", "notificar")
-    g.add_edge("notificar", END)
-    return g.compile()
+    if checkpointer is None:
+        g.add_edge("notificar", END)
+    else:
+        from agent.nodes.revision_humana import necesita_revision, revision_humana
+        from agent.storage.revision import cerrar_revision, preparar_revision
+        g.add_node("preparar_revision", preparar_revision)
+        g.add_node("revision_humana", revision_humana)
+        g.add_node("cerrar_revision", cerrar_revision)
+        g.add_conditional_edges("notificar", lambda s: "preparar_revision" if necesita_revision(s) else END)
+        g.add_edge("preparar_revision", "revision_humana")
+        g.add_edge("revision_humana", "cerrar_revision")
+        g.add_conditional_edges("cerrar_revision", lambda s:
+            "revision_humana" if not s.get("rechazado") and necesita_revision(s) else END)
+    return g.compile(checkpointer=checkpointer)
 
 
 def run_triage(
@@ -87,7 +106,7 @@ def run_triage(
 ) -> dict:
     """Corre el grafo. `imagenes` y `legibilidad` los llena la ingesta cuando el documento entra
     por archivo; si no vienen, los resuelve `normalizar`."""
-    grafo = build_graph()
+    from agent.revision_runtime import ejecutar
     estado_inicial: TriageState = {
         "documento_id": documento_id,
         "tipo_archivo": tipo_archivo,
@@ -101,4 +120,4 @@ def run_triage(
         estado_inicial["legibilidad"] = legibilidad
     if ruta_original:
         estado_inicial["ruta_original"] = ruta_original
-    return grafo.invoke(estado_inicial)
+    return ejecutar(estado_inicial)
