@@ -1,0 +1,10 @@
+{
+  "id": "M3",
+  "paciente": "Adriana Molina",
+  "medicamento": "Metotrexato",
+  "dosis": "15 mg",
+  "frecuencia": "cada 24 horas",
+  "duracion": null,
+  "resultado_esperado": "ambiguedad",
+  "edad": 45
+}

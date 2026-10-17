@@ -1,0 +1,33 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE DIAGNÓSTICO POR IMÁGENES
+Tomografía Computada
+
+INFORME DE TOMOGRAFÍA COMPUTADA
+
+Paciente: ROMERO, Alicia Beatriz
+DNI: 16.452.918
+Edad: 63 años          Sexo: Femenino
+HC N°: 297.340
+Médico solicitante: Dra. Mariana Inés Sosa, Neumonología, Mat. 125.903
+Fecha: 30/09/2026      Estudio N°: TC-2026-08417
+
+ESTUDIO REALIZADO: TC de tórax sin contraste endovenoso
+
+DATOS CLÍNICOS: Tabaquista de 40 paquetes/año. Tos crónica.
+
+TÉCNICA:
+Adquisición helicoidal desde los vértices hasta las bases pulmonares, sin contraste endovenoso. Reconstrucciones con cortes de 1,25 mm en ventana pulmonar y mediastínica.
+
+HALLAZGOS:
+Parénquima pulmonar: nódulo sólido espiculado de 14 mm en el lóbulo superior derecho. No se observan otros nódulos.
+Mediastino: sin adenopatías mediastínicas.
+Corazón y grandes vasos de tamaño y morfología conservados.
+Pleura: sin derrame pleural.
+Estructuras óseas visualizadas sin alteraciones.
+
+CONCLUSIÓN:
+Nódulo pulmonar solitario de características sospechosas. Se sugiere completar estudio con PET-TC y valoración por Neumonología.
+
+Dr. Ricardo Esteban Navarro
+Médico especialista en Diagnóstico por Imágenes
+Matrícula 121.586

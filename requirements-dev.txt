@@ -1,0 +1,5 @@
+-r requirements.txt
+pytest>=8.2
+ruff>=0.5
+reportlab>=4.2
+augraphy>=8.2

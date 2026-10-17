@@ -1,0 +1,32 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE DIAGNÓSTICO POR IMÁGENES
+Tomografía Computada
+
+INFORME DE TOMOGRAFÍA COMPUTADA
+
+Paciente: LUCERO, Hugo Ernesto
+DNI: 20.917.536
+Edad: 47 años          Sexo: Masculino
+HC N°: 355.201
+Procedencia: Servicio de Emergencias
+Médico solicitante: Dr. Fernando Ba
+Fecha: 18/09/2026      Hora del estudio: 03:12 h
+
+ESTUDIO REALIZADO: TC de abdomen y pelvis con contraste endovenoso
+
+DATOS CLÍNICOS: Dolor en fosa ilíaca derecha, fiebre, defensa abdominal. 36 horas de evolución.
+
+HALLAZGOS:
+Apéndice cecal de 14 mm con engrosamiento parietal y apendicolito.
+Líquido libre en fondo de saco y neumoperitoneo localizado.
+
+CONCLUSIÓN:
+Apendicitis aguda complicada con signos de perforación y peritonitis.
+Valoración quirúrgica urgente.
+
+CIE-10: K35.0 Apendicitis aguda con peritonitis generalizada
+
+Informe firmado electrónicamente por:
+Dra. Silvina Noemí Ortega
+Médica especialista en Radiología
+Matrícula 121.073
