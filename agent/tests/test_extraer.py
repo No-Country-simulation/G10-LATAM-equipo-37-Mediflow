@@ -48,3 +48,32 @@ def test_receta_con_firma_de_paciente_no_toma_medico():
     )
     datos = _extraer_por_regex(texto, tipo_documento="Receta Medica")
     assert datos["medico_solicitante"]["nombre"] is None
+
+def test_respaldo_separa_nombre_y_dosis():
+    """Si el nombre contiene 'Medicamento 850 mg' y dosis es None, separa."""
+    from agent.nodes.extraer import _normalizar_medicamento
+
+    med = {"nombre": "Metformina 850 mg", "dosis": None}
+    resultado = _normalizar_medicamento(med, set())
+    assert resultado["nombre"] == "Metformina"
+    assert resultado["dosis"] == "850 mg"
+
+
+def test_respaldo_no_completa_sin_unidad():
+    """Si el nombre contiene un número pero no una unidad, no completa."""
+    from agent.nodes.extraer import _normalizar_medicamento
+
+    med = {"nombre": "Metformina 850", "dosis": None}
+    resultado = _normalizar_medicamento(med, set())
+    assert resultado["nombre"] == "Metformina 850"
+    assert resultado["dosis"] is None
+
+
+def test_respaldo_no_pisa_dosis_existente():
+    """Si la dosis ya existe, no la modifica."""
+    from agent.nodes.extraer import _normalizar_medicamento
+
+    med = {"nombre": "Metformina", "dosis": "850 mg"}
+    resultado = _normalizar_medicamento(med, set())
+    assert resultado["nombre"] == "Metformina"
+    assert resultado["dosis"] == "850 mg"
