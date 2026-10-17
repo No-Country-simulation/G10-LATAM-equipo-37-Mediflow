@@ -21,7 +21,7 @@ Propuesta de reparto en 8 bloques. El reparto es provisional: quién presenta ca
 ## 0:30-1:05 · Solución y cómo funciona (texto propuesto por Carolina)
 "MediFlow clasifica el documento, extrae los datos y aplica reglas para proponer un destino. Si detecta información incompleta o una ambigüedad, lo deriva a revisión humana. Cada decisión queda registrada. No realiza diagnósticos ni sustituye la decisión clínica. Lo vemos con tres casos."
 
-## 1:05-1:45 · Demo rutina GS-28
+## 1:05-1:45 · Demo rutina GS-28 (versión en texto)
 [Usar GS-28.txt, la versión en texto. En la prueba del 17/10 la foto fue a revisión humana (el OCR leyó solo 6 caracteres, #97). Mostrar la foto solo si el #97 se corrige y se prueba en el ensayo.]
 
 "Primer caso: un documento de rutina. Veamos a dónde lo manda."
