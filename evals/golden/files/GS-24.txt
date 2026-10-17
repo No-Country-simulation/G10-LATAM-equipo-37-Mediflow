@@ -1,0 +1,51 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE MEDICINA INTERNA
+Internación General
+
+EPICRISIS
+
+Paciente: MEDINA, Olga Beatriz
+DNI: 16.284.931
+Edad: 63 años          Sexo: Femenino
+HC N°: 289.557
+Cama: 3-12
+Fecha de ingreso: 10/08/2026
+Fecha de egreso: 14/08/2026
+Días de internación: 4
+Médico tratante: Dr. Hernán Pablo Aguirre, Mat. 129.604
+
+MOTIVO DE INGRESO:
+Fiebre de hasta 39 °C y tos productiva con expectoración mucopurulenta, de 4 días de evolución.
+
+ANTECEDENTES:
+Ex tabaquista, abandonó hace 10 años. Sin otros antecedentes de relevancia. Niega alergias medicamentosas.
+
+EXAMEN FÍSICO AL INGRESO:
+TA 125/80 mmHg, FC 98 lpm, FR 22 rpm, T 38,8 °C, SatO2 94% (aire ambiente). Lúcida, orientada. Rales crepitantes y soplo tubario en base pulmonar derecha.
+
+ESTUDIOS COMPLEMENTARIOS:
+Rx de tórax (frente): consolidación alveolar en lóbulo inferior derecho con broncograma aéreo, sin derrame pleural.
+Laboratorio de ingreso: GB 14.600/mm3 (neutrófilos 82%), PCR 96 mg/L, función renal conservada.
+Hemocultivos x2: sin desarrollo.
+
+DIAGNÓSTICO DE EGRESO:
+Neumonía adquirida en la comunidad del lóbulo inferior derecho.
+CIE-10: J18.9 Neumonía, no especificada
+
+TRATAMIENTO EN INTERNACIÓN:
+Ceftriaxona 1 g intravenosa cada 24 horas, durante 4 días.
+
+EVOLUCIÓN:
+Evoluciona favorablemente. Afebril desde el 2° día de tratamiento, con disminución progresiva de la tos y la expectoración. Buena tolerancia a la vía oral. Laboratorio de control: GB 8.900/mm3, PCR 21 mg/L. SatO2 97% (aire ambiente) al egreso. Cumplidos 4 días de internación, clínicamente estable, se otorga el alta con pase a antibiótico por vía oral.
+
+INDICACIONES AL ALTA:
+Amoxicilina-clavulánico 875 mg, 1 comprimido por vía oral cada 12 horas por 7 días.
+Completar el tratamiento antibiótico aunque los síntomas mejoren.
+Reposo relativo y buena hidratación.
+Control en Consultorio Externo de Medicina Interna en 7 días.
+Consultar a emergencias ante fiebre o dificultad para respirar.
+
+Firma y sello:
+Dr. Hernán Pablo Aguirre
+Médico tratante, Servicio de Medicina Interna
+Matrícula 129.604

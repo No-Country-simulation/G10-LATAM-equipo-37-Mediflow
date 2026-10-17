@@ -1,0 +1,43 @@
+HOSPITAL GENERAL SAN MARTÍN
+SERVICIO DE DIAGNÓSTICO POR IMÁGENES
+Tomografía Computada
+
+INFORME DE TOMOGRAFÍA COMPUTADA
+
+Paciente: FERREYRA, Norberto Aníbal
+DNI: 11.742.905
+Edad: 68 años          Sexo: Masculino
+HC N°: 402.118
+Procedencia: Servicio de Emergencias
+Médico solicitante: Dr. Julián Esteban Paredes, Mat. 141.327
+Fecha: 14/09/2026      Hora del estudio: 10:37 h
+N° de estudio: TC-26-018874
+
+ESTUDIO REALIZADO: TC de cráneo sin contraste
+
+DATOS CLÍNICOS: Hemiparesia derecha y afasia de inicio súbito, 2 h de evolución. NIHSS 12. Código ACV.
+
+TÉCNICA:
+Adquisición helicoidal desde la base del cráneo hasta el vértex, con reconstrucciones axiales de 5 mm y multiplanares. Sin contraste endovenoso.
+
+HALLAZGOS:
+Hipodensidad incipiente córtico-subcortical en territorio de la arteria cerebral media izquierda, con leve borramiento de surcos frontotemporales e insulares homolaterales.
+Hiperdensidad espontánea del segmento M1 de la ACM izquierda (signo de la arteria hiperdensa).
+No se observan signos de hemorragia intracraneal, intra ni extraaxial.
+Sistema ventricular de tamaño y morfología conservados. Línea media centrada.
+Cisternas de la base libres.
+Estructuras de fosa posterior sin alteraciones.
+Calota sin lesiones.
+
+CONCLUSIÓN:
+Signos tomográficos de accidente cerebrovascular isquémico agudo en territorio de ACM izquierda, dentro de ventana terapéutica.
+Sin hemorragia intracraneal.
+
+CIE-10: I63.9 Infarto cerebral, no especificado
+
+Resultado comunicado por teléfono al médico solicitante y a Neurología a las 10:49 h.
+
+Informe firmado electrónicamente por:
+Dra. Valeria Soledad Luján
+Médica especialista en Radiología
+Matrícula 118.604

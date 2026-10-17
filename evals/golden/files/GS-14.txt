@@ -1,0 +1,43 @@
+LABORATORIO CLÍNICO SAN MARTÍN
+SERVICIO DE ANÁLISIS CLÍNICOS
+
+INFORME DE LABORATORIO
+
+Fecha de extracción: 03/10/2026
+Fecha del informe: 03/10/2026
+Procedencia: Servicio de Emergencias
+Solicitante: Dra. Natalia Soledad Vera, MP 131.795
+
+Estudio: Hemograma, función renal, lactato y análisis de orina con urocultivo.
+
+RESULTADOS:
+
+Hemograma:
+- Leucocitos: 19.800/mm³ (referencia 4.000 - 11.000)
+- Neutrófilos: 91 % (referencia 40 - 75 %)
+- Hemoglobina: 12,8 g/dL (referencia 12,0 - 16,0)
+- Plaquetas: 145.000/mm³ (referencia 150.000 - 450.000)
+
+Función renal:
+- Creatinina: 1,9 mg/dL (referencia 0,6 - 1,2)
+- Urea: 68 mg/dL (referencia 15 - 45)
+
+Otros parámetros:
+- Lactato: 3,8 mmol/L (referencia 0,5 - 2,0)
+
+Análisis de orina:
+- Leucocitos: abundantes
+- Nitritos: positivos
+- Bacterias: abundantes
+
+Urocultivo: pendiente de resultado.
+
+CONCLUSIÓN:
+
+Leucocitosis con neutrofilia, hiperlactatemia y alteración de la función renal. Hallazgos compatibles con infección urinaria complicada y sospecha de sepsis de foco urinario.
+
+CIE-10: A41.9 — Sepsis, no especificada.
+
+Resultado validado electrónicamente.
+Bioq. Martín Alejandro Suárez
+Matrícula profesional: 124.683

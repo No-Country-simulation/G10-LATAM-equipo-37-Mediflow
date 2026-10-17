@@ -1,0 +1,45 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    env_file: .env
+    environment:
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/mediflow-alert
+    ports: ["8000:8000"]
+    volumes:
+      - ./agent:/app/agent
+      - ./api:/app/api
+      - ./wallet:/app/wallet:ro
+      - ./data:/app/data
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+  ui:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    env_file: .env
+    environment:
+      - API_URL=http://api:8000
+    ports: ["8501:8501"]
+    volumes:
+      - ./ui:/app/ui
+    depends_on: [api]
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    env_file: .env
+    volumes:
+      - ./agent:/app/agent
+      - ./worker:/app/worker
+      - ./wallet:/app/wallet:ro
+      - ./data:/app/data
+    depends_on: [api]
+  # Reutiliza la definición de infra; no levantar junto con el stack de infra (puerto 5678).
+  n8n:
+    extends:
+      file: infra/docker-compose.yml
+      service: n8n
+
+volumes:
+  n8n-data:
