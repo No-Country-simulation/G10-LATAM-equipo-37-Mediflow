@@ -22,9 +22,10 @@ Propuesta de reparto en 8 bloques. El reparto es provisional: quién presenta ca
 "MediFlow clasifica el documento, extrae los datos y aplica reglas para proponer un destino. Si detecta información incompleta o una ambigüedad, lo deriva a revisión humana. Cada decisión queda registrada. No realiza diagnósticos ni sustituye la decisión clínica. Lo vemos con tres casos."
 
 ## 1:05-1:45 · Demo rutina GS-28
-[Antes del ensayo: confirmar el recorrido con la foto y el modelo de visión.]
-- "Primer caso: un documento de rutina. Veamos a dónde lo manda."
-- "Lo reconoce como certificado médico y lo envía a Historia Clínica Electrónica, sin revisión humana, y lo guarda en OCI Object Storage."
+[Usar GS-28.txt, la versión en texto. En la prueba del 17/10 la foto fue a revisión humana (el OCR leyó solo 6 caracteres, #97). Mostrar la foto solo si el #97 se corrige y se prueba en el ensayo.]
+
+"Primer caso: un documento de rutina. Veamos a dónde lo manda."
+"Lo reconoce como certificado médico y lo envía a Historia Clínica Electrónica, sin revisión humana, y lo guarda en OCI Object Storage."
 
 ## 1:45-2:25 · Demo urgencia GS-07
 "Ahora un caso crítico: un informe con hallazgo de tromboembolismo pulmonar. El agente detecta la urgencia y lo manda directo a la cola de urgencias, sin pasar por revisión. [Y avisa a la guardia: decirlo solo si el flujo de alertas (n8n a Slack) está desplegado y verificado.]"
@@ -39,7 +40,7 @@ Propuesta de reparto en 8 bloques. El reparto es provisional: quién presenta ca
 [No usar la medición de N1-13: era del prompt anterior y hay que reevaluar el nuevo. No decir tiempos por caso hasta medirlos con Groq.]
 
 ## 3:35-4:05 · Cómo trabajamos como equipo
-"Somos un equipo de [__] personas de [__] países. Trabajamos con un plan dividido en paquetes, cada uno con su responsable. Los cambios entran por pull request, con revisión y pruebas automáticas. Las decisiones importantes quedaron escritas. Y construimos juntos el conjunto de prueba para medir el agente."
+"Somos un equipo de 8 personas de [__] países. Trabajamos con un plan dividido en paquetes, cada uno con su responsable. Los cambios entran por pull request, con revisión y pruebas automáticas. Las decisiones importantes quedaron escritas. Y construimos juntos el conjunto de prueba para medir el agente."
 
 ## 4:05-4:40 · Impacto y cierre
 - "El valor de MediFlow es que buscamos reducir la espera de los documentos urgentes. Lo rutinario avanza solo, y el personal dedica su tiempo a lo que necesita criterio humano."
