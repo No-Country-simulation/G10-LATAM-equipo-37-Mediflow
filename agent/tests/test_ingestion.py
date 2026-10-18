@@ -109,3 +109,41 @@ def test_normalizar_marca_ilegible_la_imagen_sin_texto():
 def test_normalizar_da_mejor_legibilidad_cuando_hay_texto_suficiente():
     salida = normalizar({"texto": "a" * 250, "tipo_archivo": "IMAGEN", "imagenes": ["x"], "trace": []})
     assert salida["legibilidad"] >= 0.70
+
+def test_ocr_usa_ruta_por_defecto_en_windows_sin_path(monkeypatch, tmp_path):
+    """En Windows, si tesseract no esta en el PATH, usa la ruta por defecto si existe."""
+    import pytesseract
+
+    # Simular que estamos en Windows y que tesseract NO esta en el PATH.
+    monkeypatch.setattr("platform.system", lambda: "Windows")
+    monkeypatch.setattr("shutil.which", lambda _: None)
+
+    # Simular que existe la ruta por defecto en Program Files.
+    (tmp_path / "tesseract.exe").write_text("")
+
+    rutas_reales = (
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+    )
+
+    def fake_exists(ruta):
+        return ruta in rutas_reales
+
+    monkeypatch.setattr("os.path.exists", fake_exists)
+    monkeypatch.setattr(pytesseract.pytesseract, "tesseract_cmd", "tesseract")
+
+    # Llamar a _ocr con una imagen falsa (no importa el resultado, importa que se asigne la ruta).
+    # Usamos una imagen minima para evitar abrir archivos reales.
+    from PIL import Image
+
+    from agent.ingestion import _ocr
+    img = Image.new("RGB", (10, 10), "white")
+
+    # Simular que pytesseract.image_to_string devuelve "" (no importa para este test).
+    monkeypatch.setattr(pytesseract, "image_to_string", lambda *a, **kw: "")
+
+    _ocr(img)
+
+    # Verificar que se asigno la ruta por defecto.
+    assert pytesseract.pytesseract.tesseract_cmd == rutas_reales[0]
+    
