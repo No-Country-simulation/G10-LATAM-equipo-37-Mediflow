@@ -15,7 +15,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-         PR_DATA=$(gh api repos/${{ github.repository }}/commits/${{ github.sha }}/pulls \
+          PR_DATA=$(gh api repos/${{ github.repository }}/commits/${{ github.sha }}/pulls \
             --jq '[.[] | select(.merged_at != null)] | .[0] // empty')
           if [ -z "$PR_DATA" ] || [ "$PR_DATA" = "null" ]; then
             echo "❌ El commit ${{ github.sha }} no viene de un PR mergeado."
