@@ -85,8 +85,8 @@ def _legibilidad_de_imagenes(imagenes: list[str] | None, texto: str = "") -> flo
             scores.append(_score_de_imagen(img))
     if scores:
         return min(scores)
-    # Ninguna imagen decodificable: usar proxy de texto (vacío)
-    return 0.0
+    # Ninguna imagen decodificable: se usa el proxy de texto (0.0 si no hay texto)
+    return _score_from_text(texto)
 
 
 def normalizar(state: TriageState) -> dict:
@@ -97,11 +97,9 @@ def normalizar(state: TriageState) -> dict:
     legibilidad = state.get("legibilidad")
     provisional = legibilidad is None
     if provisional:
-        # Calcular score real a partir de imágenes (mínimo entre páginas) o proxy de texto
+        # Calcular score real a partir de imágenes (mínimo entre páginas) o proxy de
+        # texto si no hay páginas o ninguna se puede decodificar
         legibilidad = _legibilidad_de_imagenes(imagenes, texto)
-        # Si no hay imágenes, usamos proxy de texto (puede ser 0.0)
-        if not imagenes:
-            legibilidad = _score_from_text(texto)
 
     return {
         "texto": texto,
