@@ -1,15 +1,14 @@
 """Pruebas de la puerta de legibilidad de la imagen (N2-08, issue #62).
 
-Los scores se calculan con métricas determinísticas de calidad de imagen (resolución,
-contraste y nitidez) en Pillow, sin llamar al modelo. Por eso se pueden correr siempre: no
-necesitan red, secretos ni imágenes clínicas reales.
-
+Los scores se calculan con métricas determinísticas de calidad de imagen
+(resolución, contraste y nitidez) en Pillow, sin llamar al modelo. Por eso se pueden correr
+siempre: no necesitan red, secretos ni imágenes clínicas reales.
 El criterio de aceptación (issue #62) usa tres niveles para las fotos manuscritas:
 - leve   -> score >= 0.70 (pasa)
 - media  -> 0.40 <= score < 0.70 (pasa)
 - severa -> score < 0.40 (pasa a revisión humana)
-
-El score de un documento con `legibilidad` ya precargada no se recalcula (contrato del grafo).
+El score de un documento con `legibilidad` ya precargada no se recalcula
+(contrato del grafo).
 """
 from __future__ import annotations
 
@@ -87,5 +86,21 @@ def test_normalizar_con_imagen_borrosa_deriva_a_revision():
         "imagenes": [_b64(_pagina(blur=8, dark=0.4))],
         "trace": [],
     })
+    assert out["legibilidad"] < 0.40
+    assert out["trace"][-1]["detalle"]["fuente"] == "imagen"
+
+
+def test_normalizar_con_varias_imagenes_usa_minimo():
+    """Cuando hay varias imágenes (p.ej. PDF de múltiples páginas), se usa el mínimo."""
+    # Una imagen buena (score alto) y una mala (score bajo)
+    buena = _b64(_pagina())  # nitida ~1.0
+    mala = _b64(_pagina(blur=8, dark=0.4))  # borrosa <0.40
+    out = normalizar({
+        "texto": "",
+        "tipo_archivo": "IMAGEN",
+        "imagenes": [buena, mala],
+        "trace": [],
+    })
+    # El score debe ser el mínimo (el de la mala imagen)
     assert out["legibilidad"] < 0.40
     assert out["trace"][-1]["detalle"]["fuente"] == "imagen"
