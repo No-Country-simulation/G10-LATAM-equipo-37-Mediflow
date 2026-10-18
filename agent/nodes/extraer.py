@@ -115,6 +115,10 @@ def _normalizar_medicamento(med, medicamentos_alto_riesgo: set[str]) -> dict:
     Acepta:
     - dict con campo 'nombre'
     - string (nombre suelto)
+
+    Respaldo con regla (N1-13): si el modelo no extrajo la dosis pero el
+    nombre contiene un número + unidad (ej: "Metformina 850 mg"), separa
+    el nombre de la dosis. Solo completa si hay número + unidad explícitos.
     """
     # Si viene como string, convertir a dict.
     if isinstance(med, str):
@@ -129,6 +133,22 @@ def _normalizar_medicamento(med, medicamentos_alto_riesgo: set[str]) -> dict:
         }
 
     nombre = (med.get("nombre") or "").strip() or None
+    dosis = med.get("dosis")
+    frecuencia = med.get("frecuencia")
+    duracion = med.get("duracion")
+
+    # Respaldo con regla: separar nombre de dosis si la dosis es None
+    # pero el nombre contiene un número + unidad.
+    if nombre and dosis is None:
+        match = re.match(
+            r"^(.+?)\s+(\d+(?:[.,]\d+)?\s*(?:mg|g|mcg|ml|ui|u|%|mg/ml|mg/kg))$",
+            nombre,
+            flags=re.IGNORECASE,
+        )
+        if match:
+            nombre = match.group(1).strip()
+            dosis = match.group(2).strip()
+
     alto_riesgo = False
     if nombre:
         nombre_lower = nombre.lower()
@@ -138,9 +158,9 @@ def _normalizar_medicamento(med, medicamentos_alto_riesgo: set[str]) -> dict:
         )
     return {
         "nombre": nombre,
-        "dosis": med.get("dosis"),
-        "frecuencia": med.get("frecuencia"),
-        "duracion": med.get("duracion"),
+        "dosis": dosis,
+        "frecuencia": frecuencia,
+        "duracion": duracion,
         "alto_riesgo": alto_riesgo,
     }
 

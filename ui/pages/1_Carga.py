@@ -14,12 +14,23 @@ from lib import api_request, remember_document, render_result, show_api_error
 st.title("📄 Carga de documento")
 st.caption("El original se conserva en la sesión para que pueda ser revisado si el grafo solicita auditoría humana.")
 
+
+
+def _id_nuevo() -> str:
+    return f"DOC-UI-{uuid.uuid4().hex[:8].upper()}"
+
+
+# El ID por defecto se genera una vez por sesión. Si cambiara en cada ejecución, Streamlit trataría el campo
+# como uno nuevo al enviar el formulario y descartaría el ID que la persona escribió.
+if st.session_state.pop("carga_id_rotar", False) or "carga_id" not in st.session_state:
+    st.session_state["carga_id"] = _id_nuevo()
+
 with st.form("triage_upload"):
     uploaded = st.file_uploader(
         "Selecciona un PDF, imagen, texto o JSON",
         type=["pdf", "png", "jpg", "jpeg", "tif", "tiff", "webp", "txt", "json"],
     )
-    document_id = st.text_input("ID del documento", value=f"DOC-UI-{uuid.uuid4().hex[:8].upper()}")
+    document_id = st.text_input("ID del documento", key="carga_id")
     channel = st.text_input("Canal de origen", value="streamlit")
     submitted = st.form_submit_button("Procesar documento", type="primary")
 
@@ -46,6 +57,8 @@ if submitted:
                 )
                 if response.is_success:
                     st.session_state["last_triage_result"] = response.json()
+                    st.session_state["carga_id_rotar"] = True  # el siguiente documento lleva un ID nuevo
+                    st.rerun()  # el resultado se pinta desde la sesión; el formulario vuelve con el ID nuevo
                 else:
                     show_api_error(response)
             except RuntimeError as exc:
