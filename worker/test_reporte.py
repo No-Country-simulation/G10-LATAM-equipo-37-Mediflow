@@ -221,3 +221,28 @@ def test_worker_deja_de_reintentar_tras_tres_fallos(monkeypatch):
         except RuntimeError:
             pass
     assert len(llamadas) == worker.MAX_INTENTOS_REPORTE
+
+
+def test_envia_el_resumen_por_correo(tmp_path, monkeypatch):
+    monkeypatch.setenv("USE_LLM", "false")
+    enviados = []
+    monkeypatch.setattr(
+        reporte.notifications, "publicar_correo", lambda titulo, cuerpo: enviados.append((titulo, cuerpo)) or True
+    )
+    ahora = datetime(2026, 10, 16, 10, 0, tzinfo=UTC)
+    assert reporte.generar_reporte_diario(ahora, AlmacenFalso(), "b", tmp_path / "x.sqlite3", "07:00") == "generado"
+    assert enviados[0][0] == "MediFlow - Reporte diario 2026-10-15"
+    assert len(enviados[0][1].splitlines()) == 5
+
+
+def test_si_falla_el_correo_el_reporte_igual_se_guarda(tmp_path, monkeypatch):
+    monkeypatch.setenv("USE_LLM", "false")
+
+    def falla(titulo, cuerpo):
+        raise RuntimeError("ons caído")
+
+    monkeypatch.setattr(reporte.notifications, "publicar_correo", falla)
+    almacen = AlmacenFalso()
+    ahora = datetime(2026, 10, 16, 10, 0, tzinfo=UTC)
+    assert reporte.generar_reporte_diario(ahora, almacen, "b", tmp_path / "x.sqlite3", "07:00") == "generado"
+    assert ("b", "reportes/diario/2026-10-15.json") in almacen.archivos

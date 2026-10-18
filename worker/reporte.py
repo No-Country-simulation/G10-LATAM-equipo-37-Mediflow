@@ -16,7 +16,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from agent.llm.adapter import complete
-from agent.storage import triage_results
+from agent.storage import notifications, triage_results
 
 logger = logging.getLogger(__name__)
 
@@ -162,6 +162,15 @@ def armar_reporte(
     }
 
 
+def enviar_por_correo(contenido: dict) -> bool:
+    """Envía el resumen por correo. Si falla, el reporte ya está guardado y solo se registra."""
+    try:
+        return notifications.publicar_correo(f"MediFlow - Reporte diario {contenido['fecha']}", contenido["resumen"])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("No se pudo enviar el reporte por correo: %s", exc)
+        return False
+
+
 def generar_reporte_diario(
     ahora: datetime, storage, bucket: str, db_path: Path | None = None, hora: str | None = None
 ) -> str:
@@ -181,5 +190,7 @@ def generar_reporte_diario(
     if ruta in storage.list_prefix(bucket, ruta):
         return "ya_existia"
 
-    storage.upload_json(bucket, ruta, armar_reporte(dia, tz, db_path, ahora))
+    contenido = armar_reporte(dia, tz, db_path, ahora)
+    storage.upload_json(bucket, ruta, contenido)
+    enviar_por_correo(contenido)
     return "generado"
