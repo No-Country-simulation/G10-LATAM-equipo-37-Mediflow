@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
   n8n:
     # Versión fija: el entrypoint depende de publish:workflow (n8n 2.x). Actualizar a propósito.
-    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-2.43.6}
+    image: docker.io/n8nio/n8n:${N8N_VERSION:-2.43.6}
     # No usar env_file: el contenedor solo recibe SLACK_WEBHOOK_URL, no el resto del .env.
     environment:
       - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
