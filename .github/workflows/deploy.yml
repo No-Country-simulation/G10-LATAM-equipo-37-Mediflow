@@ -54,6 +54,7 @@ jobs:
             trap rollback ERR
             git fetch origin main
             git reset --hard origin/main
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | podman login docker.io -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             docker compose -f infra/docker-compose.yml build
             docker compose -f infra/docker-compose.yml down
             docker compose -f infra/docker-compose.yml up -d --build --remove-orphans
