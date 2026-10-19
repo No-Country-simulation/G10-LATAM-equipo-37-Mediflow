@@ -26,8 +26,17 @@ def upload_json(bucket: str, ruta: str, obj: dict) -> None:
 
 
 def list_prefix(bucket: str, prefijo: str) -> list[str]:
-    resp = _client().list_objects(namespace(), bucket, prefix=prefijo)
-    return [o.name for o in resp.data.objects]
+    cliente, espacio = _client(), namespace()
+    objetos, inicio = [], None
+    while True:
+        opciones = {"prefix": prefijo}
+        if inicio is not None:
+            opciones["start"] = inicio
+        pagina = cliente.list_objects(espacio, bucket, **opciones).data
+        objetos.extend(o.name for o in pagina.objects)
+        inicio = pagina.next_start_with
+        if not inicio:
+            return objetos
 
 
 def download(bucket: str, ruta: str) -> bytes:
