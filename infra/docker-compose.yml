@@ -39,6 +39,8 @@ services:
     restart: unless-stopped
   n8n:
     # Versión fija: el entrypoint depende de publish:workflow (n8n 2.x). Actualizar a propósito.
+    # IMPORTANTE: Esta imagen debe estar descargada en la VM (podman pull docker.io/n8nio/n8n:2.43.6).
+    # Si se limpia la caché de podman, el deploy automático fallará por rate limit de Docker Hub.
     image: docker.io/n8nio/n8n:${N8N_VERSION:-2.43.6}
     # No usar env_file: el contenedor solo recibe SLACK_WEBHOOK_URL, no el resto del .env.
     environment:
