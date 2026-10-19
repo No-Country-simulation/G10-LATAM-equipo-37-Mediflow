@@ -54,6 +54,7 @@ jobs:
             trap rollback ERR
             git fetch origin main
             git reset --hard origin/main
+            docker compose -f infra/docker-compose.yml down
             docker compose -f infra/docker-compose.yml up -d --build --remove-orphans
             curl -fsS --retry 6 --retry-delay 5 --retry-connrefused https://${{ secrets.APP_DOMAIN }}/api/health
             trap - ERR
