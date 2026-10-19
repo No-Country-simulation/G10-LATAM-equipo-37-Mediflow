@@ -1,3 +1,9 @@
+> **BORRADOR REEMPLAZADO — no usar para preparar la presentación.**
+>
+> El guion vigente es la propuesta v2 de [PR #130](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/pull/130), archivo `docs/guion-demoday-v2.md`. Hasta que se fusione, consultar ese PR. Usa dos voces con respaldo; el reparto antiguo entre Carolina y Diana que aparece debajo ya no está vigente. Titulares, respaldos y horarios se confirman con el equipo.
+>
+> Según lo confirmado por Camila en Discord el 19/10, la sección «Verificación antes del ensayo» ya quedó incorporada como checklist en el pitch actualizado. Se conserva este archivo solo como antecedente histórico, no como evidencia de funciones desplegadas, métricas ni fechas actuales.
+
 # DemoDay: borrador de 5 minutos — Carolina y Diana
 
 Actualizado 14/10/2026 tras el mensaje de María. Propuesta para acordar con Diana,
