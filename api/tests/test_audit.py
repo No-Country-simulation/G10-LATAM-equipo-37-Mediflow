@@ -10,10 +10,28 @@ import json
 
 from fastapi.testclient import TestClient
 
-from agent.storage import local_audit
+import agent.graph as graph
+from agent.revision_runtime import ejecutar
+from agent.storage import local, local_audit
+from agent.storage.revision import carpeta
 from api.main import app
 
 client = TestClient(app)
+
+
+def preparar_checkpoint(tmp_path, monkeypatch, documento_id, tipo="Receta Medica"):
+    """La API N2-05 requiere un grafo pausado, no solo un JSON de muestra."""
+    monkeypatch.setattr(local, "DATA_DIR", tmp_path)
+    monkeypatch.setenv("ENV", "dev")
+    monkeypatch.setenv("OCI_BUCKET_DEV", "pruebas")
+    monkeypatch.setenv("MEDIFLOW_CHECKPOINT_DB", str(tmp_path / "checkpoints.sqlite3"))
+    monkeypatch.setattr(local_audit, "DATA_DIR", carpeta(documento_id).parent)
+    for nombre in ("normalizar", "clasificar", "extraer"):
+        monkeypatch.setattr(graph, nombre, lambda s: {})
+    ejecutar({"documento_id": documento_id, "tipo_archivo": "TEXTO", "texto": "Ejemplo",
+              "legibilidad": 1.0, "trace": [],
+              "clasificacion": {"tipo_documento": tipo, "score_confianza_clasificacion": 0.5},
+              "datos_extraidos": {"paciente": {"nombre": "Ana"}, "medicamentos": []}})
 
 
 def test_cola_vacia_al_inicio(tmp_path, monkeypatch):
@@ -35,8 +53,7 @@ def test_documento_aparece_en_cola(tmp_path, monkeypatch):
 
 
 def test_auditar_aprobar_devuelve_200_y_registra_resolucion(tmp_path, monkeypatch):
-    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
-    local_audit.guardar_extraccion("DOC-001", {"tipo_documento": "Receta Medica"}, base=tmp_path)
+    preparar_checkpoint(tmp_path, monkeypatch, "DOC-001")
 
     r = client.post(
         "/audit/DOC-001",
@@ -72,8 +89,7 @@ def test_auditar_accion_invalida_da_422(tmp_path, monkeypatch):
 
 
 def test_auditar_dos_veces_el_mismo_documento_da_409(tmp_path, monkeypatch):
-    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
-    local_audit.guardar_extraccion("DOC-001", {"tipo_documento": "Receta Medica"}, base=tmp_path)
+    preparar_checkpoint(tmp_path, monkeypatch, "DOC-001")
     client.post("/audit/DOC-001", json={"accion": "aprobar", "revisor": "Carolina", "motivo": "ok"})
 
     r = client.post("/audit/DOC-001", json={"accion": "rechazar", "revisor": "Carolina", "motivo": "otra vez"})
@@ -81,8 +97,7 @@ def test_auditar_dos_veces_el_mismo_documento_da_409(tmp_path, monkeypatch):
 
 
 def test_auditar_corregir_con_correcciones(tmp_path, monkeypatch):
-    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
-    local_audit.guardar_extraccion("DOC-002", {"tipo_documento": "Epicrisis"}, base=tmp_path)
+    preparar_checkpoint(tmp_path, monkeypatch, "DOC-002")
 
     r = client.post(
         "/audit/DOC-002",
@@ -98,12 +113,12 @@ def test_auditar_corregir_con_correcciones(tmp_path, monkeypatch):
 
 
 def test_documento_resuelto_desaparece_de_la_cola(tmp_path, monkeypatch):
-    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
-    local_audit.guardar_extraccion("DOC-001", {"tipo_documento": "Receta Medica"}, base=tmp_path)
+    preparar_checkpoint(tmp_path, monkeypatch, "DOC-001")
     client.post("/audit/DOC-001", json={"accion": "aprobar", "revisor": "Carolina", "motivo": "ok"})
 
     r = client.get("/queue/human")
     assert r.json() == {"items": []}
+
 
 def test_auditar_rechaza_revisor_vacio(tmp_path, monkeypatch):
     monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
@@ -134,18 +149,18 @@ def test_auditar_rechaza_correcciones_si_la_accion_no_es_corregir(tmp_path, monk
 
 def test_auditar_corregir_acepta_correcciones(tmp_path, monkeypatch):
     monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
-    local_audit.guardar_extraccion("DOC-013", {"tipo_documento": "Receta Medica"}, base=tmp_path)
+    preparar_checkpoint(tmp_path, monkeypatch, "DOC-013")
     r = client.post(
         "/audit/DOC-013",
         json={
             "accion": "corregir",
             "revisor": "Ana",
             "motivo": "falta matrícula",
-            "correcciones": {"matricula": "123"},
+            "correcciones": {"medico_solicitante.matricula": "123"},
         },
     )
     assert r.status_code == 200
-    assert r.json()["resolucion"]["correcciones"] == {"matricula": "123"}
+    assert r.json()["resolucion"]["correcciones"] == {"medico_solicitante.matricula": "123"}
 
 def test_original_devuelve_el_pdf_con_su_tipo(tmp_path, monkeypatch):
     monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
@@ -178,19 +193,48 @@ def test_original_no_guardado_devuelve_404(tmp_path, monkeypatch):
     r = client.get("/audit/DOC-022/original")
     assert r.status_code == 404
 
+def test_aprobar_otro_devuelve_422_y_conserva_revision(tmp_path, monkeypatch):
+    preparar_checkpoint(tmp_path, monkeypatch, "DOC-OTRO", tipo="Otro")
+    respuesta = client.post("/audit/DOC-OTRO", json={
+        "accion": "aprobar", "revisor": "Auditor", "motivo": "Revisado"
+    })
+    assert respuesta.status_code == 422
+    assert respuesta.json()["detail"] == "Documento sin destino operativo: corrija el tipo o rechace"
+    assert not (carpeta("DOC-OTRO") / "resolucion.json").exists()
+    assert any(item["documento_id"] == "DOC-OTRO" for item in client.get("/queue/human").json()["items"])
+    respuesta = client.post("/audit/DOC-OTRO", json={
+        "accion": "rechazar", "revisor": "Auditor", "motivo": "Fuera de alcance"
+    })
+    assert respuesta.status_code == 200
+
+
+def test_error_interno_no_se_presenta_como_decision_invalida(monkeypatch):
+    import api.main as api
+
+    def fallo_interno(*args, **kwargs):
+        raise ValueError("error interno")
+
+    monkeypatch.setattr(api, "reanudar", fallo_interno)
+    with TestClient(app, raise_server_exceptions=False) as http:
+        respuesta = http.post("/audit/DOC-INTERNO", json={
+            "accion": "aprobar", "revisor": "Auditor", "motivo": "Revisado"
+        })
+    assert respuesta.status_code == 500
+
+
 def test_auditar_sin_correcciones_guarda_null(tmp_path, monkeypatch):
-    monkeypatch.setattr(local_audit, "DATA_DIR", tmp_path)
     for doc_id, accion, correcciones in [
-        ("DOC-020", "aprobar", None),
-        ("DOC-021", "aprobar", {}),
-        ("DOC-022", "rechazar", None),
+        ("NULL-01", "aprobar", None),
+        ("NULL-02", "aprobar", {}),
+        ("NULL-03", "rechazar", None),
+        ("NULL-04", "rechazar", {}),
     ]:
-        local_audit.guardar_extraccion(doc_id, {"tipo_documento": "Receta Medica"}, base=tmp_path)
-        r = client.post(
+        preparar_checkpoint(tmp_path, monkeypatch, doc_id)
+        respuesta = client.post(
             f"/audit/{doc_id}",
             json={"accion": accion, "revisor": "Ana", "motivo": "ok", "correcciones": correcciones},
         )
-        assert r.status_code == 200
-        assert r.json()["resolucion"]["correcciones"] is None
-        guardada = json.loads((tmp_path / doc_id / "resolucion.json").read_text(encoding="utf-8"))
+        assert respuesta.status_code == 200
+        assert respuesta.json()["resolucion"]["correcciones"] is None
+        guardada = json.loads((carpeta(doc_id) / "resolucion.json").read_text(encoding="utf-8"))
         assert guardada["correcciones"] is None
