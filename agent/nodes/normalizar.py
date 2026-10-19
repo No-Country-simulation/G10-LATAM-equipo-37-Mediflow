@@ -30,8 +30,10 @@ _ANCHO_NORMALIZADO = 1000
 # con el score óptico. Con menos palabras (p. ej. manuscritas) mandan solo las
 # métricas de imagen.
 _PALABRAS_MIN_OCR = 20
-# Peso provisorio de la confianza OCR en la combinación (lo afina la calibración).
-_PESO_OCR = 0.5
+# Peso de la confianza OCR en la combinación con el score óptico.
+# Calibración inicial: Tesseract separa bien impresos (>=0.75 limpios, 0.35-0.42 dañados)
+# así que el OCR lleva más peso que el óptico. Lo afina la fase 4 con datos reales del CI.
+_PESO_OCR = 0.8
 
 
 def _b64decode(b64: str) -> bytes:
