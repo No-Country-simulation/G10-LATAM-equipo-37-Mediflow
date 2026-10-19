@@ -263,6 +263,8 @@ Salida: el mismo contrato del brief, con `status`, `clasificacion`, `datos_extra
 
 El contrato completo, con los campos obligatorios por tipo de documento, las reglas de enrutamiento y las categorías de ambigüedad, está en [`docs/api-contract.md`](docs/api-contract.md).
 
+La configuración y verificación de alertas urgentes por n8n y Slack está en [`docs/n8n-alertas.md`](docs/n8n-alertas.md).
+
 ## Estructura del repositorio
 
 ```
@@ -330,17 +332,31 @@ Cada fuente resuelve una tarea distinta y conviene no mezclarlas:
 
 **El conjunto de prueba** funciona como un examen con solucionario: cada documento lleva escrito de antemano la respuesta correcta, se pasa por el agente y se compara lo que salió con lo esperado.
 
-| Qué | Cuántas | De qué tipo son | De dónde sale su etiqueta |
+Tiene **45 elementos**, cada uno con su respuesta correcta en [`evals/golden/plan_golden.csv`](evals/golden/plan_golden.csv):
+
+| Qué | Cuántos | De qué tipo son | De dónde sale su etiqueta |
 |---|---|---|---|
-| Documentos de texto | 30 | Los seis tipos: receta médica, informe de estudio por imágenes, informe de laboratorio, orden de solicitud de procedimiento, epicrisis y certificado médico | Se define al generarlos: sabemos qué pusimos en cada uno |
-| Imágenes degradadas | 12 | Sobre todo informes de estudio y certificados, que son los que en la vida real llegan escaneados o fotografiados. Salen de 12 de los 30 documentos | Heredan el contenido del documento; la decisión esperada cambia con el nivel de legibilidad |
-| Fotos de recetas manuscritas | 8, una por persona | Todas son Receta Médica, que es lo que se escribe a mano | La escribe quien redacta la receta |
-| Casos fuera de alcance | 6 | Factura de farmacia, consentimiento informado, carnet de obra social, informe en inglés, pedido de interpretar una radiografía y uno con una instrucción incrustada en el texto | Se define al escribirlos |
-| **Total** | **56** | | |
+| Documentos clínicos | 30 (GS-01 a GS-30) | Los seis tipos: receta médica, informe de estudio por imágenes, informe de laboratorio, orden de solicitud de procedimiento, epicrisis y certificado médico | Se define al generarlos: sabemos qué pusimos en cada uno |
+| Casos fuera de alcance | 7 (FA-01 a FA-07) | Factura de farmacia, consentimiento informado, carnet de obra social, informe en inglés, pedido de interpretar una radiografía, receta veterinaria y uno con una instrucción incrustada en el texto | Se define al escribirlos |
+| Fotos de recetas manuscritas | 8 (M1 a M8), una por persona | Todas son Receta Médica, que es lo que se escribe a mano | La escribe quien redacta la receta |
+| **Total** | **45** | | |
 
-Los 30 documentos cubren los cinco resultados posibles para un documento legible: rutina, alto riesgo farmacológico, urgencia, urgencia con ambigüedad y ambigüedad. Las 20 imágenes agregan el sexto, ilegible, y se reparten en tres niveles de legibilidad, leve, media y severa, para ajustar los umbrales de 0,40 y 0,70 de rules.yaml. Hay un camino que no se etiqueta de antemano: cuando el score del modelo queda entre 0,60 y 0,85, rules.yaml pide una segunda opinión o agrega una marca de auditoría. Eso depende de la confianza del modelo en cada corrida, así que no cuenta como error de enrutamiento; se refleja en la tasa de revisión humana.
+**De 45 elementos a 76 variantes.** Cada elemento se prueba en los formatos en que podría llegar al hospital, y cada formato es una variante que el agente procesa por separado:
 
-Los seis casos fuera de alcance se miden aparte, porque responden otra pregunta: no si el agente acierta, sino si sabe cuándo no le corresponde decidir. Cinco deben terminar en revisión humana con AMB-6; el de la instrucción incrustada debe enrutarse por lo que el documento realmente es, ignorando la orden.
+| Formato | Variantes |
+|---|---|
+| Texto (`.txt`) | 36 |
+| PDF digital | 12 |
+| JSON | 6 |
+| Fotos y escaneos degradados, sacados de 12 documentos clínicos y 2 casos fuera de alcance | 14 |
+| Fotos de recetas manuscritas | 8 |
+| **Total** | **76** |
+
+Los 30 documentos cubren los cinco resultados posibles para un documento legible: rutina, alto riesgo farmacológico, urgencia, urgencia con ambigüedad y ambigüedad. Las 22 imágenes agregan el sexto, ilegible. Son las 14 fotos y escaneos y las 8 recetas manuscritas, y se reparten en tres niveles de legibilidad (9 leves, 7 medias y 6 severas) para ajustar los umbrales de 0,40 y 0,70 de rules.yaml. Las fotos y escaneos heredan el contenido del documento del que salen, pero la decisión esperada cambia con el nivel de legibilidad.
+
+Hay un camino que no se etiqueta de antemano: cuando el score del modelo queda entre 0,60 y 0,85, rules.yaml pide una segunda opinión o agrega una marca de auditoría. Eso depende de la confianza del modelo en cada corrida, así que no cuenta como error de enrutamiento; se refleja en la tasa de revisión humana.
+
+Los siete casos fuera de alcance se miden aparte, porque responden otra pregunta: no si el agente acierta, sino si sabe cuándo no le corresponde decidir. Seis deben terminar en revisión humana con AMB-6. El de la instrucción incrustada (FA-05) debe enrutarse por lo que el documento realmente es, ignorando la orden.
 
 **Por qué 30.** Es el mínimo que cubre los seis tipos de documento, los cinco resultados y las categorías de ambigüedad. Es una prueba de funcionamiento, no una medición estadística: si el agente acierta el 90 %, con 30 casos el acierto real puede estar entre el 79 % y el 100 %, con un 95 % de confianza (margen = 1,96 × √(0,90 × 0,10 ÷ 30) ≈ 0,11, es decir, 11 puntos). Alcanza para saber si el sistema funciona o está roto. Medir con un margen de 5 puntos exigiría unos 140 documentos (1,96² × 0,90 × 0,10 ÷ 0,05² ≈ 138), y el conjunto crece en las siguientes versiones.
 
@@ -348,15 +364,38 @@ Para que los números no estén contaminados, los ejemplos incrustados en los pr
 
 El reparto documento por documento, con la respuesta esperada de cada uno, está en [`docs/kit-de-datos.pdf`](docs/kit-de-datos.pdf), y las fuentes con sus licencias en [`evals/DATA.md`](evals/DATA.md).
 
-El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Los resultados se publican aquí en cada iteración.
+El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Cada corrida oficial se publica en [`evals/resultados/`](evals/resultados/).
 
-| Métrica | Valor |
-|---|---|
-| Accuracy de clasificación | pendiente |
-| Recall de urgencias | pendiente |
-| Tasa de revisión humana | pendiente |
-| Latencia p50 / p95 | pendiente |
+### Primera evaluación · 13/10/2026
 
+Corrida sobre las 76 variantes de los 45 elementos del conjunto de prueba:
+- **Modelo principal:** DeepSeek (`deepseek/deepseek-chat`).
+- **Código:** commit `b3ff577` de develop.
+- **Archivos:** el informe completo, el detalle por variante y el análisis están en [`evals/resultados/2026-10-13_deepseek/`](evals/resultados/2026-10-13_deepseek/).
+
+| Métrica | Corrida completa | Solo texto, PDF y JSON |
+|---|---|---|
+| **Recall de urgencias** | 94 % (16/17) | **100 % (16/16)** |
+| Accuracy de clasificación | 83 % (52/63) | 96 % (52/54) |
+| Accuracy de destino | 62 % (39/63) | 67 % (36/54) |
+| Acierto de la marca de auditoría | 60 % (38/63) | 63 % (34/54) |
+| Casos fuera de alcance resueltos | 0 % (0/12) | 0 % (0/10) |
+| Puerta de legibilidad (media y severa) | 46 % (6/13) | no aplica |
+| Casos correctos en todo | 41 % (31/76) | 46 % (25/54) |
+| Falsas urgencias | 10 | 10 |
+| Tasa de revisión humana | 45 % (34/76) | |
+| Latencia p50 / p95 | 3,9 s / 5,2 s | |
+
+Es la línea de base: corre el código de develop tal como estaba el 13/10, antes de fusionar la regla A de urgencia y la puerta de legibilidad definitiva. Con 54 variantes de texto, el margen es de unos ±13 puntos, así que sirve para encontrar qué está roto, no para comparar modelos parecidos.
+
+**Cómo leerla**
+
+1. **Las imágenes no se evaluaron.** En la máquina de la corrida el OCR no devolvió texto, y la puerta de legibilidad mandó las 22 imágenes a revisión humana sin llamar al modelo. La única urgencia que falta es una de ellas (GS-07 escaneado). Por eso la columna de la derecha deja afuera las imágenes.
+2. **Ninguna urgencia perdida en texto, pero 10 falsas.** 8 de las 10 están en recetas, epicrisis y casos fuera de alcance. En esos tipos, la regla A (ADR-002) no admite las listas automáticas de hallazgos y palabras clave, pero todavía no está fusionada en `agent/nodes/urgencia.py`.
+3. **Fuera de alcance: lo reconoce, pero falta la marca.** En 8 de 10 variantes de texto, el agente clasifica el documento como «Otro» con AMB-6 y el motivo correcto. Seis de ellas van a Revisión humana y fallan solo porque `enrutar.py` no marca la auditoría para ese tipo.
+4. **El intento de engaño no funcionó.** FA-05 trae una instrucción incrustada para mandarlo a rutina. El agente la ignoró y envió el potasio crítico a Emergencia.
+
+El análisis completo, con los fallos por categoría AMB y por tipo de documento y lo que sigue, está en [`analisis.md`](evals/resultados/2026-10-13_deepseek/analisis.md).
 
 ## Prioridades de entrega
 
@@ -410,7 +449,6 @@ Las decisiones de diseño se registran en [`docs/decisions.md`](docs/decisions.m
 - Carlos Zunino
 - Carolina Chambique
 - Cristian Ojeda
-- Kevin Lemos
 - Maria Camila Gonzalez Nuñez
 - Néstor Gribaudo
 - Sabrina Valentim Guimaraes
@@ -422,4 +460,3 @@ Proyecto desarrollado en el marco del Hackathon ONE G10, programa Oracle Next Ed
 ## Licencia
 
 MIT. Ver [`LICENSE`](LICENSE).
-

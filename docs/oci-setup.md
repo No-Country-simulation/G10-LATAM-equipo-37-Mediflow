@@ -38,7 +38,7 @@ oci os bucket create \
   --name mediflow-prod \
   --compartment-id "$COMPARTMENT_ID" \
   --storage-tier Standard
-
+```
 
 ---
 
@@ -46,18 +46,39 @@ oci os bucket create \
 
 ### Estado actual
 
-**Fecha:** 9 de octubre de 2026
-**Estado:** ✅ Deploy funcionando (HTTP, sin dominio)
+**Fecha:** 12 de octubre de 2026
+**Estado:** ✅ Deploy funcionando con HTTPS y dominio propio
 **Responsable:** Carlos Zunino
+**Revisora:** Sabrina
 
 ### URLs públicas
 
 | Servicio | URL | Estado |
 | :--- | :--- | :--- |
-| **API** | http://144.22.215.79:8000 | ✅ Funcionando |
-| **API Docs** | http://144.22.215.79:8000/docs | ✅ Funcionando |
-| **UI Streamlit** | http://144.22.215.79:8501 | ✅ Funcionando |
-| **Health Check** | http://144.22.215.79:8000/health | ✅ `{"status":"ok"}` |
+| **UI Streamlit** | https://mediflow-equipo37.duckdns.org/ | ✅ Funcionando |
+| **API** | https://mediflow-equipo37.duckdns.org/api/ | ✅ Funcionando |
+| **API Docs** | https://mediflow-equipo37.duckdns.org/api/docs | ✅ Funcionando |
+| **Health Check** | https://mediflow-equipo37.duckdns.org/api/health | ✅ `{"status":"ok","service":"mediflow-api"}` |
+
+**Redirección:** `http://mediflow-equipo37.duckdns.org/` → `301` → `https://mediflow-equipo37.duckdns.org/`
+
+### Dominio y DNS
+
+| Componente | Valor |
+| :--- | :--- |
+| **Proveedor** | DuckDNS (gratuito) |
+| **Dominio** | `mediflow-equipo37.duckdns.org` |
+| **IP** | `144.22.215.79` |
+
+### Certificado SSL
+
+| Componente | Valor |
+| :--- | :--- |
+| **Emisor** | Let's Encrypt |
+| **Herramienta** | Certbot 3.1.0 |
+| **Válido hasta** | 10 de enero de 2027 |
+| **Ubicación** | `/etc/letsencrypt/live/mediflow-equipo37.duckdns.org/` |
+| **Renovación** | Manual (`sudo certbot renew`) |
 
 ### Infraestructura
 
@@ -90,43 +111,73 @@ oci os bucket create \
 | Puerto | Protocolo | Origen | Descripción |
 | :--- | :--- | :--- | :--- |
 | 22 | TCP | 0.0.0.0/0 | SSH |
-| 80 | TCP | 0.0.0.0/0 | HTTP |
+| 80 | TCP | 0.0.0.0/0 | HTTP (redirige a HTTPS) |
 | 443 | TCP | 0.0.0.0/0 | HTTPS |
-| 8000 | TCP | 0.0.0.0/0 | API FastAPI |
-| 8501 | TCP | 0.0.0.0/0 | UI Streamlit |
+
+**Nota:** Los puertos 8000 y 8501 ya no están expuestos directamente. Todo pasa por nginx (80/443).
 
 ### Cómo conectarse a la VM
 
 ```bash
 ssh -i "$env:USERPROFILE\.ssh\mediflow-vm-1.key" opc@144.22.215.79
-
 ```
 
 ### Cómo deployar
 
-#### Primera vez
+#### Stack `infra` (con nginx + HTTPS)
+
+**Nota:** `podman-compose` falla con Python 3.9. Los contenedores se levantan manualmente.
 
 ```bash
-# En la VM, como usuario opc
+# 1. Construir las imágenes
 cd /opt/mediflow
-sudo podman-compose -f docker-compose.dev.yml up -d --build
-```
+sudo podman build -t localhost/infra_api:latest -f api/Dockerfile .
+sudo podman build -t localhost/infra_ui:latest -f ui/Dockerfile .
+sudo podman build -t localhost/infra_worker:latest -f worker/Dockerfile .
 
-#### Actualizar el código
+# 2. Crear la red (si no existe)
+sudo podman network create infra_default 2>/dev/null
 
-```bash
-# En la VM
-cd /opt/mediflow
-git pull origin develop
-sudo podman-compose -f docker-compose.dev.yml up -d --build
+# 3. Levantar API
+sudo podman run -d --name infra_api_1 \
+  --network infra_default \
+  --network-alias api \
+  --env-file /opt/mediflow/.env \
+  -v /opt/mediflow/wallet:/app/wallet:ro \
+  localhost/infra_api:latest
+
+# 4. Levantar UI
+sudo podman run -d --name infra_ui_1 \
+  --network infra_default \
+  --network-alias ui \
+  --env-file /opt/mediflow/.env \
+  -e API_URL=http://api:8000 \
+  localhost/infra_ui:latest
+
+# 5. Levantar worker
+sudo podman run -d --name infra_worker_1 \
+  --network infra_default \
+  --env-file /opt/mediflow/.env \
+  -v /opt/mediflow/wallet:/app/wallet:ro \
+  localhost/infra_worker:latest
+
+# 6. Levantar nginx
+sudo podman run -d --name infra_nginx_1 \
+  --network infra_default \
+  -p 80:80 -p 443:443 \
+  -v /opt/mediflow/infra/nginx.conf:/etc/nginx/conf.d/default.conf:ro \
+  -v /etc/letsencrypt:/etc/letsencrypt:ro \
+  -v /var/www/certbot:/var/www/certbot:ro \
+  docker.io/library/nginx:stable
 ```
 
 #### Ver los logs
 
 ```bash
-sudo podman logs mediflow_api_1 --tail 50
-sudo podman logs mediflow_ui_1 --tail 50
-sudo podman logs mediflow_worker_1 --tail 50
+sudo podman logs infra_nginx_1 --tail 50
+sudo podman logs infra_api_1 --tail 50
+sudo podman logs infra_ui_1 --tail 50
+sudo podman logs infra_worker_1 --tail 50
 ```
 
 #### Ver el estado de los contenedores
@@ -134,6 +185,67 @@ sudo podman logs mediflow_worker_1 --tail 50
 ```bash
 sudo podman ps
 ```
+
+### Configuración de nginx
+
+**Archivo:** `/opt/mediflow/infra/nginx.conf`
+
+```nginx
+# Redirigir HTTP a HTTPS (excepto el desafío de Certbot)
+server {
+    listen 80;
+    server_name mediflow-equipo37.duckdns.org;
+    client_max_body_size 25m;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# Servidor HTTPS
+server {
+    listen 443 ssl;
+    server_name mediflow-equipo37.duckdns.org;
+    client_max_body_size 25m;
+
+    ssl_certificate     /etc/letsencrypt/live/mediflow-equipo37.duckdns.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mediflow-equipo37.duckdns.org/privkey.pem;
+
+    location = /openapi.json {
+        proxy_pass http://api:8000/openapi.json;
+        proxy_set_header Host $host;
+    }
+
+    location /api/ {
+        proxy_pass http://api:8000/;
+        proxy_set_header Host $host;
+        proxy_read_timeout 180s;
+    }
+
+    location / {
+        proxy_pass http://ui:8501/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 180s;
+    }
+}
+```
+
+### Renovación del certificado SSL
+
+El certificado dura 90 días. Para renovarlo manualmente:
+
+```bash
+sudo certbot renew
+```
+
+**Nota:** Para el DemoDay (27/10/2026) no hace falta renovar. El certificado vence el 10/01/2027.
 
 ### Archivos de configuración
 
@@ -151,9 +263,16 @@ OCI_COMPARTMENT=<COMPARTMENT_OCID>
 OCI_AUTH=instance_principal
 ONS_TOPIC_OCID=<ONS_TOPIC_OCID>
 STORAGE_BACKEND=oci
+RULES_ADMIN_TOKEN=<TOKEN>
 ```
 
 ### Pendientes
+
+#### Seguridad de endpoints
+
+- **PUT /rules:** ✅ Implementado y validando token en la VM. Valida: 503 si falta `RULES_ADMIN_TOKEN`, 401 si el token no coincide, 422 si falta `X-Editor`.
+- **POST /audit/{id}:** No valida token. Es módulo de Cristian; queda así por ahora y se coordina con Camila después de H3.
+- **Acción:** Ninguna pendiente para H3. `POST /audit/{id}` se coordina después de H3.
 
 #### ADB (Autonomous Database)
 
@@ -161,20 +280,58 @@ STORAGE_BACKEND=oci
 - **Nota:** El `docs/api-contract.md` dice que el MVP usa SQLite. ADB es para Sprint 3.
 - **Wallet:** La carpeta `wallet/` está vacía (no se necesita para el MVP).
 
-#### HTTPS / Dominio
+#### podman-compose
 
-- **Estado:** No implementado.
-- **Actual:** HTTP en la IP pública (`http://144.22.215.79:8501`).
-- **Pendiente:** Configurar DuckDNS + Let's Encrypt + nginx.
+- **Estado:** Roto (falla con Python 3.9).
+- **Workaround:** Los contenedores se levantan manualmente con `podman run`.
+- **Fix:** Instalar Python 3.11+ en la VM.
 
-#### Nginx
 
-- **Estado:** No usado actualmente.
-- **Nota:** El `docker-compose.dev.yml` no incluye nginx (solo api, ui, worker).
-- **Pendiente:** Usar `infra/docker-compose.yml` (con nginx) cuando tengamos dominio + TLS.
+### Alertas (N2-09)
+
+- **OCI Notifications (correo):** Configurado y funcionando en la VM. Es el **canal activo para H3**.
+- **Discord directo:** Configurado en el `.env` de la VM, pero el código del PR #83 aún no está mergeado.
+- **Slack vía n8n (N3-08):** Es de Alessandro y Sabrina.
+- **Configuración en la VM:** incluir `N8N_WEBHOOK_URL` en `/opt/mediflow/.env`; tanto `api` como `worker` cargan ese archivo (`env_file` en Compose y `--env-file` en el despliegue manual).
+- **Al desplegar el #83, el canal activo pasa a Discord** (prioridad N8N > Discord > OCI, un solo canal). Para seguir con correo, quitar `DISCORD_WEBHOOK_URL` del `.env`.
+- [ ] **Antes del Demo Day:** confirmar que n8n está ejecutándose y accesible para el servicio que envía la alerta. Si n8n no responde, el webhook puede esperar unos 10 segundos antes de continuar con el fallback a Discord/OCI.
 
 ### Historial de cambios
 
 | Fecha | Cambio |
 | :--- | :--- |
 | 9 oct 2026 | Deploy inicial en VM ARM. 3 contenedores corriendo (api, ui, worker). |
+| 12 oct 2026 | Deploy con HTTPS y dominio (DuckDNS + Let's Encrypt + nginx). 4 contenedores en stack `infra`. Bloque `/openapi.json` para Swagger. |
+
+## 8. Alertas en tiempo real (N2-09)
+
+### Topic de OCI Notifications
+
+- **Nombre:** `mediflow-alertas`
+- **OCID:** `ocid1.onstopic.oc1.sa-saopaulo-1.amaaaaaaof3op2aa77wg5xnuyc4cxw2wqahukas2shrzamxyg2jhdrlenx2q`
+- **Variable de entorno:** `ONS_TOPIC_OCID`
+
+### Suscripciones
+
+| Protocolo | Endpoint | Estado | Notas |
+|---|---|---|---|
+| EMAIL | `zunino.cau@gmail.com` | ✅ ACTIVE | Recibe alertas de urgencia |
+| CUSTOM_HTTPS | Discord webhook | ⚠️ PENDING | OCI no valida webhooks de Discord |
+
+### Cómo funciona
+
+El nodo `notificar` lee `notificacion_generada` del state y llama a `publicar()`. Esta función elige el canal según las variables de entorno:
+
+| Prioridad | Variable | Destino |
+|---|---|---|
+| 1 | `N8N_WEBHOOK_URL` | n8n (Nivel 3, N3-08) |
+| 2 | `DISCORD_WEBHOOK_URL` | Discord/Slack directo |
+| 3 | `ONS_TOPIC_OCID` | OCI Notifications (correo) |
+
+### Variables de entorno
+
+```bash
+# Alertas (N2-09): prioridad N8N > DISCORD > OCI
+# N8N_WEBHOOK_URL=           # (Nivel 3, N3-08)
+DISCORD_WEBHOOK_URL=         # URL del webhook de Discord
+ONS_TOPIC_OCID=              # OCID del topic de OCI Notifications

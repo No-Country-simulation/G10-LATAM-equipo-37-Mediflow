@@ -45,7 +45,8 @@ El JSON debe tener esta estructura exacta:
   "evidencia_diagnostico_principal": "fragmento del documento o null",
   "cie10_sugerido": "codigo CIE-10 o null",
   "medicamentos": [],
-  "estudios_solicitados": []
+  "estudios_solicitados": [],
+  "ambiguedad_detectada": null
 }
 
 Reglas adicionales:
@@ -57,6 +58,11 @@ Reglas adicionales:
 5. Si no podes extraer nada, devuelve el JSON con todos los campos en null.
 6. cie10_sugerido: si el diagnostico principal es claro, sugiere el codigo CIE-10 mas probable. Si no estas seguro, usa null.
 7. `fecha`: solo se extrae si está escrita explícitamente en el documento. Si no está, va en `null`. No inventar ni usar la fecha de hoy.
+8. `ambiguedad_detectada`: solo dos valores posibles:
+   - `"AMB-4"`: el texto está cortado o es ilegible (no se puede leer una parte sustancial).
+   - `"AMB-5"`: hay dos o más documentos distintos en un mismo archivo.
+   - `null`: el documento es normal (no tiene ninguna de las dos ambigüedades).
+   No uses otras categorías (AMB-1, AMB-2, AMB-3, AMB-6); esas las deciden las reglas y la clasificación.
 
 Ejemplo:
 
@@ -89,7 +95,8 @@ Salida esperada:
   "evidencia_diagnostico_principal": "CONCLUSION: Cuadro compatible con Tromboembolismo Pulmonar Agudo.",
   "cie10_sugerido": "I26.9",
   "medicamentos": [],
-  "estudios_solicitados": []
+  "estudios_solicitados": [],
+  "ambiguedad_detectada": null
 }
 
 Documento a procesar:

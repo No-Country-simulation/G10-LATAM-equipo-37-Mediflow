@@ -30,6 +30,7 @@ from pathlib import Path
 
 from agent.llm import adapter
 from agent.nodes.common import step
+from agent.nodes.documentos_multiples import detectar_documentos_multiples
 from agent.schemas.contrato import NivelPrioridad, TipoDocumento
 from agent.state import TriageState
 
@@ -94,6 +95,7 @@ def _clasificar_por_reglas(texto: str) -> dict:
         "idioma": "es",
         "legible": bool(texto.strip()),
         "justificacion": "Clasificación por reglas (fallback).",
+        "multiples_documentos": detectar_documentos_multiples(texto),
         "motivo_fuera_de_alcance": None,
     }
 
@@ -193,6 +195,7 @@ def clasificar(state: TriageState) -> dict:
 
     # Camino con LLM.
     modelo = "stub"
+    consumo = list(state.get("consumo", []))
     try:
         if not PROMPT_PATH.exists():
             logger.warning("No existe prompts/clasificar.md, usando reglas.")
@@ -202,6 +205,7 @@ def clasificar(state: TriageState) -> dict:
             resultado_llm = adapter.complete(prompt, json_mode=False, timeout=15)
             clasificacion = _normalizar_respuesta(_parsear_json(resultado_llm.text))
             modelo = resultado_llm.model
+            consumo.append(resultado_llm.consumo("clasificar"))
     except Exception as e:  # noqa: BLE001
         logger.warning("LLM falló en clasificar (%s), usando reglas.", e)
         clasificacion = _clasificar_por_reglas(texto)
@@ -209,5 +213,6 @@ def clasificar(state: TriageState) -> dict:
     return {
         "clasificacion": clasificacion,
         "modelo_utilizado": modelo,
+        "consumo": consumo,
         "trace": step(state, "clasificar", clasificacion, modelo=modelo),
     }

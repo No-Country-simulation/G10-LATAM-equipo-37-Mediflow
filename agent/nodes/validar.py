@@ -23,9 +23,11 @@ hay que resolverlas antes de que esto sea definitivo):
     la fecha del documento o es ilegible) y un CIE-10 que no existe en el catálogo
     (AMB-2 tiene prioridad sobre AMB-3). Falta la regla de "diagnóstico no coincide con
     el tipo de estudio" que menciona el contrato.
-  - AMB-5 (dos documentos en un archivo): este nodo asume que llega marcado en
-    `datos_extraidos["_multiples_documentos"]`, pero no sé todavía qué nodo (¿normalizar?
-    ¿clasificar?) es el que realmente detecta y escribe esa marca. Confirmar con Kevin/Carlos.
+  - AMB-5 (dos documentos en un archivo): la señal principal es `state["ambiguedad"]`, que
+    informa `extraer` con el modelo. Si el modelo no informó AMB-4 ni AMB-5 (modo reglas, sin
+    modelo), se usa de respaldo `clasificacion["multiples_documentos"]`, que escribe la
+    heurística de `clasificar.py`. La marca vieja `datos_extraidos["_multiples_documentos"]`
+    se eliminó: ningún nodo la escribía.
   - AMB-6 (fuera de alcance): el contrato dice que "validar.py lo escribe en el estado", pero
     el motivo (uno de los 5 de `fuera_de_alcance.motivos` en rules.yaml) parece un juicio que
     hace el modelo de clasificación, no una regla determinística de este nodo. Acá simplemente
@@ -50,8 +52,11 @@ from agent.nodes.common import step
 from agent.rules.loader import RULES_PATH, load_rules
 from agent.state import TriageState
 
-MEDICAMENTOS_PATH = Path("evals/generator/data/medicamentos.csv")
-CIE10_PATH = Path("evals/generator/data/cie10.csv")
+# Rutas absolutas desde la raíz del repo, no desde el directorio de trabajo: así el nodo
+# funciona igual en Docker (/app), en pytest y al lanzarlo desde otra carpeta.
+RAIZ_REPO = Path(__file__).resolve().parents[2]
+MEDICAMENTOS_PATH = RAIZ_REPO / "evals" / "generator" / "data" / "medicamentos.csv"
+CIE10_PATH = RAIZ_REPO / "evals" / "generator" / "data" / "cie10.csv"
 
 
 _medicamentos_cache: list[dict] | None = None
@@ -124,17 +129,33 @@ def _a_numero(texto: Any) -> float | None:
     return float(s)
 
 
+# Número que lleva su unidad pegada: "15 mg", "0,25 mg", "1.000 mg", "2 g".
+_NUMERO_CON_UNIDAD = re.compile(
+    r"(\d{1,3}(?:\.\d{3})+(?!\d)|\d+(?:[.,]\d+)?)\s*(mg|g|mcg|µg|ug)\b", re.IGNORECASE
+)
+
+
 def _dosis_en_unidad_catalogo(texto: Any, unidad_catalogo: str) -> float | None:
-    """Convierte la dosis del documento a la unidad del catálogo. None si no se puede."""
-    valor = _a_numero(texto)
+    """Convierte la dosis del documento a la unidad del catálogo. None si no se puede.
+
+    Si el texto trae una cantidad con su unidad ("3 comprimidos (15 mg)"), la dosis es esa cantidad
+    y no el primer número del texto: leer el 3 compararía 3 mg contra el rango y marcaría AMB-3
+    en una dosis correcta (GS-05, metotrexato 15 mg por semana). Sin unidad en el texto se
+    conserva el primer número y se asume la unidad del catálogo.
+    """
+    if texto is None:
+        return None
+    m = _NUMERO_CON_UNIDAD.search(str(texto))
+    if not m:
+        return _a_numero(texto)  # sin unidad: se asume la del catálogo
+    valor = _a_numero(m.group(1))
     if valor is None:
         return None
-    m = re.search(r"\d\s*(mg|g|mcg|µg|ug)\b", str(texto).lower())
-    if not m:
-        return valor  # sin unidad: se asume la del catálogo
+    unidad = m.group(2).lower()
     if unidad_catalogo.lower() == "mg":
-        return valor * _FACTOR_MG[m.group(1)]
-    return valor if m.group(1) == unidad_catalogo.lower() else None
+        return valor * _FACTOR_MG[unidad]
+    return valor if unidad == unidad_catalogo.lower() else None
+
 
 def _norm(s: str) -> str:
     s = unicodedata.normalize("NFD", s.lower().strip())
@@ -242,14 +263,33 @@ def validar_dosis_medicamentos(datos: dict, medicamentos_catalogo: list[dict], t
     return conflictos
 
 
+# Categoría de 3 caracteres con subdivisión opcional: "R91", "R91.1", "I26.9". Sin más texto.
+_CODIGO_CIE10 = re.compile(r"^([A-Z]\d{2})(?:\.\d{1,2})?$")
+
+
+def _categoria_cie10(codigo: Any) -> str | None:
+    """Categoría de 3 caracteres de un código CIE-10 («R91.1» -> «R91»), o None si no tiene la forma."""
+    m = _CODIGO_CIE10.match(str(codigo).strip().upper())
+    return m.group(1) if m else None
+
+
 def validar_cie10(datos: dict, cie10_catalogo: list[dict]) -> list[str]:
-    """Verifica que el código CIE-10 sugerido exista en la lista tabular OPS/OMS (ADR-008)."""
+    """Verifica que el código CIE-10 sugerido pertenezca a una categoría de la lista OPS/OMS (ADR-008).
+
+    Se compara por categoría de 3 caracteres (ADR-013): el catálogo sigue la CIE-10 de la OMS, donde
+    «R91» o «I10» no tienen subcódigos, mientras que adaptaciones como la CIE-10-CM agregan «R91.1».
+    Para el triaje lo que importa es la categoría. Límite conocido: un subcódigo inventado dentro de
+    una categoría real (p. ej. «I26.7») pasa. El código queda en el estado tal como lo devolvió el
+    modelo (`datos_extraidos["cie10_sugerido"]`): esta función no lo modifica.
+    """
     codigo = datos.get("cie10_sugerido")
     if not codigo:
         return []
-    for fila in cie10_catalogo:
-        if fila.get("codigo") == codigo:
-            return []
+    categoria = _categoria_cie10(codigo)
+    if categoria is not None:
+        for fila in cie10_catalogo:
+            if _categoria_cie10(fila.get("codigo", "")) == categoria:
+                return []
     return [f"Código CIE-10 no encontrado en la lista OPS/OMS: {codigo}"]
 
 
@@ -343,6 +383,28 @@ def asignar_categoria_amb(
     return None
 
 
+# Categorías que el modelo puede aportar. AMB-1, AMB-2 y AMB-3 se deciden con reglas sobre los
+# datos; AMB-6 la decide la clasificación. Lo que solo se aprecia leyendo el documento (texto
+# cortado, dos documentos en un archivo) lo informa `extraer` en `state["ambiguedad"]`.
+_CATEGORIAS_DEL_MODELO = ("AMB-4", "AMB-5")
+_PATRON_AMB = re.compile(r"AMB[-_ ]?([1-6])", re.IGNORECASE)
+
+
+def categoria_ambiguedad_del_modelo(valor: Any) -> str | None:
+    """AMB-4 o AMB-5 si `extraer` las informó en el estado; None en cualquier otro caso.
+
+    Acepta «AMB-4», «amb-5» o un texto que la contenga («AMB-5: dos documentos en uno»). Cualquier
+    otra categoría o un valor ilegible se ignora: esas se calculan por reglas, no por el modelo.
+    """
+    if not isinstance(valor, str):
+        return None
+    m = _PATRON_AMB.search(valor)
+    if not m:
+        return None
+    categoria = f"AMB-{m.group(1)}"
+    return categoria if categoria in _CATEGORIAS_DEL_MODELO else None
+
+
 # ---------------------------------------------------------------------------
 # Entrada del nodo
 # ---------------------------------------------------------------------------
@@ -361,8 +423,11 @@ def validar(state: TriageState) -> dict:
     conflictos_dosis = validar_dosis_medicamentos(datos, medicamentos_catalogo, tipo_documento)
     conflictos_cie10 = validar_cie10(datos, cie10_catalogo)
     conflictos_contradiccion = validar_contradiccion_interna(datos)
-    es_ilegible_medio = evaluar_legibilidad(legibilidad, rules)
-    es_multiples_documentos = bool(datos.get("_multiples_documentos"))  # TODO: confirmar origen real de esta marca
+    ambiguedad_modelo = categoria_ambiguedad_del_modelo(state.get("ambiguedad"))
+    es_ilegible_medio = evaluar_legibilidad(legibilidad, rules) or ambiguedad_modelo == "AMB-4"
+    es_multiples_documentos = ambiguedad_modelo == "AMB-5" or (
+        ambiguedad_modelo is None and clasificacion.get("multiples_documentos") is True
+    )
 
     categoria = asignar_categoria_amb(
         campos_faltantes,

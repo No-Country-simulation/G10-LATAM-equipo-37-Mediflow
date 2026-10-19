@@ -144,8 +144,8 @@ def test_cie10_codigo_valido(cie10_catalogo):
 
 
 def test_cie10_codigo_inexistente(cie10_catalogo):
-    """ADR-008: K35.2 no existe en la lista OPS/OMS (K35.0 es el correcto)."""
-    conflictos = validar_cie10({"cie10_sugerido": "K35.2"}, cie10_catalogo)
+    """Una categoría que no está en la lista OPS/OMS se marca (ADR-008, ADR-013)."""
+    conflictos = validar_cie10({"cie10_sugerido": "Z99"}, cie10_catalogo)
     assert len(conflictos) == 1
 
 
@@ -351,7 +351,7 @@ def test_gs06_coincide_con_plan_golden():
 def test_validar_amb5_dos_documentos_en_un_archivo():
     state = _estado_gs06()
     state["datos_extraidos"]["medicamentos"] = [{"nombre": "amoxicilina", "dosis": "500 mg"}]
-    state["datos_extraidos"]["_multiples_documentos"] = True
+    state["ambiguedad"] = "AMB-5"
     assert validar(state)["validacion"]["categoria_amb"] == "AMB-5"
 
 
@@ -384,7 +384,7 @@ def test_cie10_inexistente_da_amb2():
     """Un código CIE-10 que no existe en la lista OPS/OMS va a revisión como AMB-2."""
     state = _estado_gs06()
     state["datos_extraidos"]["medicamentos"] = [{"nombre": "amoxicilina", "dosis": "500 mg"}]
-    state["datos_extraidos"]["cie10_sugerido"] = "K35.2"
+    state["datos_extraidos"]["cie10_sugerido"] = "Z99"
     v = validar(state)["validacion"]
     assert v["categoria_amb"] == "AMB-2"
     assert any("CIE-10" in c for c in v["conflictos"])
@@ -405,7 +405,7 @@ def test_asignar_categoria_cie10_solo():
         es_ilegible_medio=False,
         es_multiples_documentos=False,
         clasificacion={"tipo_documento": "Receta Medica"},
-        conflictos_cie10=["Código CIE-10 no encontrado en la lista OPS/OMS: K35.2"],
+        conflictos_cie10=["Código CIE-10 no encontrado en la lista OPS/OMS: Z99"],
     )
     assert categoria == "AMB-2"
 
@@ -476,7 +476,8 @@ def test_fuera_de_alcance_con_multiples_documentos_conserva_amb6_y_motivo():
 
     for motivo in ("paciente_no_humano", "no_clinico"):
         state = {
-            "datos_extraidos": {"_multiples_documentos": True},
+            "datos_extraidos": {},
+            "ambiguedad": "AMB-5",
             "clasificacion": {"tipo_documento": "Otro", "motivo_fuera_de_alcance": motivo},
             "trace": [],
         }
@@ -489,7 +490,8 @@ def test_multiples_documentos_en_tipo_clinico_sigue_siendo_amb5():
     from agent.nodes.validar import validar
 
     state = {
-        "datos_extraidos": {"_multiples_documentos": True},
+        "datos_extraidos": {},
+        "ambiguedad": "AMB-5",
         "clasificacion": {"tipo_documento": "Receta Medica"},
         "trace": [],
     }
