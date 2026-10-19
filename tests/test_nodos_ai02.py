@@ -114,7 +114,8 @@ def test_clasificar_por_reglas_detecta_informe():
     assert resultado["tipo_documento"] == "Informe de Estudio por Imagenes"
     # Las reglas no detectan urgencia, siempre devuelven Rutina.
     assert resultado["nivel_prioridad"] == "Rutina"
-    assert resultado["score_confianza_clasificacion"] >= 0.8
+    # Una coincidencia de texto no debe aparentar confianza de un modelo.
+    assert 0 <= resultado["score_confianza_clasificacion"] < 0.8
 
 
 def test_clasificar_por_reglas_detecta_receta():
