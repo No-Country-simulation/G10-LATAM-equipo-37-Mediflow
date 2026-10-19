@@ -1,0 +1,23 @@
+name: Legibilidad (puerta N2-08)
+
+on:
+  pull_request:
+    paths:
+      - "agent/nodes/normalizar.py"
+      - "agent/tests/test_legibilidad.py"
+      - "agent/tests/test_legibilidad_golden.py"
+      - "agent/tests/test_legibilidad_puerta.py"
+      - "evals/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-spa tesseract-ocr-por
+      - run: ruff check agent/tests/test_legibilidad.py agent/tests/test_legibilidad_golden.py agent/tests/test_legibilidad_puerta.py agent/nodes/normalizar.py
+      - run: USE_LLM=false STORAGE_BACKEND=local pytest -q agent/tests/test_legibilidad.py agent/tests/test_legibilidad_golden.py agent/tests/test_legibilidad_puerta.py

@@ -93,7 +93,10 @@ def test_legibilidad_precargada_no_se_recalcula():
     assert out["trace"][-1]["detalle"]["legibilidad_provisional"] is False
 
 
-def test_normalizar_con_imagen_borrosa_deriva_a_revision():
+def test_normalizar_con_imagen_borrosa_deriva_a_revision(monkeypatch):
+    import agent.nodes.normalizar as modulo
+
+    monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: None)
     out = normalizar({
         "texto": "",
         "tipo_archivo": "IMAGEN",
@@ -104,8 +107,11 @@ def test_normalizar_con_imagen_borrosa_deriva_a_revision():
     assert out["trace"][-1]["detalle"]["fuente"] == "imagen"
 
 
-def test_normalizar_con_varias_imagenes_usa_minimo():
+def test_normalizar_con_varias_imagenes_usa_minimo(monkeypatch):
     """Cuando hay varias imágenes (p.ej. PDF de múltiples páginas), se usa el mínimo."""
+    import agent.nodes.normalizar as modulo
+
+    monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: None)
     # Una imagen buena (score alto) y una mala (score bajo)
     buena = _b64(_pagina())  # nitida ~1.0
     mala = _b64(_pagina(blur=8, dark=0.4))  # borrosa <0.40
