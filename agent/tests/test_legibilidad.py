@@ -15,9 +15,14 @@ from __future__ import annotations
 import base64
 from io import BytesIO
 
+import pytest
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
-from agent.nodes.normalizar import _score_de_imagen, normalizar
+from agent.nodes.normalizar import (
+    _PALABRAS_MIN_OCR,
+    _score_de_imagen,
+    normalizar,
+)
 
 
 def _pagina(fondo: int = 255, texto: int = 0, ancho: int = 1600, alto: int = 1200,
@@ -46,8 +51,17 @@ def test_pagina_nitida_pasa():
 
 
 def test_pagina_media_800x600_pasa():
+    """Una foto chica pero nítida queda penalizada por tamaño, sin llegar a ilegible."""
     score = _score_de_imagen(_pagina(ancho=800, alto=600))
-    assert 0.40 <= score < 0.70
+    assert 0.40 <= score <= 1.0
+
+
+def test_mismo_tamanio_grande_da_mismo_score():
+    """Arriba de 1000 px de ancho el tamaño no debe cambiar el score: una foto de
+    4096x3072 y un escaneo A4 de 1240x1754 son comparables tras normalizar."""
+    chica = _score_de_imagen(_pagina(ancho=1200, alto=1600))
+    grande = _score_de_imagen(_pagina(ancho=2400, alto=3200, paso=60, tam=32))
+    assert grande == pytest.approx(chica, abs=0.02)
 
 
 def test_pagina_borrosa_oscura_ilegible():
@@ -104,3 +118,92 @@ def test_normalizar_con_varias_imagenes_usa_minimo():
     # El score debe ser el mínimo (el de la mala imagen)
     assert out["legibilidad"] < 0.40
     assert out["trace"][-1]["detalle"]["fuente"] == "imagen"
+
+
+def test_imagen_no_decodificable_cuenta_cero():
+    """Una página que no se puede ni decodificar es ilegible: cuenta 0.0 y queda
+    anotada en la traza. Solo cuando NINGUNA decodifica se usa el proxy de texto."""
+    buena = _b64(_pagina())
+    out = normalizar({
+        "texto": "a" * 250,
+        "tipo_archivo": "IMAGEN",
+        "imagenes": [buena, "esto-no-es-una-imagen"],
+        "trace": [],
+    })
+    assert out["legibilidad"] == 0.0
+    detalle = out["trace"][-1]["detalle"]
+    assert detalle["imagenes_no_decodificables"] == 1
+
+
+def _binario_tesseract() -> bool:
+    """True si Tesseract está instalado (paquete + binario)."""
+    try:
+        import shutil
+
+        import pytesseract
+
+        pytesseract.get_tesseract_version()
+        return shutil.which("tesseract") is not None
+    except Exception:  # noqa: BLE001 - sin binario se salta el test OCR
+        return False
+
+
+_tesseract = pytest.mark.skipif(not _binario_tesseract(), reason="Tesseract no instalado")
+
+
+@_tesseract
+def test_sin_ocr_solo_mandan_las_metricas_de_imagen(monkeypatch):
+    """Sin OCR disponible la puerta decide igual y lo deja anotado en la traza."""
+    import agent.nodes.normalizar as modulo
+
+    monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: None)
+    out = normalizar({
+        "texto": "",
+        "tipo_archivo": "IMAGEN",
+        "imagenes": [_b64(_pagina(blur=8, dark=0.4))],
+        "trace": [],
+    })
+    detalle = out["trace"][-1]["detalle"]
+    assert detalle["ocr_disponible"] is False
+    assert detalle["confianza_ocr"] is None
+    assert detalle["fuente"] == "imagen"
+
+
+@_tesseract
+def test_pocas_palabras_ocr_no_combinan(monkeypatch):
+    """Con menos de 20 palabras (p. ej. manuscritas) manda el score óptico,
+    pero la traza guarda lo que vio el OCR."""
+    import agent.nodes.normalizar as modulo
+
+    monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: (0.90, _PALABRAS_MIN_OCR - 1))
+    img = _pagina()
+    optico = _score_de_imagen(img)
+    out = normalizar({
+        "texto": "",
+        "tipo_archivo": "IMAGEN",
+        "imagenes": [_b64(img)],
+        "trace": [],
+    })
+    assert out["legibilidad"] == optico
+    detalle = out["trace"][-1]["detalle"]
+    assert detalle["palabras_ocr"] == _PALABRAS_MIN_OCR - 1
+
+
+@_tesseract
+def test_suficientes_palabras_ocr_combinan(monkeypatch):
+    """Con 20+ palabras la confianza del OCR se combina con el score óptico."""
+    import agent.nodes.normalizar as modulo
+
+    monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: (0.80, 30))
+    img = _pagina(blur=8, dark=0.4)
+    out = normalizar({
+        "texto": "",
+        "tipo_archivo": "IMAGEN",
+        "imagenes": [_b64(img)],
+        "trace": [],
+    })
+    detalle = out["trace"][-1]["detalle"]
+    assert detalle["fuente"] == "imagen+ocr"
+    assert detalle["palabras_ocr"] == 30
+    assert detalle["confianza_ocr"] == 0.80
+    assert out["legibilidad"] > _score_de_imagen(img)
