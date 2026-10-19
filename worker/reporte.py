@@ -8,6 +8,7 @@ Paso 3: copia en reportes/diario/{fecha}.json y generación a la hora configurad
 import json
 import logging
 import os
+import re
 import sqlite3
 from collections import Counter
 from contextlib import closing
@@ -21,6 +22,7 @@ from agent.storage import notifications, triage_results
 logger = logging.getLogger(__name__)
 
 LINEAS_RESUMEN = 5
+_NUMERO = re.compile(r"\d+(?:[.,]\d+)?")
 REPORTE_TZ = os.getenv("REPORTE_TZ", "America/Argentina/Buenos_Aires")
 REPORTE_HORA = os.getenv("REPORTE_HORA", "07:00")
 DESTINO_URGENCIA = "Cola_Emergencia_Medica"
@@ -122,11 +124,52 @@ def _prompt_resumen(kpis: dict) -> str:
     )
 
 
+def _cifras_permitidas(kpis: dict) -> set[float]:
+    """Cifras que el resumen puede citar: las de los KPIs, sus porcentajes y las partes de la fecha."""
+    permitidas: set[float] = set()
+
+    def agregar(valor, *decimales: int) -> None:
+        if isinstance(valor, bool) or not isinstance(valor, (int, float)):
+            return
+        permitidas.add(round(float(valor), 6))
+        for d in decimales:
+            permitidas.add(round(float(round(valor, d)), 6))
+
+    agregar(kpis.get("total"))
+    agregar(kpis.get("urgencias"))
+    agregar(kpis.get("en_revision"))
+    agregar(kpis.get("requieren_auditoria"))
+    agregar(kpis.get("confianza_media"), 1, 2, 3)
+    tasa = kpis.get("tasa_revision")
+    if isinstance(tasa, (int, float)):
+        agregar(tasa * 100, 0, 1)
+    for conteos in (kpis.get("por_destino") or {}, kpis.get("por_tipo") or {}):
+        for valor in conteos.values():
+            agregar(valor)
+    for parte in _NUMERO.findall(str(kpis.get("fecha", ""))):
+        agregar(float(parte))
+    return permitidas
+
+
+def cifras_validas(texto: str, kpis: dict) -> bool:
+    """True si toda cifra del texto sale de los KPIs y el total de documentos aparece completo.
+
+    Compara números enteros, no subcadenas: con total 4, "40 documentos" no vale. Un resumen con
+    una cifra que no está en los KPIs (o con 0,70 frente a 0.7) se compara por valor.
+    """
+    cifras = [round(float(t.replace(",", ".")), 6) for t in _NUMERO.findall(texto)]
+    total = kpis.get("total")
+    if total is None or float(total) not in cifras:
+        return False
+    permitidas = _cifras_permitidas(kpis)
+    return all(c in permitidas for c in cifras)
+
+
 def redactar_resumen(kpis: dict) -> tuple[str, str]:
     """Devuelve (texto, origen). Origen es el modelo que lo redactó o "plantilla".
 
-    Cae a la plantilla si USE_LLM no está activo, si el modelo falla o si su respuesta no tiene
-    cinco líneas o no menciona el total de documentos (señal de que inventó cifras).
+    Cae a la plantilla si USE_LLM no está activo, si el modelo falla, si su respuesta no tiene
+    cinco líneas o si sus cifras no coinciden con los KPIs (ver `cifras_validas`).
     """
     if os.getenv("USE_LLM", "false").lower() not in ("true", "1", "yes"):
         return resumen_plantilla(kpis), "plantilla"
@@ -137,7 +180,7 @@ def redactar_resumen(kpis: dict) -> tuple[str, str]:
         return resumen_plantilla(kpis), "plantilla"
 
     lineas = [linea.strip() for linea in (resultado.text or "").splitlines() if linea.strip()]
-    if len(lineas) != LINEAS_RESUMEN or str(kpis["total"]) not in "\n".join(lineas):
+    if len(lineas) != LINEAS_RESUMEN or not cifras_validas("\n".join(lineas), kpis):
         logger.warning("El resumen del modelo no cumple el formato; se usa la plantilla")
         return resumen_plantilla(kpis), "plantilla"
     return "\n".join(lineas), resultado.model

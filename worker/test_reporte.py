@@ -140,6 +140,36 @@ def test_cae_a_la_plantilla_si_no_menciona_el_total(monkeypatch):
     assert reporte.redactar_resumen(KPIS)[1] == "plantilla"
 
 
+def test_cifras_validas_compara_numeros_y_no_subcadenas():
+    # Con total 4, "40" contiene el carácter "4" pero no es la cifra 4.
+    assert not reporte.cifras_validas("Se procesaron 40 documentos.\nHubo 1 urgencia.", KPIS)
+    assert reporte.cifras_validas("Se procesaron 4 documentos.\nHubo 1 urgencia.", KPIS)
+
+
+def test_cifras_validas_exige_el_total_completo():
+    assert not reporte.cifras_validas("Hubo 1 urgencia y 25% en revisión.", KPIS)
+
+
+def test_cifras_validas_rechaza_cifras_que_no_estan_en_los_kpis():
+    assert not reporte.cifras_validas("Se procesaron 4 documentos.\nHubo 9 urgencias.", KPIS)
+    assert not reporte.cifras_validas("Se procesaron 4 documentos.\nConfianza 0.95.", KPIS)
+
+
+def test_cifras_validas_acepta_porcentaje_decimal_y_fecha():
+    texto = "Reporte del 15/10/2026: 4 documentos.\n25% en revisión, confianza 0,70."
+    assert reporte.cifras_validas(texto, KPIS)
+
+
+def test_cae_a_la_plantilla_si_el_modelo_inventa_una_cifra(monkeypatch):
+    _con_llm(monkeypatch, texto=CINCO_LINEAS.replace("Hubo 1 urgencia.", "Hubo 9 urgencias."))
+    assert reporte.redactar_resumen(KPIS) == (reporte.resumen_plantilla(KPIS), "plantilla")
+
+
+def test_cae_a_la_plantilla_si_el_total_es_una_subcadena_de_otra_cifra(monkeypatch):
+    _con_llm(monkeypatch, texto=CINCO_LINEAS.replace("Se procesaron 4", "Se procesaron 40"))
+    assert reporte.redactar_resumen(KPIS)[1] == "plantilla"
+
+
 class AlmacenFalso:
     """Imita el módulo de almacenamiento (local u OCI) con un diccionario."""
 
