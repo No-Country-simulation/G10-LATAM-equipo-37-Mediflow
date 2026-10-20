@@ -83,7 +83,8 @@ Reglas adicionales:
 - `frecuencia`: "cada 12 horas" (no "cada 12 hs", no "12 horas")
 - `duracion`: "30 días" (no "30", no "durante 30 días")
 
-Si el documento no especifica alguno de estos campos, va en `null`. No los inventes ni los mezcles con el nombre.
+Si el documento no especifica alguno de estos campos, va en `null`. No los inventes ni los mezcles con el nombre.  
+Los números de la dosis no se corrigen ni se redondean (ej: 5000 mg se queda 5000 mg).
 
 Ejemplo:
 
