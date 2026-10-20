@@ -20,7 +20,7 @@ Hackathon ONE G10 · Oracle Next Education & Alura · Equipo 37
 
 MediFlow recibe documentos clínicos en PDF, imagen, texto o JSON, los clasifica, extrae los datos esenciales en JSON validado, calcula un score de confianza, detecta urgencias y los enruta al destino correcto sin intervención manual para los casos estándar. Los casos ambiguos, inconsistentes o ilegibles van a un auditor humano. Los documentos y las decisiones se persisten en OCI Object Storage, y el sistema completo corre en la capa Always Free de Oracle Cloud.
 
-## Probalo en vivo
+## Pruébalo en vivo
 
 | Qué | Dónde |
 |---|---|
@@ -34,7 +34,7 @@ Todo corre en la capa Always Free de Oracle Cloud y con modelos de lenguaje en p
 
 ## Tabla de contenidos
 
-- [Probalo en vivo](#probalo-en-vivo)
+- [Pruébalo en vivo](#pruébalo-en-vivo)
 
 - [El problema](#el-problema)
 - [Dónde encaja MediFlow](#dónde-encaja-mediflow)
