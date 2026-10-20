@@ -43,3 +43,19 @@ def test_comparar_detecta_regresion_de_dosis():
     # El comparador debe generar resultados individuales por campo
     assert resultados["medicamentos.0.nombre"] is True
     assert resultados["medicamentos.0.dosis"] is False
+
+def test_comparar_medicamentos_vacio_o_nulo_no_rompe():
+    """Reproduce el ValueError reportado por Cristian y Carolina cuando medicamentos está vacío o es null."""
+    esperado = {"medicamentos": [{"nombre": "Amoxicilina", "dosis": "500 mg"}]}
+    
+    # Caso 1: lista vacía
+    datos_vacio = {"medicamentos": []}
+    resultados_vacio = comparar(esperado, datos_vacio)
+    assert resultados_vacio["medicamentos.0.nombre"] is False
+    assert resultados_vacio["medicamentos.0.dosis"] is False
+    
+    # Caso 2: null (None)
+    datos_nulo = {"medicamentos": None}
+    resultados_nulo = comparar(esperado, datos_nulo)
+    assert resultados_nulo["medicamentos.0.nombre"] is False
+    assert resultados_nulo["medicamentos.0.dosis"] is False

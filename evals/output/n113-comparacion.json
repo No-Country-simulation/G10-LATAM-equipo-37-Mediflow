@@ -1,0 +1,961 @@
+{
+  "valido": true,
+  "regresiones": [],
+  "resultados": [
+    {
+      "id": "DEV-ORDEN-01",
+      "tipo": "Orden de Solicitud de Procedimiento",
+      "antes": {
+        "campos": {
+          "procedimiento_solicitado": false
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1714,
+          "tokens_salida": 305,
+          "costo_usd": 0.000214308,
+          "latencia_ms": 10605
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Lucía Prado",
+            "evidencia_nombre": "Paciente: Lucía Prado.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dr. Raúl Vega",
+            "evidencia_nombre": "Médico Solicitante: Dr. Raúl Vega.",
+            "matricula": "58231",
+            "evidencia_matricula": "Matrícula: 58231."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "cie10_sugerido": null,
+          "medicamentos": [],
+          "estudios_solicitados": [
+            "Ecografía de hombro derecho"
+          ],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "procedimiento_solicitado": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2182,
+          "tokens_salida": 363,
+          "costo_usd": 0.0003569399999999999,
+          "latencia_ms": 1848
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Lucía Prado",
+            "evidencia_nombre": "Paciente: Lucía Prado.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dr. Raúl Vega",
+            "evidencia_nombre": "Médico Solicitante: Dr. Raúl Vega.",
+            "matricula": "58231",
+            "evidencia_matricula": "Matrícula: 58231."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": "Ecografía de hombro derecho",
+          "evidencia_procedimiento_solicitado": "Procedimiento solicitado: Ecografía de hombro derecho.",
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "diagnostico_egreso": null,
+          "evidencia_diagnostico_egreso": null,
+          "cie10_sugerido": null,
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    },
+    {
+      "id": "DEV-ALTA-01",
+      "tipo": "Epicrisis",
+      "antes": {
+        "campos": {
+          "diagnostico_egreso": false
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1697,
+          "tokens_salida": 283,
+          "costo_usd": 0.000198558,
+          "latencia_ms": 1580
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Tomás Leiva",
+            "evidencia_nombre": "Paciente: Tomás Leiva.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": null,
+            "evidencia_nombre": null,
+            "matricula": null,
+            "evidencia_matricula": null
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Alta: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": "gastroenteritis",
+          "evidencia_diagnostico_principal": "Diagnóstico de egreso: gastroenteritis.",
+          "cie10_sugerido": "A09",
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "diagnostico_egreso": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2165,
+          "tokens_salida": 349,
+          "costo_usd": 0.00034599,
+          "latencia_ms": 1691
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Tomás Leiva",
+            "evidencia_nombre": "Paciente: Tomás Leiva.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": null,
+            "evidencia_nombre": null,
+            "matricula": null,
+            "evidencia_matricula": null
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Alta: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": null,
+          "evidencia_procedimiento_solicitado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": "dolor abdominal en estudio",
+          "evidencia_diagnostico_principal": "Diagnóstico de ingreso: dolor abdominal en estudio.",
+          "diagnostico_egreso": "gastroenteritis",
+          "evidencia_diagnostico_egreso": "Diagnóstico de egreso: gastroenteritis.",
+          "cie10_sugerido": "A09",
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    },
+    {
+      "id": "DEV-CERT-01",
+      "tipo": "Certificado Medico",
+      "antes": {
+        "campos": {
+          "paciente.nombre": true,
+          "medico_solicitante.nombre": true,
+          "medico_solicitante.matricula": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1711,
+          "tokens_salida": 292,
+          "costo_usd": 0.000206058,
+          "latencia_ms": 1824
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Julia Ledesma",
+            "evidencia_nombre": "Paciente: Julia Ledesma.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Inés Cabrera",
+            "evidencia_nombre": "Firma: Dra. Inés Cabrera.",
+            "matricula": "68432",
+            "evidencia_matricula": "Matrícula: 68432."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "cie10_sugerido": null,
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "paciente.nombre": true,
+          "medico_solicitante.nombre": true,
+          "medico_solicitante.matricula": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2179,
+          "tokens_salida": 359,
+          "costo_usd": 0.00035408999999999994,
+          "latencia_ms": 1725
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Julia Ledesma",
+            "evidencia_nombre": "Paciente: Julia Ledesma.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Inés Cabrera",
+            "evidencia_nombre": "Firma: Dra. Inés Cabrera.",
+            "matricula": "68432",
+            "evidencia_matricula": "Matrícula: 68432."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": null,
+          "evidencia_procedimiento_solicitado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": "Se certifica asistencia a consulta.",
+          "evidencia_conclusion": "Se certifica asistencia a consulta.",
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "diagnostico_egreso": null,
+          "evidencia_diagnostico_egreso": null,
+          "cie10_sugerido": null,
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    },
+    {
+      "id": "DEV-ALTA-02",
+      "tipo": "Epicrisis",
+      "antes": {
+        "campos": {
+          "diagnostico_egreso": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1693,
+          "tokens_salida": 268,
+          "costo_usd": 0.000188958,
+          "latencia_ms": 1894
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Matías Correa",
+            "evidencia_nombre": "Paciente: Matías Correa.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": null,
+            "evidencia_nombre": null,
+            "matricula": null,
+            "evidencia_matricula": null
+          },
+          "fecha": null,
+          "evidencia_fecha": null,
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": "dolor abdominal",
+          "evidencia_diagnostico_principal": "Diagnóstico de ingreso: dolor abdominal.",
+          "cie10_sugerido": "R10.9",
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "diagnostico_egreso": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2161,
+          "tokens_salida": 319,
+          "costo_usd": 0.00023330999999999997,
+          "latencia_ms": 1908
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Matías Correa",
+            "evidencia_nombre": "Paciente: Matías Correa.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": null,
+            "evidencia_nombre": null,
+            "matricula": null,
+            "evidencia_matricula": null
+          },
+          "fecha": null,
+          "evidencia_fecha": null,
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": null,
+          "evidencia_procedimiento_solicitado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": "dolor abdominal",
+          "evidencia_diagnostico_principal": "Diagnóstico de ingreso: dolor abdominal.",
+          "diagnostico_egreso": null,
+          "evidencia_diagnostico_egreso": null,
+          "cie10_sugerido": "R10.9",
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    },
+    {
+      "id": "DEV-CERT-02",
+      "tipo": "Certificado Medico",
+      "antes": {
+        "campos": {
+          "medico_solicitante.nombre": true,
+          "medico_solicitante.matricula": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1704,
+          "tokens_salida": 276,
+          "costo_usd": 0.000195408,
+          "latencia_ms": 1751
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Clara Rivas",
+            "evidencia_nombre": "Paciente: Clara Rivas.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": null,
+            "evidencia_nombre": null,
+            "matricula": "71546",
+            "evidencia_matricula": "Matrícula: 71546."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "cie10_sugerido": null,
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "medico_solicitante.nombre": true,
+          "medico_solicitante.matricula": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2172,
+          "tokens_salida": 327,
+          "costo_usd": 0.00023976,
+          "latencia_ms": 1667
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Clara Rivas",
+            "evidencia_nombre": "Paciente: Clara Rivas.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": null,
+            "evidencia_nombre": null,
+            "matricula": "71546",
+            "evidencia_matricula": "Matrícula: 71546."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": null,
+          "evidencia_procedimiento_solicitado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "diagnostico_egreso": null,
+          "evidencia_diagnostico_egreso": null,
+          "cie10_sugerido": null,
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    },
+    {
+      "id": "DEV-ORDEN-02",
+      "tipo": "Orden de Solicitud de Procedimiento",
+      "antes": {
+        "campos": {
+          "procedimiento_solicitado": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1716,
+          "tokens_salida": 218,
+          "costo_usd": 0.00016240799999999998,
+          "latencia_ms": 1717
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Mario Solís",
+            "evidencia_nombre": "Paciente: Mario Solís.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Eva Toledo",
+            "evidencia_nombre": "Médico Solicitante: Dra. Eva Toledo.",
+            "matricula": "82341",
+            "evidencia_matricula": "Matrícula: 82341."
+          },
+          "fecha": null,
+          "evidencia_fecha": null,
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "cie10_sugerido": null,
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "procedimiento_solicitado": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2184,
+          "tokens_salida": 327,
+          "costo_usd": 0.00024155999999999998,
+          "latencia_ms": 1947
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Mario Solís",
+            "evidencia_nombre": "Paciente: Mario Solís.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Eva Toledo",
+            "evidencia_nombre": "Médico Solicitante: Dra. Eva Toledo.",
+            "matricula": "82341",
+            "evidencia_matricula": "Matrícula: 82341."
+          },
+          "fecha": null,
+          "evidencia_fecha": null,
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": null,
+          "evidencia_procedimiento_solicitado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "diagnostico_egreso": null,
+          "evidencia_diagnostico_egreso": null,
+          "cie10_sugerido": null,
+          "medicamentos": [],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    },
+    {
+      "id": "DEV-RECETA-01",
+      "tipo": "Receta Medica",
+      "antes": {
+        "campos": {
+          "medicamentos.0.nombre": true,
+          "medicamentos.0.dosis": true,
+          "medicamentos.0.frecuencia": true,
+          "medicamentos.0.duracion": false
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1718,
+          "tokens_salida": 365,
+          "costo_usd": 0.000250908,
+          "latencia_ms": 1984
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Lucía Fernández",
+            "evidencia_nombre": "Paciente: Lucía Fernández.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Marta Gómez",
+            "evidencia_nombre": "Firma: Dra. Marta Gómez.",
+            "matricula": "12345",
+            "evidencia_matricula": "Matrícula: 12345."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "cie10_sugerido": null,
+          "medicamentos": [
+            {
+              "nombre": "Amoxicilina",
+              "dosis": "500 mg",
+              "frecuencia": "cada 8 horas",
+              "duracion": "durante 7 días",
+              "evidencia": "Medicamento: Amoxicilina 500 mg, cada 8 horas, durante 7 días."
+            }
+          ],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "medicamentos.0.nombre": true,
+          "medicamentos.0.dosis": true,
+          "medicamentos.0.frecuencia": true,
+          "medicamentos.0.duracion": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2186,
+          "tokens_salida": 394,
+          "costo_usd": 0.00037613999999999996,
+          "latencia_ms": 1590
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Lucía Fernández",
+            "evidencia_nombre": "Paciente: Lucía Fernández.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Marta Gómez",
+            "evidencia_nombre": "Firma: Dra. Marta Gómez.",
+            "matricula": "12345",
+            "evidencia_matricula": "Matrícula: 12345."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": null,
+          "evidencia_procedimiento_solicitado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "diagnostico_egreso": null,
+          "evidencia_diagnostico_egreso": null,
+          "cie10_sugerido": null,
+          "medicamentos": [
+            {
+              "nombre": "Amoxicilina",
+              "dosis": "500 mg",
+              "frecuencia": "cada 8 horas",
+              "duracion": "7 días",
+              "alto_riesgo": false
+            }
+          ],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    },
+    {
+      "id": "DEV-RECETA-02",
+      "tipo": "Receta Medica",
+      "antes": {
+        "campos": {
+          "medicamentos.0.nombre": true,
+          "medicamentos.0.dosis": true,
+          "medicamentos.0.frecuencia": true,
+          "medicamentos.0.duracion": false
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1719,
+          "tokens_salida": 368,
+          "costo_usd": 0.000252858,
+          "latencia_ms": 2561
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Pedro Ramírez",
+            "evidencia_nombre": "Paciente: Pedro Ramírez.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dr. Juan Pérez",
+            "evidencia_nombre": "Firma: Dr. Juan Pérez.",
+            "matricula": "67890",
+            "evidencia_matricula": "Matrícula: 67890."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "cie10_sugerido": null,
+          "medicamentos": [
+            {
+              "nombre": "Ibuprofeno",
+              "dosis": "400 mg",
+              "frecuencia": "cada 6 horas",
+              "duracion": "durante 3 días",
+              "evidencia": "Medicamento: Ibuprofeno 400 mg, cada 6 horas, durante 3 días."
+            }
+          ],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "medicamentos.0.nombre": true,
+          "medicamentos.0.dosis": true,
+          "medicamentos.0.frecuencia": true,
+          "medicamentos.0.duracion": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2187,
+          "tokens_salida": 397,
+          "costo_usd": 0.00028401,
+          "latencia_ms": 1976
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Pedro Ramírez",
+            "evidencia_nombre": "Paciente: Pedro Ramírez.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dr. Juan Pérez",
+            "evidencia_nombre": "Firma: Dr. Juan Pérez.",
+            "matricula": "67890",
+            "evidencia_matricula": "Matrícula: 67890."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": null,
+          "evidencia_procedimiento_solicitado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "diagnostico_egreso": null,
+          "evidencia_diagnostico_egreso": null,
+          "cie10_sugerido": null,
+          "medicamentos": [
+            {
+              "nombre": "Ibuprofeno",
+              "dosis": "400 mg",
+              "frecuencia": "cada 6 horas",
+              "duracion": "3 días",
+              "alto_riesgo": false
+            }
+          ],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    },
+    {
+      "id": "DEV-RECETA-03",
+      "tipo": "Receta Medica",
+      "antes": {
+        "campos": {
+          "medicamentos.0.nombre": true,
+          "medicamentos.0.dosis": true,
+          "medicamentos.0.frecuencia": true,
+          "medicamentos.0.duracion": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 1711,
+          "tokens_salida": 343,
+          "costo_usd": 0.000236658,
+          "latencia_ms": 1574
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Ana López",
+            "evidencia_nombre": "Paciente: Ana López.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Laura Díaz",
+            "evidencia_nombre": "Firma: Dra. Laura Díaz.",
+            "matricula": "24680",
+            "evidencia_matricula": "Matrícula: 24680."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "cie10_sugerido": null,
+          "medicamentos": [
+            {
+              "nombre": "Losartán",
+              "dosis": "50 mg",
+              "frecuencia": "cada 24 horas",
+              "evidencia": "Medicamento: Losartán 50 mg, cada 24 horas."
+            }
+          ],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      },
+      "despues": {
+        "campos": {
+          "medicamentos.0.nombre": true,
+          "medicamentos.0.dosis": true,
+          "medicamentos.0.frecuencia": true,
+          "medicamentos.0.duracion": true
+        },
+        "modelo": "deepseek/deepseek-chat",
+        "consumo": {
+          "nodo": "extraer",
+          "modelo": "deepseek/deepseek-chat",
+          "tokens_entrada": 2179,
+          "tokens_salida": 389,
+          "costo_usd": 0.00027801,
+          "latencia_ms": 1885
+        },
+        "error": false,
+        "respuesta": {
+          "paciente": {
+            "nombre": "Ana López",
+            "evidencia_nombre": "Paciente: Ana López.",
+            "edad": null,
+            "evidencia_edad": null,
+            "fecha_nacimiento": null,
+            "evidencia_fecha_nacimiento": null
+          },
+          "medico_solicitante": {
+            "nombre": "Dra. Laura Díaz",
+            "evidencia_nombre": "Firma: Dra. Laura Díaz.",
+            "matricula": "24680",
+            "evidencia_matricula": "Matrícula: 24680."
+          },
+          "fecha": "2026-10-12",
+          "evidencia_fecha": "Fecha: 12/10/2026.",
+          "estudio_realizado": null,
+          "evidencia_estudio_realizado": null,
+          "procedimiento_solicitado": null,
+          "evidencia_procedimiento_solicitado": null,
+          "hallazgos": null,
+          "evidencia_hallazgos": null,
+          "conclusion": null,
+          "evidencia_conclusion": null,
+          "diagnostico_principal": null,
+          "evidencia_diagnostico_principal": null,
+          "diagnostico_egreso": null,
+          "evidencia_diagnostico_egreso": null,
+          "cie10_sugerido": null,
+          "medicamentos": [
+            {
+              "nombre": "Losartán",
+              "dosis": "50 mg",
+              "frecuencia": "cada 24 horas",
+              "duracion": null,
+              "alto_riesgo": false
+            }
+          ],
+          "estudios_solicitados": [],
+          "ambiguedad_detectada": null
+        }
+      }
+    }
+  ]
+}

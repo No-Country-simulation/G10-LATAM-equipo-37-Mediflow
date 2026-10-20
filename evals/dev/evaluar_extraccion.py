@@ -37,7 +37,7 @@ def comparar(esperado, datos):
             if not isinstance(actual, list) or len(actual) != len(valor):
                 # Si la lista no existe o tiene distinto tamaño, todos los subcampos fallan
                 for i, esperado_item in enumerate(valor):
-                    for k, in esperado_item.keys():
+                    for k in esperado_item.keys():
                         nombre_campo = f"{campo}.{i}.{k}"
                         resultados[nombre_campo] = False
                 continue
