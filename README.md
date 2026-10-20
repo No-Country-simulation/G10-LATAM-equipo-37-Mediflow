@@ -453,7 +453,7 @@ Para un piloto hospitalario, la cadena gratuita alcanza para probar; para operac
 
 Todo lo obligatorio del brief está entregado y desplegado en Oracle Cloud. Detalle por nivel:
 
-> **Regla de alcance que seguimos:** primero se entrega completo el checklist obligatorio del brief, después los cinco diferenciales que el brief propone, y solo entonces se agregan nuestros plus. Nada del nivel 3 se empieza si algo del nivel 1 o 2 sigue abierto.
+> **Orden de prioridad que seguimos:** primero el checklist obligatorio del brief, después los cinco diferenciales que el brief propone y por último nuestros plus. Algunos plus avanzaron en paralelo, sin quitarles prioridad a los niveles 1 y 2.
 
 ### Nivel 1 · Obligatorio, checklist de evaluación del brief
 
@@ -473,7 +473,7 @@ Todo lo obligatorio del brief está entregado y desplegado en Oracle Cloud. Deta
 - [ ] OCR y visión multimodal: el OCR lee informes escaneados; la lectura de manuscritas con visión queda pendiente
 - [x] Alertas en tiempo real hacia Slack para los equipos de guardia (n8n), con Discord y OCI Notifications de respaldo
 
-### Nivel 3 · Nuestros plus, solo si el nivel 2 cierra en fecha
+### Nivel 3 · Nuestros plus
 
 - [x] Dashboard en vivo con las métricas de operación y de calidad del agente (página Métricas)
 - [x] Workflow en n8n auto-hospedado disparando las alertas a Slack, tal como lo nombra el brief
@@ -486,7 +486,7 @@ Todo lo obligatorio del brief está entregado y desplegado en Oracle Cloud. Deta
 
 ## Límites conocidos
 
-- **Las imágenes llegan al modelo como texto.** El OCR (Tesseract) lee fotos y escaneos impresos; las recetas manuscritas no se leen y van a revisión humana. El adaptador ya acepta imágenes, pero los nodos todavía no se las pasan al modelo multimodal. **[Quitar si N1-01 se fusiona antes de la entrega.]**
+- **Las imágenes llegan al modelo como texto.** El OCR (Tesseract) lee fotos y escaneos impresos; las recetas manuscritas no se leen y van a revisión humana. El adaptador ya acepta imágenes, pero los nodos todavía no se las pasan al modelo multimodal.
 - **La segunda opinión entre modelos** está prevista en el grafo, pero todavía no llama a un segundo modelo.
 - **Solo español.** Un documento en otro idioma se reconoce como fuera de alcance y va a revisión humana.
 - **Cupo gratuito.** La cadena gratuita alcanza para una demo y un piloto chico; para volumen hospitalario hace falta un plan pago.
