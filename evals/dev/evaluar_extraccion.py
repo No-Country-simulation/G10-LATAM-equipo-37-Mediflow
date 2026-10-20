@@ -24,11 +24,36 @@ def comparar(esperado, datos):
     for campo, valor in esperado.items():
         actual = datos
         for parte in campo.split("."):
-            actual = actual.get(parte) if isinstance(actual, dict) else None
-        es_medico = campo == "medico_solicitante.nombre"
-        resultados[campo] = (
-            normalizar(actual, nombre_medico=es_medico) == normalizar(valor, nombre_medico=es_medico)
-        )
+            if isinstance(actual, list) and parte.isdigit():
+                actual = actual[int(parte)] if int(parte) < len(actual) else None
+            elif isinstance(actual, dict):
+                actual = actual.get(parte)
+            else:
+                actual = None
+                break
+        # Para listas de diccionarios (como medicamentos), comparar solo los campos esperados
+        if isinstance(valor, list) and valor and isinstance(valor[0], dict):
+            if not isinstance(actual, list) or len(actual) != len(valor):
+                resultados[campo] = False
+                continue
+            ok = True
+            for esperado_item, actual_item in zip(valor, actual, strict=True):
+                for k, v in esperado_item.items():
+                    if isinstance(actual_item, dict):
+                        actual_v = actual_item.get(k)
+                    else:
+                        actual_v = None
+                    if normalizar(actual_v) != normalizar(v):
+                        ok = False
+                        break
+                if not ok:
+                    break
+            resultados[campo] = ok
+        else:
+            es_medico = campo == "medico_solicitante.nombre"
+            resultados[campo] = (
+                normalizar(actual, nombre_medico=es_medico) == normalizar(valor, nombre_medico=es_medico)
+            )
     return resultados
 
 
@@ -55,7 +80,8 @@ def main():
                 payload = _parsear_json(respuesta.text)
                 campos = comparar(caso["esperado"], payload.get("datos_extraidos", payload))
                 registro[nombre] = {"campos": campos, "modelo": respuesta.model,
-                                    "consumo": respuesta.consumo("extraer"), "error": False}
+                    "consumo": respuesta.consumo("extraer"), "error": False,
+                    "respuesta": payload}
             except Exception as exc:
                 # No guardar mensajes del proveedor que puedan contener secretos.
                 registro[nombre] = {"error": True, "clase_error": type(exc).__name__}
