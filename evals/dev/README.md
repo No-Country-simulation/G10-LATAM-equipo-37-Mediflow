@@ -31,7 +31,7 @@ Los argumentos son:
 
 El archivo de salida tiene dos campos clave:
 - **`valido`**: `true` si todas las llamadas al modelo se completaron sin errores.
-- **`regresiones`**: Un objeto con los campos que empeoraron (si está vacío, no hay regresiones).
+- **`regresiones`**: Una lista con los campos que empeoraron (si está vacía, no hay regresiones).
 
 También incluye un detalle por caso (`resultados`) donde se ve, campo por campo, si el prompt nuevo acertó o falló.
 
