@@ -31,24 +31,26 @@ def comparar(esperado, datos):
             else:
                 actual = None
                 break
-        # Para listas de diccionarios (como medicamentos), comparar solo los campos esperados
+
+        # Para listas de diccionarios (como medicamentos), comparar campo por campo
         if isinstance(valor, list) and valor and isinstance(valor[0], dict):
             if not isinstance(actual, list) or len(actual) != len(valor):
-                resultados[campo] = False
+                # Si la lista no existe o tiene distinto tamaño, todos los subcampos fallan
+                for i, esperado_item in enumerate(valor):
+                    for k, in esperado_item.keys():
+                        nombre_campo = f"{campo}.{i}.{k}"
+                        resultados[nombre_campo] = False
                 continue
-            ok = True
-            for esperado_item, actual_item in zip(valor, actual, strict=True):
+            
+            # Si la lista coincide en tamaño, comparar item por item y campo por campo
+            for i, (esperado_item, actual_item) in enumerate(zip(valor, actual, strict=True)):
                 for k, v in esperado_item.items():
+                    nombre_campo = f"{campo}.{i}.{k}"
                     if isinstance(actual_item, dict):
                         actual_v = actual_item.get(k)
                     else:
                         actual_v = None
-                    if normalizar(actual_v) != normalizar(v):
-                        ok = False
-                        break
-                if not ok:
-                    break
-            resultados[campo] = ok
+                    resultados[nombre_campo] = normalizar(actual_v) == normalizar(v)
         else:
             es_medico = campo == "medico_solicitante.nombre"
             resultados[campo] = (

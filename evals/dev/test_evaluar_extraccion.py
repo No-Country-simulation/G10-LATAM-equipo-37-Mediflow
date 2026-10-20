@@ -31,3 +31,15 @@ def test_tratamiento_no_se_elimina_en_campos_clinicos():
     assert comparar({"diagnostico_egreso": "Doctor pendiente"}, {
         "diagnostico_egreso": "pendiente"
     }) == {"diagnostico_egreso": False}
+
+def test_comparar_detecta_regresion_de_dosis():
+    """Reproduce el caso reportado por Carolina: la dosis es incorrecta pero el nombre está bien."""
+    esperado = {"medicamentos": [{"nombre": "Amoxicilina", "dosis": "500 mg"}]}
+    # El modelo devuelve el nombre bien pero la dosis mal
+    datos = {"medicamentos": [{"nombre": "Amoxicilina", "dosis": "5000 mg"}]}
+    
+    resultados = comparar(esperado, datos)
+    
+    # El comparador debe generar resultados individuales por campo
+    assert resultados["medicamentos.0.nombre"] is True
+    assert resultados["medicamentos.0.dosis"] is False
