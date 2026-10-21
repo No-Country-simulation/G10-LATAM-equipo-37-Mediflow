@@ -30,10 +30,14 @@ _ENUMS = {
     "categoria_amb": {f"AMB-{i}" for i in range(1, 7)},
     "status_backup": {"exito", "error"},
     "idioma": {"es", "en", "pt"},
+    "fuente": {"texto-proxy", "imagen+ocr", "imagen"},
 }
-_SCORES = {"score", "legibilidad", "validacion", "modelo", "acuerdo", "score_confianza_clasificacion"}
+_SCORES = {"score", "legibilidad", "validacion", "modelo", "acuerdo", "score_confianza_clasificacion",
+           "confianza_ocr"}
 _FLAGS = {"detectada", "alto_riesgo", "requiere_auditoria_humana", "notificacion_generada",
-          "legible", "legibilidad_provisional", "enviada", "multiples_documentos"}
+          "legible", "legibilidad_provisional", "enviada", "multiples_documentos",
+          "ocr_disponible"}
+_ENTEROS = {"imagenes", "caracteres", "palabras_ocr", "imagenes_no_decodificables"}
 
 
 def detalle_seguro(detalle) -> dict:
@@ -48,11 +52,14 @@ def detalle_seguro(detalle) -> dict:
     for clave, valor in detalle.items():
         if clave in _ENUMS and isinstance(valor, str) and valor in _ENUMS[clave]:
             limpio[clave] = valor
-        elif clave in _SCORES and type(valor) in (int, float) and math.isfinite(valor) and 0 <= valor <= 1:
+        elif clave in _SCORES and (
+            valor is None
+            or (type(valor) in (int, float) and math.isfinite(valor) and 0 <= valor <= 1)
+        ):
             limpio[clave] = valor
         elif clave in _FLAGS and type(valor) is bool:
             limpio[clave] = valor
-        elif clave in {"imagenes", "caracteres"} and type(valor) is int and 0 <= valor <= 10**9:
+        elif clave in _ENTEROS and type(valor) is int and 0 <= valor <= 10**9:
             limpio[clave] = valor
         elif clave in {"campos", "campos_faltantes", "conflictos"} and isinstance(valor, list):
             limpio[clave + "_cantidad"] = len(valor)
