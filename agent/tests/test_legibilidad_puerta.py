@@ -84,17 +84,39 @@ def _score_archivo(ruta: Path) -> float:
 _tesseract = pytest.mark.skipif(not _binario_tesseract(), reason="Tesseract no instalado")
 
 
+def _params_puerta() -> list:
+    """Params del test de puerta: los casos pendientes de fase 4 van como xfail (no strict).
+
+    Casos que la puerta 0.40 no resuelve todavía: GS-02, GS-28, M4–M7.
+    """
+    params: list = []
+    for cid, ruta, banda_esperada in _imagenes_existentes():
+        if cid in XFAIL_PUERTA:
+            params.append(
+                pytest.param(
+                    cid,
+                    ruta,
+                    banda_esperada,
+                    marks=pytest.mark.xfail(
+                        strict=False,
+                        reason=f"Puerta 0.40 pendiente de calibración (fase 4): {cid}",
+                    ),
+                )
+            )
+        else:
+            params.append(pytest.param(cid, ruta, banda_esperada))
+    return params
+
+
 @_tesseract
 @pytest.mark.parametrize(
     "cid,ruta,banda_esperada",
-    _imagenes_existentes(),
+    _params_puerta(),
     ids=[c[0] for c in _imagenes_existentes()],
 )
 def test_puerta_040_bloquea_solo_severas(cid, ruta, banda_esperada):
     """Puerta de producto: leve/media pasan (>= 0.40), severa se bloquea (< 0.40)."""
     score = _score_archivo(ruta)
-    if cid in XFAIL_PUERTA:
-        pytest.xfail(f"Puerta 0.40 pendiente de calibración (fase 4): {cid}")
 
     pasa_puerta = score >= 0.40
     espera_pasar = banda_esperada in ("leve", "media")

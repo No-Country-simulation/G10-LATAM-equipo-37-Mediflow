@@ -20,8 +20,8 @@ sys.path.insert(0, str(RAIZ))
 PLAN = RAIZ / "evals" / "golden" / "plan_golden.csv"
 
 from agent.nodes.normalizar import (  # noqa: E402
-    _confianza_ocr,
     _score_de_imagen,
+    _score_de_pagina,
 )
 
 
@@ -51,17 +51,10 @@ def _puerta_ok(nivel: str, score: float) -> bool:
     return False
 
 
-def _ocr_de_imagen(img: Image.Image):
-    """(confianza, palabras) de Tesseract o (None, 0) si no hay OCR."""
-    ocr = _confianza_ocr(img)
-    if ocr is None:
-        return None, 0
-    return ocr
-
-
 def main() -> int:
     niveles = _niveles()
     total = aciertos_banda = aciertos_puerta = 0
+    cero_palabras: list[str] = []
 
     print(
         f"{'archivo':22} {'nivel':7} {'optico':7} {'conf_ocr':8} {'pal_ocr':7} "
@@ -78,16 +71,12 @@ def main() -> int:
             img = Image.open(ruta)
 
             optico = _score_de_imagen(img)
-            conf, pal = _ocr_de_imagen(img)
+            # combinado usa la MISMA lógica de production (_score_de_pagina),
+            # incluida la regla de 0 palabras -> bloqueado, para evitar drift.
+            combinado, conf, pal = _score_de_pagina(img)
 
-            # Score combinado replicando la lógica de _score_de_pagina:
-            # si hay >= 20 palabras se combina con peso 0.8, si no, solo óptico.
-            from agent.nodes.normalizar import _PALABRAS_MIN_OCR, _PESO_OCR  # noqa: E402
-
-            if pal >= _PALABRAS_MIN_OCR and conf is not None:
-                combinado = round(_PESO_OCR * conf + (1.0 - _PESO_OCR) * optico, 4)
-            else:
-                combinado = optico
+            if pal == 0 and conf is not None:
+                cero_palabras.append(cid)
 
             bien_banda = _ok(nivel, combinado)
             bien_puerta = _puerta_ok(nivel, combinado)
@@ -104,6 +93,8 @@ def main() -> int:
 
     print(f"\nBanda exacta: {aciertos_banda}/{total} en banda")
     print(f"Puerta 0.40:  {aciertos_puerta}/{total} correctas")
+    if cero_palabras:
+        print(f"0-palabras (bloqueados fail-closed): {', '.join(cero_palabras)}")
     return 0
 
 

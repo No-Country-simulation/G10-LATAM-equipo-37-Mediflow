@@ -92,28 +92,66 @@ def _b64_archivo(ruta: Path) -> str:
 _tesseract = pytest.mark.skipif(not _binario_tesseract(), reason="Tesseract no instalado")
 
 
+def _params_banda() -> list:
+    """Params del test de banda: los casos con banda pendiente van como xfail (no strict).
+
+    Casos que no aciertan la banda exacta hoy (fase 4): GS-01, GS-02, GS-23, GS-28,
+    M1–M7, FA-03. Se marcan con xfail para que se vean en el reporte sin bloquear el CI.
+    """
+    xfail_banda = {
+        "GS-01", "GS-02", "GS-23", "GS-28",
+        "M1", "M2", "M3", "M4", "M5", "M6", "M7",
+        "FA-03",
+    }
+    params: list = []
+    for cid, ruta, banda in _imagenes_existentes():
+        if cid in xfail_banda:
+            params.append(
+                pytest.param(
+                    cid,
+                    ruta,
+                    banda,
+                    marks=pytest.mark.xfail(
+                        strict=False,
+                        reason=f"Banda exacta pendiente de calibración (fase 4): {cid}",
+                    ),
+                )
+            )
+        else:
+            params.append(pytest.param(cid, ruta, banda))
+    return params
+
+
 @_tesseract
-@pytest.mark.parametrize("cid,ruta,banda", _imagenes_existentes(), ids=[c[0] for c in _imagenes_existentes()])
+@pytest.mark.parametrize("cid,ruta,banda", _params_banda(), ids=[c[0] for c in _imagenes_existentes()])
 def test_imagen_golden_cae_en_su_banda(cid, ruta, banda):
     """Cada imagen real del golden set cae en la banda de su etiqueta.
 
     La banda exacta 0.70/0.40 depende de la calibración de fase 4 y no debe
-    romper el CI: los casos que no aciertan se reportan como xfail (no strict)
-    para que se vean en el reporte sin bloquear el merge.
+    romper el CI: los casos pendientes van como xfail (no strict).
     """
     score, _ = _score_archivo(ruta)
-    if _banda(score) != banda:
-        pytest.xfail(f"Banda exacta pendiente de calibración (fase 4): {cid}")
     assert _banda(score) == banda, f"{cid}: score {score}, esperado {banda}"
 
 
 @_tesseract
 @pytest.mark.parametrize(
     "cid,ruta,banda",
-    [c for c in CASOS if c[1].exists()],
+    [
+        pytest.param(
+            c[0],
+            c[1],
+            c[2],
+            marks=pytest.mark.xfail(
+                strict=False,
+                reason=f"Calibración con OCR pendiente (fase 4): {c[0]}",
+            ),
+        )
+        for c in CASOS
+        if c[1].exists()
+    ],
     ids=[c[0] for c in CASOS if c[1].exists()],
 )
-@pytest.mark.xfail(strict=False, reason="Calibración con OCR pendiente (fase 4)")
 def test_casos_que_detectaron_la_brecha(cid, ruta, banda):
     """GS-01, GS-28 y M7: los que evidenciaron que el óptico no alcanzaba."""
     score, detalle = _score_archivo(ruta)
