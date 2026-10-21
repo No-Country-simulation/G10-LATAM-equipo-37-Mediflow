@@ -1,0 +1,12 @@
+﻿{
+  "mcpServers": {
+    "promptfoo": {
+      "command": "npx",
+      "args": ["promptfoo@latest", "mcp", "--transport", "stdio"]
+    },
+    "phoenix": {
+      "command": "npx",
+      "args": ["-y", "@arizeai/phoenix-cli", "mcp"]
+    }
+  }
+}
