@@ -37,14 +37,26 @@ El JSON debe tener esta estructura exacta:
   "evidencia_fecha": "fragmento del documento o null",
   "estudio_realizado": "estudio realizado o null",
   "evidencia_estudio_realizado": "fragmento del documento o null",
+  "procedimiento_solicitado": "procedimiento pedido explícitamente o null",
+  "evidencia_procedimiento_solicitado": "fragmento del documento o null",
   "hallazgos": "hallazgos descriptivos o null",
   "evidencia_hallazgos": "fragmento del documento o null",
   "conclusion": "conclusion del informe o null",
   "evidencia_conclusion": "fragmento del documento o null",
   "diagnostico_principal": "diagnostico principal o null",
   "evidencia_diagnostico_principal": "fragmento del documento o null",
+  "diagnostico_egreso": "diagnóstico escrito al alta o null",
+  "evidencia_diagnostico_egreso": "fragmento del documento o null",
   "cie10_sugerido": "codigo CIE-10 o null",
-  "medicamentos": [],
+  "medicamentos": [
+    {
+      "nombre": "string o null",
+      "dosis": "string o null",
+      "frecuencia": "string o null",
+      "duracion": "string o null",
+      "alto_riesgo": false
+    }
+  ],
   "estudios_solicitados": [],
   "ambiguedad_detectada": null
 }
@@ -63,6 +75,16 @@ Reglas adicionales:
    - `"AMB-5"`: hay dos o más documentos distintos en un mismo archivo.
    - `null`: el documento es normal (no tiene ninguna de las dos ambigüedades).
    No uses otras categorías (AMB-1, AMB-2, AMB-3, AMB-6); esas las deciden las reglas y la clasificación.
+9. En órdenes, el estudio o procedimiento que se pide va en `procedimiento_solicitado`. No lo confundas con un estudio ya realizado. En epicrisis, copia el diagnóstico explícito de alta en `diagnostico_egreso`; no lo sustituyas por el diagnóstico de ingreso ni deduzcas uno nuevo.
+10. En certificados, `medico_solicitante` identifica al profesional que firma o emite el certificado, aunque esté al pie como «Dr.», «Dra.» o «Firma». Copia su nombre y matrícula solo si están escritos. No confundas al paciente con el profesional. Si solo hay una firma ilegible, el nombre queda null.
+11. **Medicamentos (excepción a la copia literal):** Para el campo `medicamentos`, se permite separar el nombre de la dosis, frecuencia y duración en campos distintos. En el resto de los campos (regla 2), se mantiene la copia literal. Para cada medicamento, el campo `nombre` debe contener solo el nombre del medicamento (sin dosis, sin frecuencia, sin duración). Los campos `dosis`, `frecuencia` y `duracion` van por separado:
+- `nombre`: "Enalapril" (no "Enalapril 10 mg")
+- `dosis`: "10 mg" (no "10", no "Enalapril 10 mg")
+- `frecuencia`: "cada 12 horas" (no "cada 12 hs", no "12 horas")
+- `duracion`: "30 días" (no "30", no "durante 30 días")
+
+Si el documento no especifica alguno de estos campos, va en `null`. No los inventes ni los mezcles con el nombre.  
+Los números de la dosis no se corrigen ni se redondean (ej: 5000 mg se queda 5000 mg).
 
 Ejemplo:
 

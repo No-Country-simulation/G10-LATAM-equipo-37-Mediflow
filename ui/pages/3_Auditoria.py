@@ -218,7 +218,8 @@ def resolver(documento_id: str, extraccion: dict, enviado: dict, demo: bool) -> 
     if errores:
         return errores
 
-    decision = aud.armar_decision(enviado["accion"], estado.revisor, enviado["motivo"], correcciones)
+    decision = aud.armar_decision(enviado["accion"], estado.revisor, enviado["motivo"], correcciones,
+                                  revision_version=extraccion.get("revision_version"))
     if demo:
         respuesta = {
             "documento_id": documento_id,
