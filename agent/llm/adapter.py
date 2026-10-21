@@ -27,6 +27,10 @@ FALLBACKS = [m.strip() for m in os.getenv("LLM_FALLBACKS", "").split(",") if m.s
 REINTENTOS_POR_MODELO = int(os.getenv("LLM_REINTENTOS", "3"))
 BACKOFF_BASE_S = float(os.getenv("LLM_BACKOFF_BASE", "2"))
 
+# OpenRouter headers for ranking/attribution
+OPENROUTER_REFERER = os.getenv("OPENROUTER_REFERER", "https://github.com/MediFlow")
+OPENROUTER_TITLE = os.getenv("OPENROUTER_TITLE", "MediFlow App")
+
 
 @dataclass
 class LLMResult:
@@ -99,6 +103,19 @@ def _es_error_recuperable(exc: Exception) -> bool:
     return False
 
 
+def _es_modelo_openrouter(model: str) -> bool:
+    """Verifica si el modelo usa OpenRouter (prefijo openrouter/)."""
+    return model.startswith("openrouter/")
+
+
+def _headers_openrouter() -> dict:
+    """Headers opcionales para OpenRouter (ranking y atribución)."""
+    return {
+        "HTTP-Referer": OPENROUTER_REFERER,
+        "X-Title": OPENROUTER_TITLE,
+    }
+
+
 def _llamar_modelo(
     model: str,
     content: list[dict],
@@ -109,6 +126,9 @@ def _llamar_modelo(
     import litellm  # se importa acá para que los tests sin claves no lo necesiten
 
     kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
+    # Agregar headers de OpenRouter si el modelo lo usa
+    if _es_modelo_openrouter(model):
+        kwargs["extra_headers"] = _headers_openrouter()
     return litellm.completion(
         model=model,
         messages=[{"role": "user", "content": content}],

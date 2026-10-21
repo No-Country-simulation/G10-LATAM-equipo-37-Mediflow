@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
+from agent.llm import init_phoenix
 from agent.nodes.revision_humana import DecisionHumana, DestinoNoOperativo
 from agent.revision_runtime import RevisionConflicto, RevisionNoExiste, reanudar
 from agent.rules.loader import ReglasInvalidas, guardar_reglas, load_rules, toca_umbrales
@@ -24,6 +25,10 @@ from agent.storage.local_audit import (
 )
 
 app = FastAPI(title="MediFlow", version="0.1.0")
+
+
+# Inicializar Phoenix/OpenInference al arrancar (solo en dev)
+init_phoenix()
 
 
 DecisionAuditor = DecisionHumana

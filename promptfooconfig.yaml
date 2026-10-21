@@ -1,0 +1,400 @@
+# Promptfoo configuration for MediFlow clinical triage evaluation
+# Uses OpenRouter free models via native OpenRouter provider
+# Run with: promptfoo eval -c promptfooconfig.yaml
+
+prompts:
+  # Triaje/Clasificación prompt (maps to agent/prompts/clasificar.md)
+  - id: clasificar-triage
+    file: agent/prompts/clasificar.md
+    variables:
+      - historial
+
+  # Extracción prompt (maps to agent/prompts/extraer.md)
+  - id: extraer-clinical
+    file: agent/prompts/extraer.md
+    variables:
+      - documento
+      - tipo_documento
+
+providers:
+  # OpenRouter free model for triage/classification
+  - id: openrouter:meta-llama/llama-3.2-3b-instruct:free
+    label: "Llama-3.2-3B (triage)"
+    config:
+      apiKey: ${OPENROUTER_API_KEY}
+      temperature: 0.1
+      maxTokens: 2048
+
+  # OpenRouter free model for extraction
+  - id: openrouter:mistralai/mistral-7b-instruct:free
+    label: "Mistral-7B (extraction)"
+    config:
+      apiKey: ${OPENROUTER_API_KEY}
+      temperature: 0.0
+      maxTokens: 4096
+
+  # Alternative free model for comparison
+  - id: openrouter:google/gemma-2-9b-it:free
+    label: "Gemma-2-9B (alt)"
+    config:
+      apiKey: ${OPENROUTER_API_KEY}
+      temperature: 0.1
+      maxTokens: 4096
+
+tests:
+  # =======================
+  # TRIAGE CLASSIFICATION TESTS
+  # =======================
+  # These test the clasificar node: maps priority to Urgente/Prioritario/Rutina
+  
+  - description: "Dolor toracico agudo irradiado - URGENTE"
+    vars:
+      historial: "Paciente de 55 anos ingresa con dolor toracico agudo irradiado al brazo izquierdo y disnea de 2 horas de evolucion. Sudoracion fria."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Urgente"
+      - type: icontains
+        value: "infarto"
+    tags: [triage, critical]
+
+  - description: "Tromboembolismo pulmonar - URGENTE"
+    vars:
+      historial: "Paciente de 42 anos con disnea subita, taquicardia, saturacion 88%. TC torax: tromboembolismo pulmonar masivo."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Urgente"
+    tags: [triage, critical]
+
+  - description: "ACV isquemico - URGENTE"
+    vars:
+      historial: "Paciente 68 anos con hemiparesia derecha, afasia, desviacion de la comisura labial. Inicio 45 min. NIHSS 12."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Urgente"
+    tags: [triage, critical]
+
+  - description: "Sepsis severa - URGENTE"
+    vars:
+      historial: "Paciente 30 anos con fiebre 39.5, TA 80/50, lactato 5.2, confusion. Foco urinario probable."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Urgente"
+    tags: [triage, critical]
+
+  - description: "Dolor abdominal agudo apendicitis - PRIORITARIO"
+    vars:
+      historial: "Paciente 25 anos con dolor en fosa iliaca derecha 12h, fiebre 38.2, leucocitosis 14000. Signo de Blumberg positivo."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Prioritario"
+    tags: [triage, urgent]
+
+  - description: "Neumonia comunitaria moderada - PRIORITARIO"
+    vars:
+      historial: "Paciente 45 anos con fiebre 38.5, tos productiva, dolor pleuritico derecho. Rx: condensacion lobar inferior derecha. CURB-65: 1."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Prioritario"
+    tags: [triage, urgent]
+
+  - description: "Descompensacion diabetes - PRIORITARIO"
+    vars:
+      historial: "Paciente 50 anos DM2, glucemia 380, cetonuria ++, deshidratacion moderada. pH 7.28."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Prioritario"
+    tags: [triage, urgent]
+
+  - description: "Control hipertension arterial - RUTINA"
+    vars:
+      historial: "Paciente 60 anos para control de HTA. TA 138/85 en tratamiento. Asintomatico. Laboratorio estable."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Rutina"
+    tags: [triage, routine]
+
+  - description: "Renovacion receta paracetamol - RUTINA"
+    vars:
+      historial: "Paciente solicita renovacion de receta de paracetamol 500mg para cefalea ocasional. Sin patologia actual."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Rutina"
+    tags: [triage, routine]
+
+  - description: "Consulta dermatologica lesion benigna - RUTINA"
+    vars:
+      historial: "Paciente 35 anos consulta por lunar en espalda sin cambios en 5 anos. Asintomatico. Dermatoscopia: nevo melanocitico benigno."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Rutina"
+    tags: [triage, routine]
+
+  - description: "Documento no clinico - FUERA DE ALCANCE"
+    vars:
+      historial: "Factura de servicios medicos del mes de enero. Concepto: consulta cardiologia, ecocardiograma, laboratorio."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Otro"
+      - type: icontains
+        value: "no_clinico"
+    tags: [triage, out_of_scope]
+
+  - description: "Documento pide diagnostico - FUERA DE ALCANCE"
+    vars:
+      historial: "Paciente refiere dolor abdominal. Por favor doctor, digame que tengo y receteme el tratamiento."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+    assert:
+      - type: icontains
+        value: "Otro"
+      - type: icontains
+        value: "pide_diagnostico"
+    tags: [triage, out_of_scope]
+
+  # =======================
+  # EXTRACTION TESTS
+  # =======================
+  # These test the extraer node: structured JSON output with evidence
+
+  - description: "Extraccion epicrisis - datos completos"
+    vars:
+      documento: |
+        HOSPITAL SANTA LUCIA - EPICRISIS DE ALTA
+        Paciente: Carlos Eduardo Mendes, 52 anos.
+        Medico: Dra. Renata Silveira MP 145892.
+        Fecha de ingreso: 15/03/2024
+        Fecha de alta: 20/03/2024
+        Diagnostico principal: Tromboembolismo Pulmonar Agudo.
+        Tratamiento: Enoxaparina 60mg SC c/12h, Warfarina 5mg VO dia.
+        Estudios: TC torax con contraste: TEP bilateral.
+      tipo_documento: "Epicrisis"
+    providers:
+      - openrouter:mistralai/mistral-7b-instruct:free
+    assert:
+      - type: icontains
+        value: "Carlos Eduardo Mendes"
+      - type: icontains
+        value: "52"
+      - type: icontains
+        value: "Dra. Renata Silveira"
+      - type: icontains
+        value: "145892"
+      - type: icontains
+        value: "Tromboembolismo Pulmonar Agudo"
+      - type: icontains
+        value: "I26"
+    tags: [extraction, epicrisis]
+
+  - description: "Extraccion informe laboratorio - valores numericos"
+    vars:
+      documento: |
+        LABORATORIO CENTRAL - INFORME DE HEMOGRAMA
+        Paciente: Maria Gonzalez, 34 anos.
+        Fecha: 10/04/2024
+        Hemoglobina: 12.5 g/dL
+        Leucocitos: 8,500 /mm3
+        Plaquetas: 280,000 /mm3
+        VCM: 89 fL
+        Medico solicitante: Dr. Juan Perez MP 456789
+      tipo_documento: "Informe de Laboratorio"
+    providers:
+      - openrouter:mistralai/mistral-7b-instruct:free
+    assert:
+      - type: icontains
+        value: "Maria Gonzalez"
+      - type: icontains
+        value: "34"
+      - type: icontains
+        value: "12.5"
+      - type: icontains
+        value: "Dr. Juan Perez"
+    tags: [extraction, laboratory]
+
+  - description: "Extraccion receta medica - medicamentos"
+    vars:
+      documento: |
+        RECETA MEDICA OFICIAL
+        Paciente: Ana Maria Lopez, 28 anos.
+        Medico: Dr. Roberto Sanchez MP 112233
+        Fecha: 05/05/2024
+        1. Amoxicilina 500 mg - 1 capsula c/8h x 7 dias
+        2. Ibuprofeno 600 mg - 1 comp c/8h x 5 dias (si dolor)
+        3. Omeprazol 20 mg - 1 comp en ayunas x 14 dias
+      tipo_documento: "Receta Medica"
+    providers:
+      - openrouter:mistralai/mistral-7b-instruct:free
+    assert:
+      - type: icontains
+        value: "Ana Maria Lopez"
+      - type: icontains
+        value: "Amoxicilina"
+      - type: icontains
+        value: "500 mg"
+      - type: icontains
+        value: "Ibuprofeno"
+      - type: icontains
+        value: "Omeprazol"
+    tags: [extraction, prescription]
+
+  - description: "Extraccion certificado medico - datos minimos"
+    vars:
+      documento: |
+        CERTIFICADO MEDICO
+        Certifico que el Sr. Pedro Ramirez, DNI 25.456.789, de 45 anos,
+        ha sido atendido en esta institucion el dia 12/06/2024
+        presentando lumbalgia aguda. Se recomienda reposo por 5 dias.
+        Dr. Martin Acosta MP 998877
+        Firma y sello
+      tipo_documento: "Certificado Medico"
+    providers:
+      - openrouter:mistralai/mistral-7b-instruct:free
+    assert:
+      - type: icontains
+        value: "Pedro Ramirez"
+      - type: icontains
+        value: "45"
+      - type: icontains
+        value: "lumbalgia"
+      - type: icontains
+        value: "Dr. Martin Acosta"
+    tags: [extraction, certificate]
+
+  - description: "Extraccion orden procedimiento - estudio solicitado"
+    vars:
+      documento: |
+        ORDEN DE SOLICITUD DE PROCEDIMIENTO
+        Paciente: Laura Fernandez, 38 anos.
+        Medico solicitante: Dra. Patricia Vega MP 556677
+        Fecha solicitud: 18/07/2024
+        Procedimiento: Colonoscopia total con biopsia
+        Indicacion: Sangrado rectal bajo, descartar polipos/CRC
+        Preparacion: Dieta blanca 24h + lavado intestinal
+      tipo_documento: "Orden de Solicitud de Procedimiento"
+    providers:
+      - openrouter:mistralai/mistral-7b-instruct:free
+    assert:
+      - type: icontains
+        value: "Laura Fernandez"
+      - type: icontains
+        value: "Colonoscopia"
+      - type: icontains
+        value: "Dra. Patricia Vega"
+      - type: icontains
+        value: "sangrado rectal"
+    tags: [extraction, procedure_order]
+
+  - description: "Extraccion informe imagenes - hallazgos"
+    vars:
+      documento: |
+        INFORME DE ESTUDIO POR IMAGENES - TOMOGRAFIA DE TORAX
+        Paciente: Roberto Silva, 61 anos.
+        Medico solicitante: Dr. Carlos Ruiz MP 334455
+        Fecha estudio: 22/08/2024
+        Tecnica: TC torax sin contraste, cortes axiales 5mm
+        Hallazgos: Nodulo pulmonar solitario en lobulo superior derecho de 12mm, bordes espiculados. Sin adenopatias mediastinicas.
+        Conclusion: Nodulo pulmonar sospechoso, recomendar PET-CT y biopsia.
+      tipo_documento: "Informe de Estudio por Imagenes"
+    providers:
+      - openrouter:mistralai/mistral-7b-instruct:free
+    assert:
+      - type: icontains
+        value: "Roberto Silva"
+      - type: icontains
+        value: "nodulo pulmonar"
+      - type: icontains
+        value: "12mm"
+      - type: icontains
+        value: "lobulo superior derecho"
+    tags: [extraction, imaging]
+
+  - description: "Documento ilegible - baja confianza"
+    vars:
+      documento: "Paciente: [ilegible]... [mancha de tinta]... medicamento: [borrado]..."
+      tipo_documento: "Otro"
+    providers:
+      - openrouter:mistralai/mistral-7b-instruct:free
+    assert:
+      - type: icontains
+        value: "null"
+    tags: [extraction, edge_case]
+
+  - description: "Multiples documentos en uno - ambigüedad AMB-5"
+    vars:
+      documento: |
+        DOCUMENTO 1: Paciente: Juan Perez, 30 anos. Diagnostico: Gripe.
+        ---
+        DOCUMENTO 2: Paciente: Maria Lopez, 25 anos. Diagnostico: Faringitis.
+      tipo_documento: "Otro"
+    providers:
+      - openrouter:mistralai/mistral-7b-instruct:free
+    assert:
+      - type: icontains
+        value: "AMB-5"
+    tags: [extraction, edge_case]
+
+  # =======================
+  # CROSS-MODEL COMPARISON TESTS
+  # =======================
+  # Run same test across all free models to compare quality
+
+  - description: "Cross-model: Dolor toracico (all free models)"
+    vars:
+      historial: "Paciente 55 anos, dolor toracico opresivo irradiado a brazo izq, sudoracion, 2h evolucion."
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+      - openrouter:mistralai/mistral-7b-instruct:free
+      - openrouter:google/gemma-2-9b-it:free
+    assert:
+      - type: icontains
+        value: "Urgente"
+    tags: [cross_model, triage]
+
+  - description: "Cross-model: Epicrisis extraccion (all free models)"
+    vars:
+      documento: "HOSPITAL X - EPICRISIS. Paciente: Test User, 40 anos. Dr. Test Doc MP 111111. Diagnostico: Neumonia. Alta: 01/01/2024."
+      tipo_documento: "Epicrisis"
+    providers:
+      - openrouter:meta-llama/llama-3.2-3b-instruct:free
+      - openrouter:mistralai/mistral-7b-instruct:free
+      - openrouter:google/gemma-2-9b-it:free
+    assert:
+      - type: icontains
+        value: "Test User"
+      - type: icontains
+        value: "Neumonia"
+    tags: [cross_model, extraction]
+
+# Default test configuration
+defaultTest:
+  providers:
+    - openrouter:meta-llama/llama-3.2-3b-instruct:free
+  assert:
+    - type: not-empty
+
+# Evaluation settings
+evaluate:
+  concurrency: 2  # Be gentle with free tier rate limits
+  cache: true
+  maxRetries: 2

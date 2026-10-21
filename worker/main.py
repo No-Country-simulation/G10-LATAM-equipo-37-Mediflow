@@ -9,6 +9,7 @@ import time
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
+from agent.llm import init_phoenix
 from agent.storage import triage_results
 from agent.storage.buckets import bucket_actual
 
@@ -197,6 +198,9 @@ def reporte_diario() -> None:
 
 
 if __name__ == "__main__":
+    # Inicializar Phoenix/OpenInference (solo en dev)
+    init_phoenix()
+    
     log.info("Worker iniciado; intervalo=%s segundos", INTERVALO)
 
     while True:
