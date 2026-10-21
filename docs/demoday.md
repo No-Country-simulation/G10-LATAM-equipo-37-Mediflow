@@ -4,7 +4,7 @@ Demo Day 1 · Hackathon ONE G10 · Equipo 37
 
 > Guion vigente del Demo Day (F-08). Reemplaza a [`guion-demoday-carolina.md`](guion-demoday-carolina.md). La versión en PDF circula en Discord con el mismo contenido.
 
-Martes 27 de octubre de 2026 · Guion vigente (basado en el v2 del \#130) · Versión del 20/10
+Martes 27 de octubre de 2026 · Guion vigente (basado en el v2 del \#130) · Versión del 21/10
 
 **Formato.** Dos voces y un solo cambio de voz a la ida y otro a la vuelta. Contenido de 4:40 y 20 segundos de margen. Mientras una voz habla, la otra comparte pantalla. El resto del equipo está conectado para las preguntas técnicas.
 
@@ -18,7 +18,7 @@ Martes 27 de octubre de 2026 · Guion vigente (basado en el v2 del \#130) · Ver
 | 0:30–1:00 | Solución y cómo funciona                                                           | Voz 1 | Diapositiva 3                                          |
 | 1:00–1:25 | Demo 1 · Rutina (GS-28, texto)                                                     | Voz 2 | Diapositiva 4 → App · Carga                            |
 | 1:25–2:00 | Demo 2 · Urgencia (GS-07) y alerta                                                 | Voz 2 | App · Carga → Slack                                    |
-| 2:00–2:35 | Demo 3 · Revisión humana (GS-06)                                                   | Voz 2 | App · Carga → Auditoría                                |
+| 2:00–2:35 | Demo 3 · Revisión humana (GS-06)                                                   | Voz 2 | App · Carga → Auditoría (vista verificada sin datos del paciente) |
 | 2:35–2:55 | Demo 4 · Intento de engaño (FA-05)                                                 | Voz 2 | App · Carga                                            |
 | 2:55–3:10 | Los demás casos, ya procesados **\[pendiente: opcional: se decide en el ensayo\]** | Voz 2 | App · Métricas, «Operación de hoy»                     |
 | 3:10–3:40 | Resultados                                                                         | Voz 2 | App · Métricas, «Calidad del agente» (o diapositiva 5) |
@@ -38,7 +38,9 @@ Martes 27 de octubre de 2026 · Guion vigente (basado en el v2 del \#130) · Ver
 
 **Pantalla:** diapositiva 3.
 
-> «MediFlow es un agente de IA que hace ese primer recorrido en segundos. Clasifica el documento, extrae los datos con la frase que los respalda, detecta urgencias y lo envía a uno de cinco destinos. Lo gobiernan tres reglas: no diagnostica, no inventa, y cuando duda, le pasa el caso a una persona. Y el hospital puede cambiar sus reglas y umbrales desde la pantalla, sin tocar código. Lo vemos con casos de nuestro conjunto de prueba, todos sintéticos.»
+> «MediFlow es un agente de IA que hace ese primer recorrido en alrededor de un minuto. Clasifica el documento, extrae los datos con la frase que los respalda, detecta urgencias y lo envía a uno de cinco destinos. Lo gobiernan tres reglas: no diagnostica, no inventa, y cuando duda, le pasa el caso a una persona. Y el hospital puede cambiar sus reglas y umbrales desde la pantalla, sin tocar código. Lo vemos con casos de nuestro conjunto de prueba, todos sintéticos.»
+
+*Nota: En la corrida del 21/10 con Groq cada caso tardó entre 11 y 67 s. Por eso dice «alrededor de un minuto» y no «en segundos» ni «en menos de un minuto».*
 
 ### 1:00 · Demo 1 · Rutina (GS-28) · Voz 2 · AI engineer
 
@@ -50,17 +52,17 @@ Martes 27 de octubre de 2026 · Guion vigente (basado en el v2 del \#130) · Ver
 
 **Pantalla:** **Carga**; después, la ventana del canal de Slack. **Acción:** subir **GS-07**, mostrar Cola de Emergencia y cambiar a Slack.
 
-> «Ahora un caso crítico, como el del enunciado del hackathon: un informe de tomografía con tromboembolismo pulmonar. El agente detecta la urgencia por tres vías independientes, el hallazgo crítico, las palabras del informe y su propio juicio, y basta con una. Lo manda directo a la cola de Emergencia y, con un workflow de n8n, avisa a la guardia en Slack, sin datos del paciente.»
+> «Ahora un caso crítico, como el del enunciado del hackathon: un informe de tomografía con tromboembolismo pulmonar. El agente detecta la urgencia por tres vías independientes, el hallazgo crítico, las palabras del informe y su propio juicio, y basta con una. Lo manda directo a la cola de Emergencia y, con un workflow de n8n, avisa a la guardia en Slack **\[pendiente: «sin datos del paciente», solo si Carlos confirma `ALERTA_OCULTAR_PACIENTE=true` en la VM\]**.»
 
-*Nota: Alerta n8n → Slack verificada de punta a punta por Carlos el 20/10. El workflow de n8n se desactiva cada vez que se reinicia la VM: 30 minutos antes, revisar que esté activo y mandar una alerta de prueba. Si no llega, la frase termina en «Lo manda directo a la cola de Emergencia».*
+*Nota: El 20/10 Carlos probó el payload y la configuración de n8n → Slack. Falta una prueba completa del caso GS-07 en la URL pública después del despliegue. El workflow de n8n se desactiva cada vez que se reinicia la VM: 30 minutos antes de cada ensayo y del evento, revisar que esté activo y procesar GS-07 de punta a punta hasta ver la alerta en Slack. Si no llega, la frase termina en «Lo manda directo a la cola de Emergencia».*
 
 ### 2:00 · Demo 3 · Revisión humana (GS-06) · Voz 2 · AI engineer
 
-**Pantalla:** **Carga**; después, **Auditoría**. **Acción:** subir **GS-06**, mostrar Revisión Humana y su motivo; abrirlo en Auditoría, corregir y aprobar.
+**Pantalla:** **Carga**; después, **Auditoría**. **Acción:** subir **GS-06** y mostrar Revisión Humana con su motivo. En **Auditoría**, mostrar solo una vista ya verificada en la que no se vean el nombre del paciente ni sus identificadores. Si esa vista no existe, mostrar una captura o un clip anonimizado de antemano, no la pantalla en vivo.
 
-> «Tercer caso: una receta de amoxicilina que el agente no puede dar por buena: **\[pendiente: motivo tal como lo muestra la pantalla\]**. No la deja pasar: la manda a revisión humana con el motivo a la vista. **\[pendiente: El auditor ve el documento al lado de lo que extrajo el agente, corrige y aprueba, y el documento sigue a Farmacia. Si lo rechaza, no llega a ningún destino.\]**»
+> «Tercer caso: una receta de amoxicilina que el agente no puede dar por buena, porque la dosis está fuera de rango. No la deja pasar: la manda a revisión humana con el motivo a la vista. **\[pendiente: si #86 está desplegado: El auditor ve el documento al lado de lo que extrajo el agente, corrige la dosis, escribe el motivo y pulsa Corregir y Aprobar; recién entonces el documento sigue a Farmacia. Si lo rechaza, no llega a ningún destino.\]**»
 
-*Nota: Decir solo el motivo que muestre la traza. Con modelo, el 13/10 salió AMB-3: dosis fuera de rango (Amoxicilina 5000 mg). **\[pendiente: Confirmar con la corrida --solo GS-06 GS-14.\]** La corrección ya está en develop (#86); se muestra solo si está desplegada y probada ese día.*
+*Nota: Confirmado con la cadena de la VM (Groq) el 21/10: GS-06 da AMB-3, dosis fuera de rango (Amoxicilina 5000 mg), y va a Revisión Humana. La corrección del auditor ya está en develop (#86); se muestra solo si está desplegada y probada ese día. Si no, la frase termina en «con el motivo a la vista».*
 
 ### 2:35 · Demo 4 · Intento de engaño (FA-05) · Voz 2 · AI engineer
 
@@ -76,15 +78,15 @@ Martes 27 de octubre de 2026 · Guion vigente (basado en el v2 del \#130) · Ver
 
 *Nota: Bloque opcional: no está en el v2 y depende de que el \#144 esté desplegado. Se decide en el ensayo del jueves. Si se quita, esos 15 segundos pasan al margen.*
 
-*Nota: Cristian probó GS-14 en develop con reglas, sin modelo: sale a Emergencia con la marca de auditoría. En la URL pública se ve después del pase 1. GS-10 no sirve de respaldo. **\[pendiente: Confirmar con Groq.\]***
+*Nota: Confirmado con la cadena de la VM (Groq) el 21/10: GS-14 va a Emergencia con la marca de auditoría y AMB-1. En la URL pública se ve después del pase 1. GS-10 no sirve de respaldo.*
 
 ### 3:10 · Resultados · Voz 2 · AI engineer
 
 **Pantalla:** página **Métricas**, pestaña «Calidad del agente». Si el panel no está desplegado, la diapositiva 5.
 
-> «Para medirlo armamos 45 documentos etiquetados a mano, en 76 variantes: texto, PDF, JSON, fotos y recetas manuscritas. En la evaluación final, con modelos gratuitos, detectó **\[pendiente: X de Y\]** urgencias y envió al destino correcto el **\[pendiente: N %\]** de los documentos. La demo corre con Groq, con el modelo Qwen; si falla, pasa a Gemini, y si fallan los dos, sigue con reglas y lo marca para revisión.»
+> «Para medirlo armamos 45 documentos etiquetados a mano, en 76 variantes: texto, PDF, JSON, fotos y recetas manuscritas. En la evaluación final, con modelos gratuitos, detectó **\[pendiente: X de Y\]** urgencias y envió al destino correcto el **\[pendiente: N %\]** de los documentos. La demo corre con Groq, con el modelo Qwen; si falla, pasa a Gemini y después a Mistral, y si fallan los tres, sigue con reglas y lo marca para revisión.»
 
-*Nota: Si la corrida final no está: «En la línea base del 13/10, con DeepSeek, detectó 16 de 17 urgencias; la que faltó era una imagen escaneada.» Es la línea base: no es la evaluación final ni una medición con Groq. No usar cifras preliminares como finales. No nombrar Mistral hasta que Carlos confirme que está activo.*
+*Nota: Si la corrida final no está: «En la línea base del 13/10, con DeepSeek, detectó 16 de 17 urgencias; la que faltó era una imagen escaneada.» Es la línea base: no es la evaluación final ni una medición con Groq. La verificación del 21/10 con Groq cubrió solo los 5 casos de la demo (8 variantes): sirve para decir que esos casos se verificaron con la cadena de producción, no como tasa de acierto. No usar cifras preliminares como finales.*
 
 ### 3:40 · Cómo trabajamos · Voz 1
 
@@ -118,8 +120,8 @@ Con las demos 1 a 4 y la cola, el pitch muestra un caso de cada resultado del co
 
 - Si la app no responde en 15 segundos, no se arregla en vivo. La Voz 2 dice: «Para no perder tiempo, les mostramos los mismos casos grabados» y pasa al video, abierto en otra pestaña en el minuto justo.
 - El texto de cada caso no cambia: se narra sobre el video o las capturas. Si la app vuelve a responder, se retoma en vivo en el caso siguiente.
-- Pestañas abiertas y en orden: diapositivas, Carga, Auditoría, Métricas, Slack, video.
-- Nunca abrir «Resultado completo»: muestra el nombre del paciente sintético.
+- Pestañas abiertas y en orden: diapositivas, Carga, Auditoría (vista verificada sin datos del paciente, o la captura anonimizada), Métricas, Slack, video.
+- Nunca abrir «Resultado completo»: muestra el nombre del paciente sintético. En Auditoría, lo mismo: solo la vista verificada sin nombre ni identificadores, o la captura anonimizada. La ocultación del video editado no protege la pantalla en vivo.
 - Probar los casos 30 minutos antes y dejar GS-14, GS-04, FA-07 y M7 ya procesados para que aparezcan en Métricas. Durante el evento nadie más usa la app, para no gastar el cupo gratuito. Anotar commit y modelo de cada prueba.
 
 ## Preguntas probables del jurado
@@ -128,12 +130,12 @@ Con las demos 1 a 4 y la cola, el pitch muestra un caso de cada resultado del co
 |-------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
 | ¿Qué pasa si el modelo se equivoca? | Si la confianza es baja o los datos no cuadran, el documento va a una persona. Una urgencia detectada no se frena por una duda: va a Emergencia y además queda marcada para auditoría. | Cristian   |
 | ¿Diagnostica?                       | No. Lee lo que el documento ya dice. Interpretar radiografías queda fuera de alcance a propósito.                                                                                      | Carolina   |
-| ¿Y los datos de los pacientes?      | Solo documentos sintéticos. Alertas y panel sin datos del paciente; los documentos quedan en Oracle Cloud.                                                                             | Sabrina    |
-| ¿Qué modelo usan y cuánto cuesta?   | Groq Qwen con Gemini de respaldo, en planes gratuitos; si fallan, sigue con reglas. Con un modelo pago, un documento cuesta **\[pendiente: US\$ N\]**.                                 | Carlos     |
+| ¿Y los datos de los pacientes?      | Solo documentos sintéticos y los documentos quedan en Oracle Cloud. **\[pendiente: las alertas de Slack van sin datos del paciente, si se confirma `ALERTA_OCULTAR_PACIENTE=true`\]**. El panel de Auditoría sí muestra los datos, porque el auditor los necesita para revisar; por eso en la demo solo mostramos una vista sin nombre ni identificadores. | Sabrina    |
+| ¿Qué modelo usan y cuánto cuesta?   | Groq Qwen, con Gemini y Mistral de respaldo, en planes gratuitos; si fallan los tres, sigue con reglas. Con un modelo pago, un documento cuesta menos de un centavo de dólar: unos US\$ 0,0005 con DeepSeek, medido el 13/10. | Carlos     |
 | ¿Cómo saben que funciona?           | 45 documentos en 76 variantes, etiquetados y revisados por el equipo, y una evaluación publicada en el repositorio.                                                                    | Camila     |
 | ¿Pueden engañarlo?                  | Lo probamos con FA-05: ignoró la orden escondida. También reconoce lo que está fuera de alcance, como una receta veterinaria o un informe en otro idioma.                              | Cristian   |
 | ¿Cómo se conecta a un hospital?     | Por API, por la pantalla de carga o dejando el archivo en una carpeta en la nube que el agente vigila.                                                                                 | Alessandro |
-| ¿Y si se cae el modelo o internet?  | El documento queda guardado antes de que intervenga ningún modelo y se reintenta. Nunca se pierde.                                                                                     | Néstor     |
+| ¿Y si se cae el modelo o internet?  | El documento se guarda en el bucket antes de llamar al modelo. Si el proveedor falla, queda en cola y se reintenta. Si no se pudo guardar, la respuesta lo indica en `status_backup` en vez de darlo por guardado. | Néstor     |
 | ¿Qué sigue?                         | Leer manuscritas con visión, sumar portugués y conectarlo a sistemas hospitalarios reales.                                                                                             | Néstor     |
 
 ## Antes del Demo Day
@@ -142,11 +144,13 @@ Con las demos 1 a 4 y la cola, el pitch muestra un caso de cada resultado del co
 |-------------------------------------------------------------------------------------------------|-------------------------------|-----------------------------------|
 | Votar la Voz 2 y los respaldos                                                                  | Equipo                        | Mié 21/10                         |
 | Corrida final y números en rojo                                                                 | Carlos y Camila               | **\[pendiente: fecha\]**          |
-| Dejar activo el workflow de n8n después de cada reinicio de la VM y mandar una alerta de prueba | Carlos                        | Antes de cada ensayo y del evento |
+| Confirmar `ALERTA_OCULTAR_PACIENTE=true` en la VM                                               | Carlos                        | Antes del ensayo 1                |
+| Dejar activo el workflow de n8n después de cada reinicio de la VM y procesar GS-07 de punta a punta hasta ver la alerta en Slack | Carlos | Antes de cada ensayo y del evento |
 | Desplegar el dashboard (#144) y la corrección del auditor (#86)                                 | Carlos                        | Antes del ensayo 1                |
+| Preparar la vista de Auditoría sin datos del paciente, o la captura anonimizada de respaldo     | **\[pendiente: responsable\]** | Antes del ensayo 1                |
 | Ajustar diapositivas y notas de orador a dos voces                                              | Diana                         | Jue 22/10                         |
 | Ensayo 1, las dos voces con cronómetro                                                          | Voz 1 (por confirmar) y Voz 2 | Jue 22/10                         |
 | Ensayo 2, el equipo hace de jurado                                                              | Equipo                        | Vie 23/10                         |
 | Ensayo general en la URL pública, con el plan B probado                                         | Equipo                        | Lun 26/10                         |
 
-MediFlow · Equipo 37 · Fuentes: guion v2 (#130), ADR-014 y comentarios de Cristian del 19/10. Este documento reemplaza al borrador del 14/10.
+MediFlow · Equipo 37 · Fuentes: guion v2 (#130), ADR-014, comentarios de Cristian del 19/10 y corrida de Carlos del 21/10. Este documento reemplaza al borrador del 14/10.
