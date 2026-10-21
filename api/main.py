@@ -1,16 +1,21 @@
 """API de MediFlow."""
+import hashlib
 import hmac
 import os
-from typing import Literal, Optional
 
 from fastapi import FastAPI, File, Form, Header, HTTPException, Response, UploadFile
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import ValidationError
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
+from agent.nodes.revision_humana import DecisionHumana, DestinoNoOperativo
+from agent.revision_runtime import RevisionConflicto, RevisionNoExiste, reanudar
 from agent.rules.loader import ReglasInvalidas, guardar_reglas, load_rules, toca_umbrales
 from agent.schemas.contrato import TriageRequest, TriageResponse
 from agent.storage import local_audit, triage_results
+from agent.storage.backend import storage
+from agent.storage.buckets import bucket_actual
+from agent.storage.identificadores import validar_id
 from agent.storage.local_audit import (
     AccionInvalida,
     DocumentoNoEncontrado,
@@ -21,19 +26,14 @@ from agent.storage.local_audit import (
 app = FastAPI(title="MediFlow", version="0.1.0")
 
 
-class DecisionAuditor(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True)
+DecisionAuditor = DecisionHumana
 
-    accion: Literal["aprobar", "corregir", "rechazar"]  # ADR-004
-    revisor: str = Field(min_length=1)
-    motivo: str = Field(min_length=1)
-    correcciones: Optional[dict] = None
 
-    @model_validator(mode="after")
-    def _correcciones_solo_al_corregir(self):
-        if self.correcciones and self.accion != "corregir":
-            raise ValueError("Las correcciones solo se admiten con la acción 'corregir'")
-        return self
+def _validar_id(documento_id):
+    try:
+        validar_id(documento_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Identificador no permitido") from exc
 
 
 def _a_respuesta(resultado: dict) -> TriageResponse:
@@ -54,6 +54,13 @@ def _a_respuesta(resultado: dict) -> TriageResponse:
     )
 
 
+def _ejecutar_triage(*args, **kwargs):
+    try:
+        return run_triage(*args, **kwargs)
+    except OSError as exc:
+        raise HTTPException(status_code=503, detail="No se pudo persistir; reintente el documento") from exc
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "mediflow-api"}
@@ -61,10 +68,11 @@ def health():
 
 @app.post("/triage", response_model=TriageResponse)
 def triage(req: TriageRequest):
-    if req.tipo_archivo in ("TEXTO", "JSON") and not req.documento_texto:
+    _validar_id(req.documento_id)
+    if req.tipo_archivo in ("TEXTO", "JSON") and not (req.documento_texto or "").strip():
         raise HTTPException(status_code=422, detail="documento_texto es obligatorio para TEXTO y JSON")
 
-    resultado = run_triage(
+    resultado = _ejecutar_triage(
         req.documento_id,
         req.tipo_archivo,
         req.documento_texto,
@@ -82,6 +90,7 @@ async def triage_upload(
     archivo: UploadFile = File(...),
 ):
     try:
+        _validar_id(documento_id)
         contenido = await archivo.read()
         documento = ingest_document(
             contenido,
@@ -93,13 +102,20 @@ async def triage_upload(
     finally:
         await archivo.close()
 
-    resultado = run_triage(
+    # Clave por contenido: reintentar el mismo ID no sustituye el original ya auditado.
+    ruta_original = f"recibidos/{documento_id}/{hashlib.sha256(contenido).hexdigest()}"
+    try:
+        storage.upload_bytes(bucket_actual(), ruta_original, contenido)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="No se pudo guardar el original") from exc
+    resultado = _ejecutar_triage(
         documento_id,
         documento.tipo_archivo,
         documento.texto,
         canal_origen,
         imagenes=documento.imagenes,
         legibilidad=documento.legibilidad,
+        ruta_original=ruta_original,
     )
     respuesta = _a_respuesta(resultado)
     triage_results.guardar_resultado(respuesta.model_dump(mode="json"))
@@ -122,38 +138,36 @@ def obtener_triage(documento_id: str):
 
 @app.get("/queue/human")
 def cola_humana():
-    items = local_audit.listar_cola_humana(base=local_audit.DATA_DIR)
+    items = local_audit.listar_cola_humana()
     return {"items": items}
 
 
 @app.post("/audit/{documento_id}")
 def auditar(documento_id: str, decision: DecisionAuditor):
+    _validar_id(documento_id)
     try:
-        resolucion = local_audit.guardar_resolucion(
-            documento_id,
-            decision.accion,
-            revisor=decision.revisor,
-            motivo=decision.motivo,
-            correcciones=decision.correcciones,
-            base=local_audit.DATA_DIR,
-        )
-    except DocumentoNoEncontrado as exc:
+        return reanudar(documento_id, decision.model_dump(exclude_none=True))
+    except (DocumentoNoEncontrado, RevisionNoExiste) as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ResolucionYaExiste as exc:
+    except (ResolucionYaExiste, RevisionConflicto) as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
-    except AccionInvalida as exc:
+    except DestinoNoOperativo as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-
-    return {"documento_id": documento_id, "resolucion": resolucion}
+    except (AccionInvalida, ValidationError) as exc:
+        raise HTTPException(status_code=422, detail="Decisión o identificador no válido") from exc
+    except OSError as exc:
+        raise HTTPException(status_code=503, detail="No se pudo persistir; reintente la misma decisión") from exc
 
 
 @app.get("/audit/{documento_id}/original")
 def original_auditoria(documento_id: str):
     try:
-        contenido, tipo = local_audit.obtener_original(documento_id, base=local_audit.DATA_DIR)
+        contenido, tipo = local_audit.obtener_original(documento_id)
     except (DocumentoNoEncontrado, OriginalNoDisponible) as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return Response(content=contenido, media_type=tipo)
+
+
 @app.get("/rules")
 def reglas():
     return load_rules()
