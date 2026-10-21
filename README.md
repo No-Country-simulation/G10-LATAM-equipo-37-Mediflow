@@ -96,7 +96,7 @@ Un agente que trata cada documento como un caso de triaje:
 
 1. **Ingesta** en cualquier formato soportado: PDF con texto, PDF escaneado, imagen, texto plano o JSON.
 2. **Clasificación** en seis tipos: Receta Médica, Informe de Estudio por Imágenes, Informe de Laboratorio, Orden de Solicitud de Procedimiento, Epicrisis y Certificado Médico.
-3. **Extracción estructurada** con un LLM multimodal y validación con esquemas Pydantic. Cada dato extraído cita el fragmento del documento que lo sustenta. Lo que no está en el documento queda en `null`; nunca se inventa.
+3. **Extracción estructurada** con un LLM y validación con esquemas Pydantic. Cada dato extraído cita el fragmento del documento que lo sustenta. Lo que no está en el documento queda en `null`; nunca se inventa.
 4. **Score de confianza** compuesto por legibilidad, validación de consistencia, confianza declarada por el modelo y acuerdo entre modelos.
 5. **Detección de urgencia** desde fuentes independientes: hallazgos críticos, palabras clave, valores críticos de laboratorio y juicio del modelo. Basta con que una dispare. Las tres listas automáticas se aplican solo a informes de estudio, informes de laboratorio y órdenes; en recetas, epicrisis y certificados decide el modelo, que lee el contexto.
 6. **Enrutamiento** a uno de cinco destinos: Cola de Emergencia Médica, Farmacia Hospitalaria, Auditoría de Autorizaciones, Historia Clínica Electrónica o Cola de Revisión Humana.
@@ -155,7 +155,7 @@ flowchart LR
 | Capa | Tecnología |
 |---|---|
 | Orquestación | LangGraph, grafo con nodos y aristas condicionales y estado tipado |
-| Modelo | LiteLLM con una cadena de modelos gratuitos: Groq `qwen/qwen3.8-27b` como principal y Gemini Flash de respaldo. Si fallan todos, el agente sigue con reglas y lo marca para revisión ([ADR-014](docs/decisions.md)) |
+| Modelo | LiteLLM con una cadena de modelos gratuitos: Groq `qwen/qwen3.8-27b` como principal y Gemini Flash y Mistral de respaldo. Si fallan todos, el agente sigue con reglas y lo marca para revisión ([ADR-014](docs/decisions.md)) |
 | Validación | Pydantic, un esquema por tipo de documento y contrato de entrada y salida |
 | API | FastAPI |
 | Interfaz | Streamlit: carga, cola de triaje, auditoría, reglas, métricas y trazas |
@@ -422,7 +422,7 @@ El análisis completo, con los fallos por categoría AMB y por tipo de documento
 
 **[Pendiente: se completa con la corrida final N3-01.]** Misma corrida sobre las 76 variantes, con todos los arreglos fusionados, y dos cadenas de modelos sobre el mismo commit:
 
-- **Gratuita** (la que corre en producción): Groq `qwen/qwen3.8-27b` → Gemini Flash.
+- **Gratuita** (la que corre en producción): Groq `qwen/qwen3.8-27b` → Gemini Flash y Mistral.
 - **Paga**, solo para comparar calidad y costo: DeepSeek.
 - **Código:** commit **[pendiente]** de develop. **Archivos:** **[pendiente: carpeta en `evals/resultados/`]**.
 
@@ -444,7 +444,7 @@ Desde #107, cada llamada al modelo registra los tokens y el costo. Un documento 
 
 | Cadena | Costo por documento | 1.000 documentos por día | Capacidad gratuita |
 |---|---|---|---|
-| Gratuita (Groq → Gemini) | US$ 0 | US$ 0 | **[pendiente: documentos por día antes de agotar el cupo]** |
+| Gratuita (Groq → Gemini/Mistral) | US$ 0 | US$ 0 | **[pendiente: documentos por día antes de agotar el cupo]** |
 | Paga (DeepSeek) | **[pendiente]** (≈ US$ 0,0005 medido el 13/10) | **[pendiente]** (≈ US$ 15 por mes) | Sin límite práctico |
 
 Para un piloto hospitalario, la cadena gratuita alcanza para probar; para operación diaria conviene un plan pago, que cuesta centavos por cada mil documentos.
@@ -511,7 +511,7 @@ Las decisiones de diseño se registran en [`docs/decisions.md`](docs/decisions.m
 | Alessandro Cappelli | responsable del desarrollo de interfaz-streamlit, configuración del repositorio, video y alertas con n8n |
 | Carlos Zunino | responsable de la clasificación, extracción, adaptador de modelos e infraestructura en OCI-Oracle Cloud Infrastructure |
 | Carolina Chambique | responsable de la revisión humana dentro del grafo |
-| Cristian Ojeda | responsable de la validación, urgencias, reglas y endpoints de revisión humana |
+| Cristian Ojeda | responsable de la validación, urgencias, reglas, endpoints de revisión humana y pruebas de calidad (QA)  |
 | Leidy Diana Gaitan Fiaga | apoyo y soporte en creación de los casos borde, documentos del conjunto de prueba y creación del video demo del agente |
 | Maria Camila Gonzalez Nuñez | responsable de la Planeación, estrategia y desarrollo del proyecto, como soporte técnico, diseño del conjunto de pruebas, sistema de evaluación, panel del auditor y dashboards de control |
 | Néstor Gribaudo | responsable de la creación del grafo, puntaje, enrutamiento, legibilidad y trazas |
