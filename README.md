@@ -477,7 +477,6 @@ Todo lo obligatorio del brief está entregado y desplegado en Oracle Cloud. Deta
 
 - [x] Dashboard en vivo con las métricas de operación y de calidad del agente (página Métricas)
 - [x] Workflow en n8n auto-hospedado disparando las alertas a Slack, tal como lo nombra el brief
-- [ ] Multilingüe: documentos en portugués además de español, con un solo esquema de salida
 - [ ] Reporte diario y semanal al gestor hospitalario, redactado por el agente
 - [x] Evaluación publicada en `evals/resultados/` (la calibración del score queda para la siguiente versión)
 - [x] Resiliencia con cadena de modelos de respaldo y caída a reglas
@@ -507,16 +506,16 @@ Las decisiones de diseño se registran en [`docs/decisions.md`](docs/decisions.m
 
 ## Equipo
 
-| Persona | Rol |
+| Persona | Actividades |
 |---|---|
-| Alessandro Cappelli | Full Stack Developer: interfaz, configuración del repositorio, video y alertas con n8n |
-| Carlos Zunino | AI Engineer: clasificación, extracción, adaptador de modelos e infraestructura en OCI |
-| Carolina Chambique | AI Engineer: revisión humana dentro del grafo y presentación del Demo Day |
-| Cristian Ojeda | AI Engineer: validación, urgencias, reglas y endpoints de revisión humana |
-| Leidy Diana Gaitan Fiaga | Datos y pruebas: casos borde, documentos del conjunto de prueba y presentación |
-| Maria Camila Gonzalez Nuñez | Data Scientist: conjunto de prueba, evaluación, panel del auditor y dashboard |
-| Néstor Gribaudo | LLM Engineer: grafo, puntaje, enrutamiento, legibilidad y trazas |
-| Sabrina Valentim Guimaraes | Backend Developer: API, worker, persistencia y respaldos |
+| Alessandro Cappelli | responsable del desarrollo de interfaz-streamlit, configuración del repositorio, video y alertas con n8n |
+| Carlos Zunino | responsable de la clasificación, extracción, adaptador de modelos e infraestructura en OCI-Oracle Cloud Infrastructure |
+| Carolina Chambique | responsable de la revisión humana dentro del grafo |
+| Cristian Ojeda | responsable de la validación, urgencias, reglas y endpoints de revisión humana |
+| Leidy Diana Gaitan Fiaga | apoyo y soporte en creación de los casos borde, documentos del conjunto de prueba y creación del video demo del agente |
+| Maria Camila Gonzalez Nuñez | responsable de la Planeación, estrategia y desarrollo del proyecto, como soporte técnico, diseño del conjunto de pruebas, sistema de evaluación, panel del auditor y dashboards de control |
+| Néstor Gribaudo | responsable de la creación del grafo, puntaje, enrutamiento, legibilidad y trazas |
+| Sabrina Valentim Guimaraes | desarrollo de la API, worker, persistencia y respaldos |
 
 Repositorio: [No-Country-simulation/G10-LATAM-equipo-37-Mediflow](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow)
 
