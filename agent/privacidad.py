@@ -53,7 +53,7 @@ def detalle_seguro(detalle) -> dict:
         if clave in _ENUMS and isinstance(valor, str) and valor in _ENUMS[clave]:
             limpio[clave] = valor
         elif clave in _SCORES and (
-            valor is None
+            (clave == "confianza_ocr" and valor is None)
             or (type(valor) in (int, float) and math.isfinite(valor) and 0 <= valor <= 1)
         ):
             limpio[clave] = valor
