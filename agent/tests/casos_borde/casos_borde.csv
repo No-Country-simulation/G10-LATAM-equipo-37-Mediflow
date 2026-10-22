@@ -1,0 +1,14 @@
+id,caso,archivo,como_se_envia,http_esperado,destino_esperado,categoria_amb,auditoria,mensaje_esperado
+CB-01,Archivo vacío (0 bytes),vacio.txt,POST /triage/upload,422,,,,vacío
+CB-02,Texto solo con espacios,solo_espacios.txt,POST /triage/upload,200,Cola_Revision_Humana,,si,
+CB-03,JSON con documento_texto vacío,json_texto_vacio.json,POST /triage/upload,422,,,,documento_texto
+CB-04,documento_texto con solo espacios en el cuerpo JSON,(cuerpo JSON),POST /triage,422,,,,documento_texto
+CB-05,Extensión que no coincide con el contenido (PDF llamado .png),pdf_disfrazado.png,POST /triage/upload,422,,,,extensión
+CB-06,Formato no soportado (Word),nota_evolucion.docx,POST /triage/upload,422,,,,no soportado
+CB-07,Texto que no está en UTF-8,latin1.txt,POST /triage/upload,422,,,,UTF-8
+CB-08,PDF dañado,pdf_danado.pdf,POST /triage/upload,422,,,,no se puede leer
+CB-09,Imagen dañada,imagen_danada.jpg,POST /triage/upload,422,,,,no se puede leer
+CB-10,PDF de 51 páginas (se genera en el test),(generado),POST /triage/upload,422,,,,50 páginas
+CB-11,PDF de 50 páginas: el límite se acepta (se genera en el test),(generado),POST /triage/upload,200,(cualquier destino definido),,,
+CB-12,Dos documentos en un archivo: certificado y receta,dos_documentos.txt,run_triage y POST /triage/upload,200,Cola_Revision_Humana,AMB-5,si,
+CB-13,JSON sin nombre del paciente (receta),json_sin_paciente.json,run_triage y POST /triage/upload,200,Cola_Revision_Humana,AMB-1,si,
