@@ -93,7 +93,10 @@ def test_legibilidad_precargada_no_se_recalcula():
     assert out["trace"][-1]["detalle"]["legibilidad_provisional"] is False
 
 
-def test_normalizar_con_imagen_borrosa_deriva_a_revision():
+def test_normalizar_con_imagen_borrosa_deriva_a_revision(monkeypatch):
+    import agent.nodes.normalizar as modulo
+
+    monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: None)
     out = normalizar({
         "texto": "",
         "tipo_archivo": "IMAGEN",
@@ -104,8 +107,11 @@ def test_normalizar_con_imagen_borrosa_deriva_a_revision():
     assert out["trace"][-1]["detalle"]["fuente"] == "imagen"
 
 
-def test_normalizar_con_varias_imagenes_usa_minimo():
+def test_normalizar_con_varias_imagenes_usa_minimo(monkeypatch):
     """Cuando hay varias imágenes (p.ej. PDF de múltiples páginas), se usa el mínimo."""
+    import agent.nodes.normalizar as modulo
+
+    monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: None)
     # Una imagen buena (score alto) y una mala (score bajo)
     buena = _b64(_pagina())  # nitida ~1.0
     mala = _b64(_pagina(blur=8, dark=0.4))  # borrosa <0.40
@@ -151,9 +157,10 @@ def _binario_tesseract() -> bool:
 _tesseract = pytest.mark.skipif(not _binario_tesseract(), reason="Tesseract no instalado")
 
 
-@_tesseract
 def test_sin_ocr_solo_mandan_las_metricas_de_imagen(monkeypatch):
-    """Sin OCR disponible la puerta decide igual y lo deja anotado en la traza."""
+    """Cuando _confianza_ocr devuelve None (binario ausente), la puerta usa solo
+    las métricas de imagen y lo anota en la traza. No necesita Tesseract real:
+    mockea _confianza_ocr para probar la rama ocr is None de forma determinista."""
     import agent.nodes.normalizar as modulo
 
     monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: None)
@@ -169,10 +176,9 @@ def test_sin_ocr_solo_mandan_las_metricas_de_imagen(monkeypatch):
     assert detalle["fuente"] == "imagen"
 
 
-@_tesseract
 def test_pocas_palabras_ocr_no_combinan(monkeypatch):
-    """Con menos de 20 palabras (p. ej. manuscritas) manda el score óptico,
-    pero la traza guarda lo que vio el OCR."""
+    """Con 1.._PALABRAS_MIN_OCR-1 palabras (p. ej. manuscritas) manda el score
+    óptico, pero la traza guarda lo que vio el OCR. No necesita Tesseract real."""
     import agent.nodes.normalizar as modulo
 
     monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: (0.90, _PALABRAS_MIN_OCR - 1))
@@ -189,9 +195,35 @@ def test_pocas_palabras_ocr_no_combinan(monkeypatch):
     assert detalle["palabras_ocr"] == _PALABRAS_MIN_OCR - 1
 
 
-@_tesseract
+def test_cero_palabras_ocr_se_bloquea(monkeypatch):
+    """Regla M7 (fail-closed): OCR corrió pero reconoció 0 palabras -> score 0.0.
+
+    No necesita binario de Tesseract: mockea _confianza_ocr para devolver
+    (0.0, 0) sobre una imagen nítida (óptico 1.0) y verifica que la puerta
+    sigue bloqueando porque no hay señal textual de legibilidad.
+    """
+    import agent.nodes.normalizar as modulo
+
+    monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: (0.0, 0))
+    img = _pagina()  # óptico = 1.0, pero OCR dice 0 palabras
+    optico = _score_de_imagen(img)
+    assert optico >= 0.70  # la imagen es nítida, el óptico dice que pasa
+    out = normalizar({
+        "texto": "",
+        "tipo_archivo": "IMAGEN",
+        "imagenes": [_b64(img)],
+        "trace": [],
+    })
+    assert out["legibilidad"] == 0.0
+    detalle = out["trace"][-1]["detalle"]
+    assert detalle["palabras_ocr"] == 0
+    assert detalle["confianza_ocr"] == 0.0
+    assert detalle["fuente"] == "imagen+ocr"
+
+
 def test_suficientes_palabras_ocr_combinan(monkeypatch):
-    """Con 20+ palabras la confianza del OCR se combina con el score óptico."""
+    """Con 20+ palabras la confianza del OCR se combina con el score óptico.
+    No necesita Tesseract real: mockea _confianza_ocr."""
     import agent.nodes.normalizar as modulo
 
     monkeypatch.setattr(modulo, "_confianza_ocr", lambda _img: (0.80, 30))

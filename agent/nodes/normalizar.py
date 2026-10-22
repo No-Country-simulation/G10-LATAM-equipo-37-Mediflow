@@ -30,8 +30,10 @@ _ANCHO_NORMALIZADO = 1000
 # con el score óptico. Con menos palabras (p. ej. manuscritas) mandan solo las
 # métricas de imagen.
 _PALABRAS_MIN_OCR = 20
-# Peso provisorio de la confianza OCR en la combinación (lo afina la calibración).
-_PESO_OCR = 0.5
+# Peso de la confianza OCR en la combinación con el score óptico.
+# Calibración inicial: Tesseract separa bien impresos (>=0.75 limpios, 0.35-0.42 dañados)
+# así que el OCR lleva más peso que el óptico. Lo afina la fase 4 con datos reales del CI.
+_PESO_OCR = 0.8
 
 
 def _b64decode(b64: str) -> bytes:
@@ -130,12 +132,22 @@ def _confianza_ocr(img: Image.Image) -> tuple[float, int] | None:
 
 
 def _score_de_pagina(img: Image.Image) -> tuple[float, float | None, int]:
-    """(score, confianza OCR o None, palabras OCR) de una página decodificable."""
+    """(score, confianza OCR o None, palabras OCR) de una página decodificable.
+
+    Regla de bloqueo (fase 4, issue #62): si el OCR se ejecutó pero no reconoció
+    NINGUNA palabra (palabras == 0, confianza 0.0), no hay señal textual de
+    legibilidad y se bloquea fail-closed (score 0.0). Evita que un manuscrito
+    severo con bordes nítos (óptico alto) pase sin ser legible (p. ej. M7).
+    Con 1.._PALABRAS_MIN_OCR-1 palabras mandan las métricas de imagen.
+    """
     optico = _score_de_imagen(img)
     ocr = _confianza_ocr(img)
     if ocr is None:
         return optico, None, 0
     confianza, palabras = ocr
+    if palabras == 0:
+        # OCR corrió (confianza 0.0) pero reconoció cero palabras: ilegible.
+        return 0.0, confianza, palabras
     if palabras < _PALABRAS_MIN_OCR:
         return optico, confianza, palabras
     return round(_PESO_OCR * confianza + (1.0 - _PESO_OCR) * optico, 4), confianza, palabras
