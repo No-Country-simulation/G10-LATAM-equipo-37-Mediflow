@@ -21,7 +21,7 @@ from dataclasses import dataclass
 logger = logging.getLogger(__name__)
 
 PRIMARY = os.getenv("LLM_PRIMARY", "gemini/gemini-2.5-flash")
-FALLBACKS = [m.strip() for m in os.getenv("LLM_FALLBACKS", "").split(",") if m.strip()]
+FALLBACKS = [m.strip() for m in os.getenv("LLM_FALLBACKS", "gemini/gemini-2.5-flash").split(",") if m.strip()]
 
 # Configuración de reintentos.
 REINTENTOS_POR_MODELO = int(os.getenv("LLM_REINTENTOS", "3"))

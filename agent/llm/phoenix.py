@@ -4,15 +4,17 @@ Este módulo configura la instrumentación automática de trazas para llamadas a
 a través de LiteLLM (que usa la API compatible con OpenAI de OpenRouter).
 
 Uso:
-    from agent.llm.phoenix import init_phoenix
+    from agent.llm.phoenix import init_phoenix, shutdown_phoenix
     
     # En api/main.py y worker/main.py al inicio:
     init_phoenix()
+    # ... app lifecycle ...
+    shutdown_phoenix()
 
 Variables de entorno:
-    PHOENIX_ENABLED=true|false (default: true en dev, false en prod)
+    PHOENIX_ENABLED=true|false (default: false - opt-in explícito)
     PHOENIX_PORT=6006 (default)
-    PHOENIX_HOST=0.0.0.0 (default)
+    PHOENIX_HOST=127.0.0.1 (default loopback, NO 0.0.0.0)
     PHOENIX_WORKING_DIR=./phoenix_data (default)
 """
 import logging
@@ -26,21 +28,20 @@ _phoenix_initialized = False
 _phoenix_app = None
 
 
-def _is_dev_environment() -> bool:
-    """Determina si estamos en entorno de desarrollo."""
-    env = os.getenv("ENV", "dev").lower()
-    return env in ("dev", "development", "local")
-
-
 def _phoenix_enabled() -> bool:
-    """Verifica si Phoenix debe activarse."""
-    # Por defecto: activado en dev, desactivado en prod salvo que se fuerce
+    """Verifica si Phoenix debe activarse (opt-in explícito)."""
     forced = os.getenv("PHOENIX_ENABLED", "").lower()
     if forced in ("true", "1", "yes"):
         return True
-    if forced in ("false", "0", "no"):
+    if forced in ("false", "0", "no", ""):
         return False
-    return _is_dev_environment()
+    return False
+
+
+def _is_dev_environment() -> bool:
+    """Determina si estamos en entorno de desarrollo (solo para logging)."""
+    env = os.getenv("ENV", "prod").lower()
+    return env in ("dev", "development", "local")
 
 
 def init_phoenix(
@@ -52,7 +53,7 @@ def init_phoenix(
     Inicializa el servidor Phoenix e instrumentación OpenInference.
     
     Args:
-        host: Host donde escuchar (default: PHOENIX_HOST o 0.0.0.0)
+        host: Host donde escuchar (default: PHOENIX_HOST o 127.0.0.1 loopback)
         port: Puerto (default: PHOENIX_PORT o 6006)
         working_dir: Directorio de datos (default: PHOENIX_WORKING_DIR o ./phoenix_data)
     
@@ -67,7 +68,7 @@ def init_phoenix(
         return False
 
     if not _phoenix_enabled():
-        logger.info("Phoenix desactivado (ENV=prod o PHOENIX_ENABLED=false).")
+        logger.info("Phoenix desactivado (opt-in: PHOENIX_ENABLED no es 'true').")
         return False
 
     try:
@@ -84,7 +85,8 @@ def init_phoenix(
         )
         return False
 
-    host = host or os.getenv("PHOENIX_HOST", "0.0.0.0")
+    # Default a loopback (127.0.0.1) para seguridad - NO 0.0.0.0
+    host = host or os.getenv("PHOENIX_HOST", "127.0.0.1")
     port = port or int(os.getenv("PHOENIX_PORT", "6006"))
     working_dir = working_dir or os.getenv("PHOENIX_WORKING_DIR", "./phoenix_data")
 
@@ -162,11 +164,9 @@ def is_phoenix_running() -> bool:
 def get_phoenix_url() -> str | None:
     """Devuelve la URL del servidor Phoenix si está corriendo."""
     if is_phoenix_running():
-        host = os.getenv("PHOENIX_HOST", "0.0.0.0")
+        host = os.getenv("PHOENIX_HOST", "127.0.0.1")
         port = os.getenv("PHOENIX_PORT", "6006")
-        # Si host es 0.0.0.0, usar localhost para acceso local
-        display_host = "localhost" if host == "0.0.0.0" else host
-        return f"http://{display_host}:{port}"
+        return f"http://{host}:{port}"
     return None
 
 

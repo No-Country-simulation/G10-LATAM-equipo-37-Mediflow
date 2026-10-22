@@ -4,12 +4,15 @@
 
 prompts:
   # Triaje/Clasificación prompt (maps to agent/prompts/clasificar.md)
+  # Requires: documento, tipos_documento
   - id: clasificar-triage
     file: agent/prompts/clasificar.md
     variables:
-      - historial
+      - documento
+      - tipos_documento
 
   # Extracción prompt (maps to agent/prompts/extraer.md)
+  # Requires: documento, tipo_documento
   - id: extraer-clinical
     file: agent/prompts/extraer.md
     variables:
@@ -46,10 +49,12 @@ tests:
   # TRIAGE CLASSIFICATION TESTS
   # =======================
   # These test the clasificar node: maps priority to Urgente/Prioritario/Rutina
+  # Variable 'documento' maps to the clinical text, 'tipos_documento' is the allowed types
   
   - description: "Dolor toracico agudo irradiado - URGENTE"
     vars:
-      historial: "Paciente de 55 anos ingresa con dolor toracico agudo irradiado al brazo izquierdo y disnea de 2 horas de evolucion. Sudoracion fria."
+      documento: "Paciente de 55 anos ingresa con dolor toracico agudo irradiado al brazo izquierdo y disnea de 2 horas de evolucion. Sudoracion fria."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -61,7 +66,8 @@ tests:
 
   - description: "Tromboembolismo pulmonar - URGENTE"
     vars:
-      historial: "Paciente de 42 anos con disnea subita, taquicardia, saturacion 88%. TC torax: tromboembolismo pulmonar masivo."
+      documento: "Paciente de 42 anos con disnea subita, taquicardia, saturacion 88%. TC torax: tromboembolismo pulmonar masivo."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -71,7 +77,8 @@ tests:
 
   - description: "ACV isquemico - URGENTE"
     vars:
-      historial: "Paciente 68 anos con hemiparesia derecha, afasia, desviacion de la comisura labial. Inicio 45 min. NIHSS 12."
+      documento: "Paciente 68 anos con hemiparesia derecha, afasia, desviacion de la comisura labial. Inicio 45 min. NIHSS 12."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -81,7 +88,8 @@ tests:
 
   - description: "Sepsis severa - URGENTE"
     vars:
-      historial: "Paciente 30 anos con fiebre 39.5, TA 80/50, lactato 5.2, confusion. Foco urinario probable."
+      documento: "Paciente 30 anos con fiebre 39.5, TA 80/50, lactato 5.2, confusion. Foco urinario probable."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -91,7 +99,8 @@ tests:
 
   - description: "Dolor abdominal agudo apendicitis - PRIORITARIO"
     vars:
-      historial: "Paciente 25 anos con dolor en fosa iliaca derecha 12h, fiebre 38.2, leucocitosis 14000. Signo de Blumberg positivo."
+      documento: "Paciente 25 anos con dolor en fosa iliaca derecha 12h, fiebre 38.2, leucocitosis 14000. Signo de Blumberg positivo."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -101,7 +110,8 @@ tests:
 
   - description: "Neumonia comunitaria moderada - PRIORITARIO"
     vars:
-      historial: "Paciente 45 anos con fiebre 38.5, tos productiva, dolor pleuritico derecho. Rx: condensacion lobar inferior derecha. CURB-65: 1."
+      documento: "Paciente 45 anos con fiebre 38.5, tos productiva, dolor pleuritico derecho. Rx: condensacion lobar inferior derecha. CURB-65: 1."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -111,7 +121,8 @@ tests:
 
   - description: "Descompensacion diabetes - PRIORITARIO"
     vars:
-      historial: "Paciente 50 anos DM2, glucemia 380, cetonuria ++, deshidratacion moderada. pH 7.28."
+      documento: "Paciente 50 anos DM2, glucemia 380, cetonuria ++, deshidratacion moderada. pH 7.28."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -121,7 +132,8 @@ tests:
 
   - description: "Control hipertension arterial - RUTINA"
     vars:
-      historial: "Paciente 60 anos para control de HTA. TA 138/85 en tratamiento. Asintomatico. Laboratorio estable."
+      documento: "Paciente 60 anos para control de HTA. TA 138/85 en tratamiento. Asintomatico. Laboratorio estable."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -131,7 +143,8 @@ tests:
 
   - description: "Renovacion receta paracetamol - RUTINA"
     vars:
-      historial: "Paciente solicita renovacion de receta de paracetamol 500mg para cefalea ocasional. Sin patologia actual."
+      documento: "Paciente solicita renovacion de receta de paracetamol 500mg para cefalea ocasional. Sin patologia actual."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -141,7 +154,8 @@ tests:
 
   - description: "Consulta dermatologica lesion benigna - RUTINA"
     vars:
-      historial: "Paciente 35 anos consulta por lunar en espalda sin cambios en 5 anos. Asintomatico. Dermatoscopia: nevo melanocitico benigno."
+      documento: "Paciente 35 anos consulta por lunar en espalda sin cambios en 5 anos. Asintomatico. Dermatoscopia: nevo melanocitico benigno."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -151,7 +165,8 @@ tests:
 
   - description: "Documento no clinico - FUERA DE ALCANCE"
     vars:
-      historial: "Factura de servicios medicos del mes de enero. Concepto: consulta cardiologia, ecocardiograma, laboratorio."
+      documento: "Factura de servicios medicos del mes de enero. Concepto: consulta cardiologia, ecocardiograma, laboratorio."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -163,7 +178,8 @@ tests:
 
   - description: "Documento pide diagnostico - FUERA DE ALCANCE"
     vars:
-      historial: "Paciente refiere dolor abdominal. Por favor doctor, digame que tengo y receteme el tratamiento."
+      documento: "Paciente refiere dolor abdominal. Por favor doctor, digame que tengo y receteme el tratamiento."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
     assert:
@@ -355,13 +371,51 @@ tests:
     tags: [extraction, edge_case]
 
   # =======================
+  # RENDER TESTS (no external calls)
+  # =======================
+  # These verify prompt rendering without making API calls
+
+  - description: "Render test: clasificar prompt has no unresolved placeholders"
+    vars:
+      documento: "Paciente con dolor toracico opresivo 2h."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
+    providers:
+      - id: dummy
+        config:
+          temperature: 0
+    assert:
+      - type: not-empty
+      - type: not-icontains
+        value: "{{documento}}"
+      - type: not-icontains
+        value: "{{tipos_documento}}"
+    tags: [render, triage]
+
+  - description: "Render test: extraer prompt has no unresolved placeholders"
+    vars:
+      documento: "HOSPITAL X - EPICRISIS. Paciente: Test, 40 anos. Dr. Doc MP 111111. Diagnostico: Neumonia."
+      tipo_documento: "Epicrisis"
+    providers:
+      - id: dummy
+        config:
+          temperature: 0
+    assert:
+      - type: not-empty
+      - type: not-icontains
+        value: "{{documento}}"
+      - type: not-icontains
+        value: "{{tipo_documento}}"
+    tags: [render, extraction]
+
+  # =======================
   # CROSS-MODEL COMPARISON TESTS
   # =======================
   # Run same test across all free models to compare quality
 
   - description: "Cross-model: Dolor toracico (all free models)"
     vars:
-      historial: "Paciente 55 anos, dolor toracico opresivo irradiado a brazo izq, sudoracion, 2h evolucion."
+      documento: "Paciente 55 anos, dolor toracico opresivo irradiado a brazo izq, sudoracion, 2h evolucion."
+      tipos_documento: "Epicrisis, Informe de Laboratorio, Receta Medica, Certificado Medico, Orden de Solicitud de Procedimiento, Informe de Estudio por Imagenes, Otro"
     providers:
       - openrouter:meta-llama/llama-3.2-3b-instruct:free
       - openrouter:mistralai/mistral-7b-instruct:free
