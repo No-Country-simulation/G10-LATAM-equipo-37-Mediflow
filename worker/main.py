@@ -5,10 +5,12 @@ registra los resultados en SQLite y aplica reintentos ante fallos temporales.
 """
 import logging
 import os
+import signal
 import time
 
 from agent.graph import run_triage
 from agent.ingestion import IngestionError, ingest_document
+from agent.llm import init_phoenix, shutdown_phoenix
 from agent.storage import triage_results
 from agent.storage.buckets import bucket_actual
 
@@ -30,6 +32,20 @@ else:
     raise ValueError(
         f"STORAGE_BACKEND no válido: {_BACKEND!r}. Usa 'local' u 'oci'."
     )
+
+
+# Manejo de señales para shutdown limpio
+_shutdown_requested = False
+
+
+def _signal_handler(signum, frame):
+    global _shutdown_requested
+    log.info("Señal %s recibida, iniciando apagado...", signum)
+    _shutdown_requested = True
+
+
+signal.signal(signal.SIGINT, _signal_handler)
+signal.signal(signal.SIGTERM, _signal_handler)
 
 
 def listar_recibidos() -> list[str]:
@@ -197,12 +213,19 @@ def reporte_diario() -> None:
 
 
 if __name__ == "__main__":
+    # Inicializar Phoenix/OpenInference (opt-in: solo si PHOENIX_ENABLED=true)
+    init_phoenix()
+    
     log.info("Worker iniciado; intervalo=%s segundos", INTERVALO)
 
-    while True:
-        try:
-            procesar_pendientes()
-        except Exception:
-            log.exception("Fallo al revisar recibidos/")
+    try:
+        while not _shutdown_requested:
+            try:
+                procesar_pendientes()
+            except Exception:
+                log.exception("Fallo al revisar recibidos/")
 
-        time.sleep(INTERVALO)
+            time.sleep(INTERVALO)
+    finally:
+        shutdown_phoenix()
+        log.info("Worker detenido.")
