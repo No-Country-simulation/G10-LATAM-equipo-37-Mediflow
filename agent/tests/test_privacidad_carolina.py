@@ -77,3 +77,17 @@ def test_error_persistencia_no_expone_nombre_en_ruta(caplog, monkeypatch):
     resultado = modulo.persistir({"documento_id": "Paciente Centinela", "decision": {}})
     assert resultado["almacenamiento"]["status_backup"] == "error"
     assert "Paciente Centinela" not in caplog.text + json.dumps(resultado["trace"])
+
+
+@pytest.mark.parametrize(
+    "clave",
+    ["score", "legibilidad", "validacion", "modelo", "acuerdo", "score_confianza_clasificacion"],
+)
+def test_score_none_se_omite(clave):
+    """None no es valor permitido para scores (excepto confianza_ocr)."""
+    assert detalle_seguro({clave: None}) == {}
+
+
+def test_confianza_ocr_none_se_conserva():
+    """confianza_ocr=None representa OCR no disponible/no medido."""
+    assert detalle_seguro({"confianza_ocr": None}) == {"confianza_ocr": None}
