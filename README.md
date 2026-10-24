@@ -24,13 +24,12 @@ MediFlow recibe documentos clínicos en PDF, imagen, texto o JSON, los clasifica
 
 | Qué | Dónde |
 |---|---|
-| Aplicación (carga, cola, auditoría, reglas, métricas y trazas) | [mediflow-equipo37.duckdns.org](https://mediflow-equipo37.duckdns.org/) |
-| Panel de métricas: operación del día y calidad del agente | [mediflow-equipo37.duckdns.org/Metricas](https://mediflow-equipo37.duckdns.org/Metricas) |
+| Aplicación (carga, cola, auditoría, reglas y trazas) | [mediflow-equipo37.duckdns.org](https://mediflow-equipo37.duckdns.org/) |
 | API y su documentación interactiva | [mediflow-equipo37.duckdns.org/api/docs](https://mediflow-equipo37.duckdns.org/api/docs) |
 | Video de la demo | **[pendiente: enlace de YouTube]** |
 | Evaluación publicada | [`evals/resultados/`](evals/resultados/) |
 
-Todo corre en la capa Always Free de Oracle Cloud y con modelos de lenguaje en planes gratuitos. Los documentos de la demo son sintéticos: ningún dato pertenece a un paciente real.
+Todo corre en la capa Always Free de Oracle Cloud y con un modelo de lenguaje en plan gratuito. Los documentos de la demo son sintéticos: ningún dato pertenece a un paciente real.
 
 ## Tabla de contenidos
 
@@ -58,7 +57,7 @@ Todo corre en la capa Always Free de Oracle Cloud y con modelos de lenguaje en p
 
 ## El problema
 
-Hospitales, laboratorios y aseguradoras de salud procesan a diario miles de documentos heterogéneos: informes de estudios, recetas, órdenes de autorización, epicrisis y certificados. Equipos administrativos los leen a mano para transcribir datos en sistemas heredados. El proceso es lento, caro, propenso a errores de tipeo y, cuando el documento describe una urgencia, la demora se paga en la atención del paciente.
+Hospitales, laboratorios y aseguradoras de salud procesan a diario grandes volúmenes de documentos heterogéneos: informes de estudios, recetas, órdenes de autorización, epicrisis y certificados. Equipos administrativos los leen a mano para transcribir datos en sistemas heredados. El proceso es lento, caro, propenso a errores de tipeo y, cuando el documento describe una urgencia, la demora se paga en la atención del paciente.
 
 ## Dónde encaja MediFlow
 
@@ -67,8 +66,8 @@ El usuario no es el médico, es el equipo administrativo y el auditor clínico. 
 1. Un médico de guardia solicita una tomografía.
 2. El radiólogo interpreta el estudio y escribe un informe.
 3. Ese informe sale del sistema como PDF, se imprime y se escanea, o llega por correo.
-4. Cae en una bandeja administrativa junto a cientos de documentos más.
-5. Hoy alguien lo lee, teclea los datos en el sistema heredado y decide a dónde va. Tarda horas.
+4. Cae en una bandeja administrativa junto a muchos otros documentos.
+5. Hoy alguien lo lee, teclea los datos en el sistema heredado y decide a dónde va, cuando llega su turno en la pila.
 6. Con MediFlow entra por la API, la pantalla de carga o el bucket, y en segundos queda clasificado, extraído, puntuado y enrutado.
 
 MediFlow entra en el paso 4.
@@ -77,7 +76,7 @@ Tres ejemplos de lo que le llega: el informe en PDF que exporta el sistema de im
 
 ## Alcance
 
-MediFlow hace triaje documental, no triaje clínico. No diagnostica: detecta que un documento ya dice algo urgente y lo mueve rápido. En el primer ejemplo, el tromboembolismo lo diagnosticó el radiólogo; lo que MediFlow evita es que ese informe espere seis horas en una bandeja.
+MediFlow hace triaje documental, no triaje clínico. No diagnostica: detecta que un documento ya dice algo urgente y lo mueve rápido. En el primer ejemplo, el tromboembolismo lo diagnosticó el radiólogo; lo que MediFlow busca evitar es que ese informe espere en una bandeja hasta que alguien lo lea.
 
 | Dimensión | Dentro de alcance | Fuera de alcance |
 |---|---|---|
@@ -104,7 +103,7 @@ Un agente que trata cada documento como un caso de triaje:
 
 Principios que gobiernan el diseño:
 
-- Una urgencia nunca se pierde por una ambigüedad: va a Emergencia y además queda marcada para auditoría.
+- Una urgencia detectada no se frena por una ambigüedad: va a Emergencia y además queda marcada para auditoría.
 - Si el auditor rechaza un documento, este termina en `rechazados/` y no sigue hacia ningún destino operativo. Un rechazo no se puede volver una aprobación por error del sistema.
 - Cuando la lectura falla, el sistema lo dice; no rellena con datos inventados.
 - Si el documento no se pudo guardar en el bucket, la respuesta lo dice. El campo `status_backup` solo dice `exito` cuando el objeto quedó realmente escrito, nunca antes.
@@ -155,13 +154,13 @@ flowchart LR
 | Capa | Tecnología |
 |---|---|
 | Orquestación | LangGraph, grafo con nodos y aristas condicionales y estado tipado |
-| Modelo | LiteLLM con una cadena de modelos gratuitos: Groq `qwen/qwen3.8-27b` como principal y Gemini Flash y Mistral de respaldo. Si fallan todos, el agente sigue con reglas y lo marca para revisión ([ADR-014](docs/decisions.md)) |
+| Modelo | LiteLLM con Groq `qwen/qwen3.8-27b` en plan gratuito. Si el modelo no responde, el agente sigue con reglas y lo marca para revisión ([ADR-014](docs/decisions.md)) |
 | Validación | Pydantic, un esquema por tipo de documento y contrato de entrada y salida |
 | API | FastAPI |
 | Interfaz | Streamlit: carga, cola de triaje, auditoría, reglas, métricas y trazas |
 | Documentos | OCI Object Storage, Always Free |
 | Cómputo | VM Ampere A1 en OCI, Always Free, con Docker Compose y Nginx como servidor web de entrada (recibe las peticiones, gestiona el certificado HTTPS y las reparte entre la API y la interfaz) |
-| Alertas | n8n auto-hospedado en la VM que publica en Slack, con Discord y OCI Notifications como respaldo. La alerta no lleva datos del paciente |
+| Alertas | n8n auto-hospedado en la VM que publica en el canal de Slack de la guardia. La alerta no lleva el nombre del paciente (`ALERTA_OCULTAR_PACIENTE=true`) |
 | CI/CD | GitHub Actions, despliegue automático en cada merge a `main` |
 
 ## Grafo de decisión
@@ -247,7 +246,7 @@ En ambos casos el documento se persiste con su marca, porque el registro debe ex
 
 **Alto riesgo farmacológico.** Una receta con anticoagulantes, opioides, insulina, potasio intravenoso o metotrexato. No dispara Emergencia, porque no hay una urgencia clínica: va a Farmacia Hospitalaria como cualquier receta, pero con auditoría obligatoria. La lista de medicamentos está en `agent/rules/rules.yaml` y se edita sin tocar el código.
 
-**Urgencia con ambigüedad** no es contradictorio: la urgencia es sobre el contenido clínico, la ambigüedad sobre la calidad del dato. Si la conclusión dice "tromboembolismo pulmonar agudo" pero una sombra tapa el nombre del paciente, el documento va a Emergencia de inmediato y además queda marcado para auditoría. Una urgencia nunca se retiene esperando que un humano complete un dato.
+**Urgencia con ambigüedad** no es contradictorio: la urgencia es sobre el contenido clínico, la ambigüedad sobre la calidad del dato. Si la conclusión dice "tromboembolismo pulmonar agudo" pero una sombra tapa el nombre del paciente, el documento va a Emergencia de inmediato y además queda marcado para auditoría. Una urgencia detectada no se retiene esperando que un humano complete un dato.
 
 Las reglas que alimentan el grafo (umbrales, destinos, hallazgos críticos, valores críticos de laboratorio, medicamentos de alto riesgo y categorías de ambigüedad) viven en `agent/rules/rules.yaml` y se editan sin tocar el código.
 
@@ -260,7 +259,7 @@ Los tres escenarios que exige el brief, más un caso por cada resultado del conj
 | **Rutina** | GS-28 | Certificado médico | Historia Clínica Electrónica, sin auditoría, objeto en `procesados/historia_clinica/` |
 | **Urgencia** | GS-07 y el ejemplo del brief ([`docs/examples/triage_request.json`](docs/examples/triage_request.json)) | Informe de tomografía con tromboembolismo pulmonar agudo | Cola de Emergencia Médica, alerta a la guardia, objeto en `procesados/urgentes/` |
 | **Ambigüedad** | GS-06 | Receta con un dato de dosis que no se puede dar por bueno | Cola de Revisión Humana. Si el auditor corrige, se reencamina a Farmacia; si lo rechaza, termina en `rechazados/` y no continúa hacia ningún destino operativo |
-| Urgencia con ambigüedad | GS-14 | Laboratorio de sepsis con un dato faltante | Cola de Emergencia Médica **y** marca de auditoría: una urgencia nunca se frena por una duda |
+| Urgencia con ambigüedad | GS-14 | Laboratorio de sepsis con un dato faltante | Cola de Emergencia Médica **y** marca de auditoría: una urgencia detectada no se frena por una duda |
 | Alto riesgo | GS-04 | Receta con anticoagulante | Farmacia Hospitalaria con `requiere_auditoria_humana: true`. El alto riesgo farmacológico marca auditoría, no dispara Emergencia |
 | Fuera de alcance | FA-07 | Receta veterinaria | Cola de Revisión Humana con AMB-6: el agente reconoce que no le corresponde decidir |
 | Intento de engaño | FA-05 | Laboratorio con potasio crítico y una orden escondida para mandarlo a rutina | Cola de Emergencia Médica: el agente ignora la orden |
@@ -385,9 +384,9 @@ Para que los números no estén contaminados, los ejemplos incrustados en los pr
 
 El reparto documento por documento, con la respuesta esperada de cada uno, está en [`docs/kit-de-datos.pdf`](docs/kit-de-datos.pdf), y las fuentes con sus licencias en [`evals/DATA.md`](evals/DATA.md).
 
-El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Cada corrida oficial se publica en [`evals/resultados/`](evals/resultados/).
+El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Cada corrida oficial se publica en [`evals/resultados/`](evals/resultados/). Hay dos: la línea base del 13/10 con DeepSeek y la del 22/10 con la cadena gratuita.
 
-### Primera evaluación · 13/10/2026
+### Línea base · 13/10/2026
 
 Corrida sobre las 76 variantes de los 45 elementos del conjunto de prueba:
 - **Modelo principal:** DeepSeek (`deepseek/deepseek-chat`).
@@ -418,36 +417,54 @@ Es la línea de base: corre el código de develop tal como estaba el 13/10, ante
 
 El análisis completo, con los fallos por categoría AMB y por tipo de documento y lo que sigue, está en [`analisis.md`](evals/resultados/2026-10-13_deepseek/analisis.md).
 
-### Evaluación final · [pendiente: fecha]
+### Segunda corrida · 22/10/2026 · cadena gratuita sin cupo
 
-**[Pendiente: se completa con la corrida final N3-01.]** Misma corrida sobre las 76 variantes, con todos los arreglos fusionados, y dos cadenas de modelos sobre el mismo commit:
+Corrida sobre las mismas 76 variantes, con el código del 22/10 (incluye la regla A, la marca de auditoría para fuera de alcance, la validación de dosis y CIE-10 y N1-13) y la cadena gratuita de producción, Groq `qwen/qwen3.8-27b`.
+- **Archivos:** [`evals/resultados/2026-10-22_groq/`](evals/resultados/2026-10-22_groq/). **[pendiente: Carlos sube la carpeta con `report.md` y `resultados.json`; si no está, esta sección se quita.]**
 
-- **Gratuita** (la que corre en producción): Groq `qwen/qwen3.8-27b` → Gemini Flash y Mistral.
-- **Paga**, solo para comparar calidad y costo: DeepSeek.
-- **Código:** commit **[pendiente]** de develop. **Archivos:** **[pendiente: carpeta en `evals/resultados/`]**.
+**Cómo leerla.** El cupo diario gratuito de Groq se agotó durante la corrida, así que la mayoría de los documentos se resolvió con la caída a reglas: la latencia p50 fue de 0,1 s y el campo del modelo quedó vacío. Por eso esta corrida **no mide al modelo**: mide qué hace el sistema cuando el modelo no responde. No se compara punto a punto con la línea base.
 
-| Métrica | Primera evaluación (13/10) | Final, cadena gratuita | Final, DeepSeek |
-|---|---|---|---|
-| **Recall de urgencias** | 94 % (16/17) | **[pendiente]** | **[pendiente]** |
-| Accuracy de clasificación | 83 % | **[pendiente]** | **[pendiente]** |
-| Accuracy de destino | 62 % | **[pendiente]** | **[pendiente]** |
-| Casos fuera de alcance resueltos | 0 % | **[pendiente]** | **[pendiente]** |
-| Falsas urgencias | 10 | **[pendiente]** | **[pendiente]** |
-| Tasa de revisión humana | 45 % | **[pendiente]** | **[pendiente]** |
-| Latencia p50 | 3,9 s | **[pendiente]** | **[pendiente]** |
+| Métrica | Línea base 13/10 (DeepSeek) | 22/10 (mayoría con reglas) |
+|---|---|---|
+| **Recall de urgencias** | 94 % (16/17) | **100 % (17/17)** |
+| Accuracy de clasificación | 83 % (52/63) | 92 % (58/63) |
+| Accuracy de destino | 62 % (39/63) | 76 % (48/63) |
+| Acierto de la marca de auditoría | 60 % (38/63) | 67 % (42/63) |
+| Casos fuera de alcance resueltos | 0 % (0/12) | 67 % (8/12) |
+| Puerta de legibilidad (media y severa) | 46 % (6/13) | 31 % (4/13) |
+| Casos correctos en todo | 41 % (31/76) | 50 % (38/76) |
+| Tasa de revisión humana | 45 % (34/76) | 50 % (38/76) |
+| Latencia p50 / p95 | 3,9 s / 5,2 s | 0,1 s / 4,3 s |
 
-**[Pendiente: tres o cuatro líneas sobre qué mejoró, qué no y por qué.]**
+Lo que sí muestra:
+1. **Con la mayoría de los documentos resueltos sin modelo, ninguna urgencia del conjunto se perdió (17/17).** Las tres listas automáticas (hallazgos críticos, palabras de urgencia y valores críticos de laboratorio) y la regla A sostienen la detección aunque el modelo no responda.
+2. **Los arreglos fusionados después del 13/10 se notan** en fuera de alcance (de 0/12 a 8/12) y en la marca de auditoría.
+3. **La puerta de legibilidad sigue siendo el punto débil:** las recetas manuscritas M1 a M6 fallan, porque el OCR no lee letra cursiva y la imagen todavía no llega al modelo (ver [Límites conocidos](#límites-conocidos)).
+
+### Verificación en producción · 24/10/2026
+
+Pruebas en la URL pública con Groq, documentadas en [`docs/demoday.md`](docs/demoday.md):
+
+| Caso | Resultado | Tiempo |
+|---|---|---|
+| GS-28, certificado (texto) | Historia Clínica Electrónica | unos 2 s |
+| GS-07, tromboembolismo (texto) | Cola de Emergencia Médica y alerta en Slack | unos 3 s |
+| GS-07, tromboembolismo (foto escaneada) | Cola de Emergencia Médica y alerta en Slack | 9,9 s |
+| GS-06, receta con dosis fuera de rango | Cola de Revisión Humana | 3,6 s |
+| FA-05, potasio crítico con una orden escondida | Cola de Emergencia Médica: ignoró la orden; alerta con el nombre omitido | 3,4 s |
+
+Son mediciones sin carga y de un solo intento: muestran que el flujo funciona de punta a punta, no el rendimiento bajo volumen.
 
 ### Costo y capacidad
 
-Desde #107, cada llamada al modelo registra los tokens y el costo. Un documento usa unas 3.500 fichas (tokens) en dos llamadas: clasificar y extraer.
+Desde #107, cada llamada al modelo registra los tokens y el costo. En la línea base, un documento usó unas 3.500 fichas (tokens) en dos llamadas: clasificar y extraer.
 
-| Cadena | Costo por documento | 1.000 documentos por día | Capacidad gratuita |
-|---|---|---|---|
-| Gratuita (Groq → Gemini/Mistral) | US$ 0 | US$ 0 | **[pendiente: documentos por día antes de agotar el cupo]** |
-| Paga (DeepSeek) | **[pendiente]** (≈ US$ 0,0005 medido el 13/10) | **[pendiente]** (≈ US$ 15 por mes) | Sin límite práctico |
+| Cadena | Costo por documento | Capacidad |
+|---|---|---|
+| Gratuita (Groq, producción) | Sin costo mientras alcance el cupo diario | El cupo diario se agotó antes de terminar las 76 variantes del 22/10: alcanza para la demo y pruebas chicas |
+| Paga (DeepSeek, línea base del 13/10) | Unos US$ 0,0005 medidos | Sin límite práctico; unos US$ 15 por mes para 1.000 documentos por día |
 
-Para un piloto hospitalario, la cadena gratuita alcanza para probar; para operación diaria conviene un plan pago, que cuesta centavos por cada mil documentos.
+Para operar en un hospital hace falta un plan pago: con DeepSeek, el costo medido es de centavos por cada mil documentos.
 
 ## Estado del proyecto
 
@@ -471,15 +488,15 @@ Todo lo obligatorio del brief está entregado y desplegado en Oracle Cloud. Deta
 - [x] Despliegue completo en OCI Compute con acceso público
 - [x] Flujo clínico personalizable: reglas, destinos y umbrales editables sin tocar el código
 - [ ] OCR y visión multimodal: el OCR lee informes escaneados; la lectura de manuscritas con visión queda pendiente
-- [x] Alertas en tiempo real hacia Slack para los equipos de guardia (n8n), con Discord y OCI Notifications de respaldo
+- [x] Alertas en tiempo real hacia Slack para los equipos de guardia, con n8n, verificadas de punta a punta en la URL pública
 
 ### Nivel 3 · Nuestros plus
 
-- [x] Dashboard en vivo con las métricas de operación y de calidad del agente (página Métricas)
+- [ ] Dashboard con las métricas de operación y de calidad del agente: listo en #144, entra después del Demo Day. Hoy la página Métricas muestra los contadores básicos de la API
 - [x] Workflow en n8n auto-hospedado disparando las alertas a Slack, tal como lo nombra el brief
 - [ ] Reporte diario y semanal al gestor hospitalario, redactado por el agente
 - [x] Evaluación publicada en `evals/resultados/` (la calibración del score queda para la siguiente versión)
-- [x] Resiliencia con cadena de modelos de respaldo y caída a reglas
+- [x] Resiliencia: si el modelo no responde, el agente sigue con reglas y marca el documento para revisión (probado en la corrida del 22/10)
 - [ ] Segunda opinión entre modelos cuando el score es medio
 - [ ] Aprendizaje desde las correcciones del auditor como tests de regresión
 
@@ -488,7 +505,10 @@ Todo lo obligatorio del brief está entregado y desplegado en Oracle Cloud. Deta
 - **Las imágenes llegan al modelo como texto.** El OCR (Tesseract) lee fotos y escaneos impresos; las recetas manuscritas no se leen y van a revisión humana. El adaptador ya acepta imágenes, pero los nodos todavía no se las pasan al modelo multimodal.
 - **La segunda opinión entre modelos** está prevista en el grafo, pero todavía no llama a un segundo modelo.
 - **Solo español.** Un documento en otro idioma se reconoce como fuera de alcance y va a revisión humana.
-- **Cupo gratuito.** La cadena gratuita alcanza para una demo y un piloto chico; para volumen hospitalario hace falta un plan pago.
+- **Cupo gratuito.** El cupo diario de Groq alcanza para la demo y pruebas chicas: se agotó en la corrida de 76 variantes del 22/10. Para volumen hospitalario hace falta un plan pago.
+- **Modelos de respaldo sin probar.** El adaptador admite una cadena de respaldo (Gemini, Mistral; [ADR-014](docs/decisions.md)), pero no se probó en una falla real. Lo probado es la caída a reglas.
+- **Sin evaluación final con modelo.** La corrida del 22/10 resolvió la mayoría de los casos con reglas; la medición completa con Groq y con DeepSeek sobre el mismo commit queda para la siguiente versión.
+- **Documentos sintéticos y sin validación clínica.** Es un prototipo; llevarlo a un hospital real pide validación clínica y un plan de modelos acorde al volumen.
 - **Prueba de funcionamiento, no medición estadística:** con 76 variantes, cada porcentaje tiene un margen de unos ±11 a ±13 puntos.
 
 ## Cómo contribuir
