@@ -1,47 +1,46 @@
-"""Acceso a OCI Object Storage. En la VM usa instance principal; en local, ~/.oci/config."""
+"""Acceso a OCI Object Storage. Plan B: Fallback local forzado para la VM."""
 import json
 import os
 
+# Directorio local para guardar los archivos en la VM
+LOCAL_STORAGE_DIR = "/app/data/storage_fallback"
 
 def _client():
-    import oci
-
-    if os.getenv("OCI_AUTH", "config") == "instance_principal":
-        signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
-        return oci.object_storage.ObjectStorageClient(config={}, signer=signer)
-    config = oci.config.from_file(profile_name=os.getenv("OCI_CONFIG_PROFILE", "DEFAULT"))
-    return oci.object_storage.ObjectStorageClient(config)
-
+    # Forzamos a que no use OCI para evitar el error 401 de Instance Principal
+    return None
 
 def namespace() -> str:
-    return os.getenv("OCI_NAMESPACE") or _client().get_namespace().data
-
+    return "local"
 
 def upload_bytes(bucket: str, ruta: str, data: bytes, content_type: str = "application/octet-stream") -> None:
-    _client().put_object(namespace(), bucket, ruta, data, content_type=content_type)
-
+    filepath = os.path.join(LOCAL_STORAGE_DIR, bucket, ruta)
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    with open(filepath, "wb") as f:
+        f.write(data)
+    print(f"FALLBACK: Guardado localmente en {filepath}")
 
 def upload_json(bucket: str, ruta: str, obj: dict) -> None:
     upload_bytes(bucket, ruta, json.dumps(obj, ensure_ascii=False, indent=2).encode(), "application/json")
 
-
 def list_prefix(bucket: str, prefijo: str) -> list[str]:
-    cliente, espacio = _client(), namespace()
-    objetos, inicio = [], None
-    while True:
-        opciones = {"prefix": prefijo}
-        if inicio is not None:
-            opciones["start"] = inicio
-        pagina = cliente.list_objects(espacio, bucket, **opciones).data
-        objetos.extend(o.name for o in pagina.objects)
-        inicio = pagina.next_start_with
-        if not inicio:
-            return objetos
-
+    resultados = []
+    prefix_dir = os.path.join(LOCAL_STORAGE_DIR, bucket)
+    if os.path.exists(prefix_dir):
+        for root, dirs, files in os.walk(prefix_dir):
+            for file in files:
+                ruta = os.path.join(root, file).replace(prefix_dir + "/", "")
+                if ruta.startswith(prefijo):
+                    resultados.append(ruta)
+    return resultados
 
 def download(bucket: str, ruta: str) -> bytes:
-    return _client().get_object(namespace(), bucket, ruta).data.content
-
+    filepath = os.path.join(LOCAL_STORAGE_DIR, bucket, ruta)
+    if os.path.exists(filepath):
+        with open(filepath, "rb") as f:
+            return f.read()
+    raise FileNotFoundError(f"No se encontró el archivo {ruta} en {bucket}")
 
 def borrar(bucket: str, ruta: str) -> None:
-    _client().delete_object(namespace(), bucket, ruta)
+    filepath = os.path.join(LOCAL_STORAGE_DIR, bucket, ruta)
+    if os.path.exists(filepath):
+        os.remove(filepath)
