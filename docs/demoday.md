@@ -53,7 +53,7 @@ Martes 27 de octubre de 2026 (Demo Day 1) · Jueves 29 de octubre (Demo Day 2, s
 *Los cinco destinos no se nombran en voz alta: Cola de Emergencia Médica (urgencias), Farmacia Hospitalaria (recetas), Auditoría de Autorizaciones, Historia Clínica Electrónica (rutina) y Cola de Revisión Humana.*
 
 *Notas:*
-- **[pendiente: «menos de un minuto» se confirma con la medición en la URL pública con un reintento; si el número es otro, se cambia aquí y en la diapositiva 7.]**
+- **[pendiente: «menos de un minuto» se confirma con la medición en la URL pública con un reintento. La diapositiva 7 y el video ya no lo dicen; si no se mide antes del dom 25/10 20:00, se quita también de la Solución.]**
 - **[pendiente: «reglas editables» se dice solo si se comprueba en la URL pública.]**
 
 **Acción:** al terminar, pasar a la pestaña **MediFlow** (Ctrl+2), página **Carga**.
@@ -80,10 +80,10 @@ Después, **F5**: no hay botón de limpiar y el resultado anterior sigue a la vi
 ### 1:45 · Demo 2 · Urgencia (GS-07) y alerta
 
 **Acción:** subir **GS-07**; mostrar la Cola de Emergencia; cambiar a Slack (Ctrl+3) y volver (Ctrl+2).
-**Archivo:** **[pendiente: decidir versión A (texto) o B (foto escaneada) y usar la misma en el video y en vivo; la B es la que se probó en la URL pública con Slack]**.
+**Archivo:** **GS-07 en versión B, la foto escaneada (`GS-07_escaneado.png`).** Es la misma que muestra el video y la que se probó en la URL pública con Slack.
 **Antes del turno:** probar la alerta de Slack 30 minutos antes subiendo el documento de urgencia.
 
-> *(Al elegir el archivo)* «Ahora lo más delicado: una urgencia. Cargo un informe de tomografía con tromboembolismo pulmonar.»
+> *(Al elegir el archivo)* «Ahora lo más delicado: una urgencia. Cargo la foto de un informe de tomografía con tromboembolismo pulmonar.»
 >
 > *(Mientras procesa, unos 10 s)* «El agente busca señales de urgencia por varias vías independientes, y con una señal basta para decidir.»
 >
@@ -176,10 +176,10 @@ Fin a los 4:40.
 | Despliegue en OCI con acceso público | Toda la demo corre en la URL pública |
 | Alertas en tiempo real a Slack | Demo 2 (si la prueba previa lo confirma) |
 | Panel Human-in-the-Loop | Demo 3 en Auditoría (si #86 está desplegado) |
-| Reglas y umbrales sin tocar código | Una frase en Solución; se muestra en el video |
+| Reglas y umbrales sin tocar código | Una frase en Solución, solo si se comprueba en la URL pública (el video no muestra la página Reglas) |
 | Guardrails | Reglas del agente en Solución; módulo opcional de engaño |
 
-El resto de los casos, la API con el ejemplo del enunciado y la consola de Oracle Cloud van en el video, no en el pitch.
+El resto de los casos no se muestran en el pitch.
 
 ## Plan B
 
