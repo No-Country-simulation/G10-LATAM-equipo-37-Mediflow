@@ -54,7 +54,8 @@ Martes 27 de octubre de 2026 (Demo Day 1) · Jueves 29 de octubre (Demo Day 2, s
 
 *Notas:*
 - **[pendiente: «menos de un minuto» se confirma con la medición en la URL pública con un reintento. La diapositiva 7 y el video ya no lo dicen; si no se mide antes del dom 25/10 20:00, se quita también de la Solución.]**
-- **[pendiente: «reglas editables» se dice solo si se comprueba en la URL pública.]**
+- «Reglas editables»: verificado el 24/10 en la URL pública (se guardó la página Reglas sin cambiar valores; editor `cristian-qa`). **[Repetir tras el Pase 2; si falla, quitar la frase de la Solución.]**
+- Mediciones del 24/10 por la mañana en la URL pública, sin carga: GS-28 unos 2 s, GS-07 foto 9,9 s, GS-07 texto 3 s, GS-06 3,6 s y FA-05 3,4 s. **[Repetir tras el Pase 2.]**
 
 **Acción:** al terminar, pasar a la pestaña **MediFlow** (Ctrl+2), página **Carga**.
 
@@ -99,21 +100,21 @@ Después, **F5**.
 
 **Acción:** subir **GS-06** y mostrar la Cola de Revisión Humana con su motivo. **[Si la corrección del auditor (#86) está desplegada y probada ese día: cambiar a Auditoría.]** En Auditoría, «Modo demostración» apagado.
 
-> *(Al elegir el archivo)* «Ahora un tercer caso, en el que el agente duda: una receta de amoxicilina.»
+> *(Al elegir el archivo)* «Ahora un tercer caso, en el que el agente duda: una receta de amoxicilina con una dosis muy por encima de lo normal.»
 >
 > *(Mientras procesa)* «Algo en esta receta no cuadra.»
 >
-> *(Resultado)* «La dosis, 5000 mg por toma, está fuera del rango permitido. El agente no la corrige ni la deja pasar: la manda a revisión humana y deja el motivo a la vista.»
+> *(Resultado)* «Aquí el aviso es distinto: pide revisión humana antes de continuar, con confianza baja por datos ambiguos o incompletos, y la manda a la Cola de Revisión Humana. El agente no la corrige ni la deja pasar.»
 >
 > **[Solo si #86 está probado:]** «En Auditoría, la persona ve el caso, lo corrige y la receta sigue a Farmacia.»
 
-*Nota: la pantalla principal muestra el motivo genérico del sistema («datos ambiguos o incompletos»); la dosis y el código AMB-3 aparecen solo en «Resultado completo» y en Trazas, que no se abren. **[pendiente: comprobar en el ensayo qué motivo muestra la pantalla y decirlo tal como aparece.]***
+*Nota: la pantalla muestra el motivo genérico del sistema («datos ambiguos o incompletos»); la dosis y el código AMB-3 aparecen solo en «Resultado completo» y en Trazas, que no se abren. **No desplazar la pantalla en este caso:** bajo el resultado se despliega «Abrir documento para auditoría» con el documento original, que muestra nombre, DNI y fecha de nacimiento del paciente sintético. Comprobar en el ensayo, con la ventana y el zoom reales, que ese contenido no se vea; si se asoma, bajar el zoom del navegador.*
 
 Después, **F5** (solo si sigue el engaño; si se pasa a las diapositivas, no hace falta).
 
 ### Módulo opcional · Intento de engaño (FA-05)
 
-Entra solo si **FA-05 se probó en la URL pública con la cadena de producción** y el ensayo cierra en 4:40 o menos. Suma una subida de archivo y un F5 más. Si entra, la diapositiva 4 y la 3 deben reflejarlo.
+Entra solo si **FA-05 se probó en la URL pública con la cadena de producción** y el ensayo cierra en 4:40 o menos. Suma una subida de archivo y un F5 más. Si entra, la diapositiva 4 y la 3 deben reflejarlo. *(Probado el 24/10 en la URL pública: Informe de Laboratorio, Emergencia, alerta a Slack con el nombre omitido; repetir tras el Pase 2.)*
 
 **Acción:** subir **FA-05.txt**.
 
@@ -176,7 +177,7 @@ Fin a los 4:40.
 | Despliegue en OCI con acceso público | Toda la demo corre en la URL pública |
 | Alertas en tiempo real a Slack | Demo 2 (si la prueba previa lo confirma) |
 | Panel Human-in-the-Loop | Demo 3 en Auditoría (si #86 está desplegado) |
-| Reglas y umbrales sin tocar código | Una frase en Solución, solo si se comprueba en la URL pública (el video no muestra la página Reglas) |
+| Reglas y umbrales sin tocar código | Una frase en Solución; verificado en la URL pública el 24/10, repetir tras el Pase 2 (el video no muestra la página Reglas) |
 | Guardrails | Reglas del agente en Solución; módulo opcional de engaño |
 
 El resto de los casos no se muestran en el pitch.
@@ -189,6 +190,9 @@ El resto de los casos no se muestran en el pitch.
 ## No hacer
 
 - Abrir «Resultado completo»: muestra el nombre del paciente sintético.
+- Desplazar la pantalla en el Demo 3: bajo el resultado se abre el documento original con nombre, DNI y fecha de nacimiento.
+- Abrir la Cola de triaje: es compartida y muestra los casos de otras pruebas.
+- Abrir Métricas: hoy muestra todo en cero (issue #156).
 - Nombrar Gemini o Mistral.
 - Decir «0 falsas urgencias».
 - Mezclar cifras de distintas corridas.
