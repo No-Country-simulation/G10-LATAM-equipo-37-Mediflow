@@ -22,14 +22,32 @@ def upload_bytes(bucket: str, ruta: str, data: bytes, content_type: str = "appli
 def upload_json(bucket: str, ruta: str, obj: dict) -> None:
     upload_bytes(bucket, ruta, json.dumps(obj, ensure_ascii=False, indent=2).encode(), "application/json")
 
-def list_prefix(bucket: str, prefijo: str) -> list[str]:
+def list_prefix(bucket: str, prefix: str) -> list[str]:
+    client = _client()
+    if client is not None:
+        # Lógica de OCI (compatible con tests y producción)
+        ns = namespace()
+        resultados = []
+        start = None
+        while True:
+            kwargs = {"prefix": prefix}
+            if start:
+                kwargs["start"] = start
+            pagina = client.list_objects(ns, bucket, **kwargs).data
+            for obj in pagina.objects:
+                resultados.append(obj.name)
+            if not pagina.next_start_with:
+                break
+            start = pagina.next_start_with
+        return resultados
+    # Fallback local (para la VM sin OCI)
     resultados = []
     prefix_dir = os.path.join(LOCAL_STORAGE_DIR, bucket)
     if os.path.exists(prefix_dir):
         for root, _dirs, files in os.walk(prefix_dir):
             for file in files:
                 ruta = os.path.join(root, file).replace(prefix_dir + "/", "")
-                if ruta.startswith(prefijo):
+                if ruta.startswith(prefix):
                     resultados.append(ruta)
     return resultados
 
