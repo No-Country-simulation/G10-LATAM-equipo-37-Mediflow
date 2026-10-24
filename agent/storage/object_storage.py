@@ -26,7 +26,7 @@ def list_prefix(bucket: str, prefijo: str) -> list[str]:
     resultados = []
     prefix_dir = os.path.join(LOCAL_STORAGE_DIR, bucket)
     if os.path.exists(prefix_dir):
-        for root, dirs, files in os.walk(prefix_dir):
+        for root, _dirs, files in os.walk(prefix_dir):
             for file in files:
                 ruta = os.path.join(root, file).replace(prefix_dir + "/", "")
                 if ruta.startswith(prefijo):
