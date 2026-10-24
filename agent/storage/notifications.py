@@ -45,6 +45,19 @@ def publicar(titulo: str, cuerpo: str) -> None:
     raise ultimo_error
 
 
+def publicar_correo(titulo: str, cuerpo: str) -> bool:
+    """Envía por correo (OCI Notifications), sin pasar por n8n ni Discord.
+
+    Usa REPORTE_TOPIC_OCID y, si no existe, ONS_TOPIC_OCID. Devuelve False si no hay topic.
+    """
+    topic = os.getenv("REPORTE_TOPIC_OCID") or os.getenv("ONS_TOPIC_OCID")
+    if not topic:
+        logger.warning("Sin REPORTE_TOPIC_OCID ni ONS_TOPIC_OCID: el reporte no se envía por correo.")
+        return False
+    _publicar_oci(topic, titulo, cuerpo)
+    return True
+
+
 def _publicar_webhook(url: str, titulo: str, cuerpo: str, formato: str) -> None:
     """Publica en un webhook HTTP (Discord, Slack, n8n)."""
     import httpx
