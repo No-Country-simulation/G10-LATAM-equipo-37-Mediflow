@@ -32,28 +32,34 @@ Martes 27 de octubre de 2026 (Demo Day 1) · Jueves 29 de octubre (Demo Day 2, s
 
 ## Guion momento a momento
 
+*Ritmo: hablar pausado y respirar. Pausa de un segundo después del gancho, después de cada resultado en pantalla y antes del cierre. Se dice el mensaje de cada lámina, no se lee su texto. Si algo falla, no se piden disculpas: se pasa al Plan B y se sigue.*
+
 ### 0:00 · Problema
 
-**Pantalla:** diapositiva 1 durante el saludo; después, la 2.
+**Pantalla:** diapositiva 1 durante el gancho y la presentación; la 2 cuando se describe el problema.
 
-> «Buenas tardes, somos el Equipo 37 y les presentamos MediFlow, un software para centros médicos.»
+> «Imaginen un centro médico a media tarde. Llega el resultado de un examen que indica una *embolia pulmonar*, pero queda en una pila, entre recetas y certificados, esperando a que una persona lo lea.»
 >
-> «En ellos llegan cada día muchos documentos clínicos en diferentes formatos, tales como PDFs, escaneos, fotos o texto. Una persona debe leer cada documento, lo cual es lento, y en el caso de una urgencia como *embolia pulmonar* puede quedar en una pila.»
+> «Somos el Equipo 37, y esto es MediFlow: un agente de IA que lee, clasifica y enruta documentos clínicos, y avisa a la guardia si hay una urgencia.»
+>
+> *(Diapositiva 2)* «Cada día llegan muchos documentos clínicos, en PDF, escaneados, en foto o en texto. Hoy una persona tiene que leerlos uno por uno, y eso es lento.»
+
+*Tres mensajes clave, que se repiten en la Solución y en el cierre: 1) una urgencia no queda esperando en una pila; 2) no diagnostica, no inventa y, si duda, pasa a una persona; 3) ya está en línea, en esta dirección.*
 
 ### 0:30 · Solución y cómo funciona
 
 **Pantalla:** diapositiva 3; después, la 4 («Tres documentos, tres caminos»).
 
-> «Frente a eso, MediFlow es un agente de IA que hace ese primer recorrido en menos de un minuto: clasifica, extrae los datos relevantes, detecta urgencias y envía cada documento a uno de cinco destinos, guardando el original en OCI Object Storage.»
+> «Frente a eso, MediFlow hace ese primer recorrido en menos de un minuto: clasifica cada documento, extrae los datos relevantes, detecta urgencias y lo envía al destino que corresponde, guardando el original por si hace falta una auditoría.»
 >
-> «MediFlow tiene 3 reglas: no diagnostica, no inventa, y si duda envía a una persona. Cuenta con reglas editables que el centro médico puede ajustar.»
+> «MediFlow tiene tres reglas: no diagnostica, no inventa, y si duda envía a una persona. Eso es lo que lo distingue: sabe cuándo dudar. Y sus reglas son editables: el centro médico puede ajustarlas.»
 >
-> *(Diapositiva 4)* «Para las pruebas de demostración se cargarán 3 casos: rutina, urgencia y revisión humana.»
+> *(Diapositiva 4)* «Les muestro tres casos, en vivo y en orden: uno de rutina, una urgencia y uno en el que el agente duda.»
 
 *Los cinco destinos no se nombran en voz alta: Cola de Emergencia Médica (urgencias), Farmacia Hospitalaria (recetas), Auditoría de Autorizaciones, Historia Clínica Electrónica (rutina) y Cola de Revisión Humana.*
 
 *Notas:*
-- **[pendiente: «menos de un minuto» se confirma con la medición en la URL pública con un reintento. La diapositiva 7 y el video ya no lo dicen; si no se mide antes del dom 25/10 20:00, se quita también de la Solución.]**
+- «Menos de un minuto»: confirmado el 24/10 con Groq en la URL pública. Cristian midió de 2 a 10 s por caso; Carlos midió GS-28 3,6 s, GS-14 4,0 s, GS-06 2,6 s y GS-07 (foto) 18,1 s, con promedio de 7,1 s. **[Repetir tras el Pase 2. La diapositiva 7 y el video no lo dicen.]**
 - «Reglas editables»: verificado el 24/10 en la URL pública (se guardó la página Reglas sin cambiar valores; editor `cristian-qa`). **[Repetir tras el Pase 2; si falla, quitar la frase de la Solución.]**
 - Mediciones del 24/10 por la mañana en la URL pública, sin carga: GS-28 unos 2 s, GS-07 foto 9,9 s, GS-07 texto 3 s, GS-06 3,6 s y FA-05 3,4 s. **[Repetir tras el Pase 2.]**
 
@@ -74,7 +80,7 @@ Martes 27 de octubre de 2026 (Demo Day 1) · Jueves 29 de octubre (Demo Day 2, s
 3. Confianza: «Con una confianza del **[valor en pantalla]** %.»
 4. Destino: «Y lo envía a Historia Clínica Electrónica, sin revisión humana.»
 5. Justificación: «Y acá el agente deja la razón de la decisión.» *(No se lee.)*
-6. Cierre: «Nadie en el proceso tuvo que tocar el documento.»
+6. Cierre: «Nadie en el proceso tuvo que tocar ni leer el documento.»
 
 Después, **F5**: no hay botón de limpiar y el resultado anterior sigue a la vista.
 
@@ -84,9 +90,9 @@ Después, **F5**: no hay botón de limpiar y el resultado anterior sigue a la vi
 **Archivo:** **GS-07 en versión B, la foto escaneada (`GS-07_escaneado.png`).** Es la misma que muestra el video y la que se probó en la URL pública con Slack.
 **Antes del turno:** probar la alerta de Slack 30 minutos antes subiendo el documento de urgencia.
 
-> *(Al elegir el archivo)* «Ahora lo más delicado: una urgencia. Cargo la foto de un informe de tomografía con tromboembolismo pulmonar.»
+> *(Al elegir el archivo)* «Ahora lo más delicado: una urgencia. Cargo la foto de un informe de tomografía que indica una embolia pulmonar.»
 >
-> *(Mientras procesa, unos 10 s)* «El agente busca señales de urgencia por varias vías independientes, y con una señal basta para decidir.»
+> *(Mientras procesa, de 10 a 20 s con la foto)* «El agente busca señales de urgencia por varias vías independientes, y con una señal basta para decidir.»
 >
 > *(Cuando aparece el resultado)* «Listo, lo reconoce como **[tipo en pantalla]** y lo manda directo a la cola de Emergencia, sin pasar por revisión.»
 >
@@ -158,7 +164,7 @@ Entra solo si **FA-05 se probó en la URL pública con la cadena de producción*
 >
 > «El prototipo corre completo en la capa gratuita de Oracle Cloud, con documentos sintéticos. Llevarlo a un centro médico real pide validación clínica y un plan de modelos acorde al volumen.»
 >
-> «MediFlow no reemplaza al médico: hace que el documento le llegue antes. Gracias.»
+> «MediFlow no reemplaza al médico: hace que el documento le llegue antes. Una urgencia no queda esperando en una pila, y MediFlow ya está en línea, en esta dirección. Gracias.»
 
 Fin a los 4:40.
 
@@ -173,7 +179,7 @@ Fin a los 4:40.
 | Cómo trabajaron como equipo | Cómo trabajamos |
 | El impacto o valor | Impacto y cierre |
 | Tres escenarios: rutina, urgencia y revisión humana | Demos 1, 2 y 3 |
-| OCI Object Storage segregado (obligatorio) | Solución (el original se guarda en OCI Object Storage) |
+| OCI Object Storage segregado (obligatorio) | **No se dice en el pitch.** Hoy los originales se guardan en el disco de la VM (#158) porque OCI no autentica; **[decisión del equipo: restablecer OCI o presentarlo como límite]** |
 | Despliegue en OCI con acceso público | Toda la demo corre en la URL pública |
 | Alertas en tiempo real a Slack | Demo 2 (si la prueba previa lo confirma) |
 | Panel Human-in-the-Loop | Demo 3 en Auditoría (si #86 está desplegado) |
@@ -193,6 +199,8 @@ El resto de los casos no se muestran en el pitch.
 - Desplazar la pantalla en el Demo 3: bajo el resultado se abre el documento original con nombre, DNI y fecha de nacimiento.
 - Abrir la Cola de triaje: es compartida y muestra los casos de otras pruebas.
 - Abrir Métricas: hoy muestra todo en cero (issue #156).
+- Disculparse por lo que no se hizo o por un fallo: se sigue adelante.
+- Invitar al jurado a probarlo en vivo: otras personas gastan el cupo de Groq y llenan la cola mientras presentan otros equipos.
 - Nombrar Gemini o Mistral.
 - Decir «0 falsas urgencias».
 - Mezclar cifras de distintas corridas.
@@ -206,7 +214,7 @@ El resto de los casos no se muestran en el pitch.
 - Slack y n8n probados 30 minutos antes (el workflow de n8n se desactiva si se reinicia la VM).
 - Probar GS-28, GS-07, GS-06 (y FA-05 si se usa) en la URL pública y anotar commit y modelo.
 - Notificaciones silenciadas. Durante el evento nadie más usa la app, para no gastar el cupo de Groq.
-- Ensayar los clics junto con el texto, con cronómetro, al menos dos veces.
+- Ensayar los clics junto con el texto, con cronómetro, mínimo cinco veces; una de ellas por videollamada con el respaldo, compartiendo la pantalla.
 
 ## Antes del Demo Day
 
@@ -219,7 +227,7 @@ El resto de los casos no se muestran en el pitch.
 | Corrida final de 76 variantes con Groq (hash y carpeta en `evals/resultados`) | Carlos | **[pendiente: fecha]** |
 | Pase 2 a main, incluido el `command_timeout` (#154) | Carlos y Alessandro | Antes del lun 26/10 por la noche |
 | Decidir la versión de GS-07 (texto o foto) | Cristian y Carlos | Vie 23/10 |
-| Ensayo 1, con cronómetro | Titular y respaldo | Sáb 24/10 |
+| Ensayos 1 a 5, con cronómetro (uno por videollamada con el respaldo) | Titular y respaldo | Sáb 24 a lun 26/10 |
 | Ensayo general en la URL pública, con el plan B probado | Equipo | Lun 26/10 |
 
 El orden y la hora de cada grupo se anuncian el lunes 26/10.
