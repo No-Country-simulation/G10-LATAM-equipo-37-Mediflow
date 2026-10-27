@@ -11,8 +11,8 @@ Hackathon ONE G10 · Oracle Next Education & Alura · Equipo 37
 [![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-UI-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![OCI](https://img.shields.io/badge/Oracle%20Cloud-Always%20Free-C74634?logo=oracle&logoColor=white)](https://www.oracle.com/cloud/free/)
-[![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)](#estado-del-proyecto)
-[![Licencia](https://img.shields.io/badge/licencia-MIT-blue)](LICENSE)
+[![Estado](https://img.shields.io/badge/estado-desplegado%20en%20OCI-brightgreen)](#estado-del-proyecto)
+[![Licencia](https://img.shields.io/badge/licencia-MIT-blue)](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/LICENSE)
 
 </div>
 
@@ -20,8 +20,19 @@ Hackathon ONE G10 · Oracle Next Education & Alura · Equipo 37
 
 MediFlow recibe documentos clínicos en PDF, imagen, texto o JSON, los clasifica, extrae los datos esenciales en JSON validado, calcula un score de confianza, detecta urgencias y los enruta al destino correcto sin intervención manual para los casos estándar. Los casos ambiguos, inconsistentes o ilegibles van a un auditor humano. Los documentos y las decisiones se persisten en OCI Object Storage, y el sistema completo corre en la capa Always Free de Oracle Cloud.
 
+## Pruébalo en vivo
+
+| Qué | Dónde |
+|---|---|
+| Aplicación (carga, cola, auditoría, reglas y trazas) | [mediflow-equipo37.duckdns.org](https://mediflow-equipo37.duckdns.org/) |
+| API y su documentación interactiva | [mediflow-equipo37.duckdns.org/api/docs](https://mediflow-equipo37.duckdns.org/api/docs) |
+| Evaluación publicada | [`evals/resultados/`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/tree/main/evals/resultados) |
+
+Todo corre en la capa Always Free de Oracle Cloud y con un modelo de lenguaje en plan gratuito. Los documentos de la demo son sintéticos: ningún dato pertenece a un paciente real.
+
 ## Tabla de contenidos
 
+- [Pruébalo en vivo](#pruébalo-en-vivo)
 - [El problema](#el-problema)
 - [Dónde encaja MediFlow](#dónde-encaja-mediflow)
 - [Alcance](#alcance)
@@ -36,14 +47,14 @@ MediFlow recibe documentos clínicos en PDF, imagen, texto o JSON, los clasifica
 - [Cómo ejecutarlo](#cómo-ejecutarlo)
 - [Despliegue en Oracle Cloud](#despliegue-en-oracle-cloud)
 - [Datos y evaluación](#datos-y-evaluación)
-- [Prioridades de entrega](#prioridades-de-entrega)
-- [Cómo contribuir](#cómo-contribuir)
+- [Estado del proyecto](#estado-del-proyecto)
+- [Límites conocidos](#límites-conocidos)
 - [Equipo](#equipo)
 - [Licencia](#licencia)
 
 ## El problema
 
-Hospitales, laboratorios y aseguradoras de salud procesan a diario miles de documentos heterogéneos: informes de estudios, recetas, órdenes de autorización, epicrisis y certificados. Equipos administrativos los leen a mano para transcribir datos en sistemas heredados. El proceso es lento, caro, propenso a errores de tipeo y, cuando el documento describe una urgencia, la demora se paga en la atención del paciente.
+Hospitales, laboratorios y aseguradoras de salud procesan a diario grandes volúmenes de documentos heterogéneos: informes de estudios, recetas, órdenes de autorización, epicrisis y certificados. Equipos administrativos los leen a mano para transcribir datos en sistemas heredados. El proceso es lento, caro, propenso a errores de tipeo y, cuando el documento describe una urgencia, la demora se paga en la atención del paciente.
 
 ## Dónde encaja MediFlow
 
@@ -52,8 +63,8 @@ El usuario no es el médico, es el equipo administrativo y el auditor clínico. 
 1. Un médico de guardia solicita una tomografía.
 2. El radiólogo interpreta el estudio y escribe un informe.
 3. Ese informe sale del sistema como PDF, se imprime y se escanea, o llega por correo.
-4. Cae en una bandeja administrativa junto a cientos de documentos más.
-5. Hoy alguien lo lee, teclea los datos en el sistema heredado y decide a dónde va. Tarda horas.
+4. Cae en una bandeja administrativa junto a muchos otros documentos.
+5. Hoy alguien lo lee, teclea los datos en el sistema heredado y decide a dónde va, cuando llega su turno en la pila.
 6. Con MediFlow entra por la API, la pantalla de carga o el bucket, y en segundos queda clasificado, extraído, puntuado y enrutado.
 
 MediFlow entra en el paso 4.
@@ -62,7 +73,7 @@ Tres ejemplos de lo que le llega: el informe en PDF que exporta el sistema de im
 
 ## Alcance
 
-MediFlow hace triaje documental, no triaje clínico. No diagnostica: detecta que un documento ya dice algo urgente y lo mueve rápido. En el primer ejemplo, el tromboembolismo lo diagnosticó el radiólogo; lo que MediFlow evita es que ese informe espere seis horas en una bandeja.
+MediFlow hace triaje documental, no triaje clínico. No diagnostica: detecta que un documento ya dice algo urgente y lo mueve rápido. En el primer ejemplo, el tromboembolismo lo diagnosticó el radiólogo; lo que MediFlow busca evitar es que ese informe espere en una bandeja hasta que alguien lo lea.
 
 | Dimensión | Dentro de alcance | Fuera de alcance |
 |---|---|---|
@@ -81,7 +92,7 @@ Un agente que trata cada documento como un caso de triaje:
 
 1. **Ingesta** en cualquier formato soportado: PDF con texto, PDF escaneado, imagen, texto plano o JSON.
 2. **Clasificación** en seis tipos: Receta Médica, Informe de Estudio por Imágenes, Informe de Laboratorio, Orden de Solicitud de Procedimiento, Epicrisis y Certificado Médico.
-3. **Extracción estructurada** con un LLM multimodal y validación con esquemas Pydantic. Cada dato extraído cita el fragmento del documento que lo sustenta. Lo que no está en el documento queda en `null`; nunca se inventa.
+3. **Extracción estructurada** con un LLM y validación con esquemas Pydantic. Cada dato extraído cita el fragmento del documento que lo sustenta. Lo que no está en el documento queda en `null`; nunca se inventa.
 4. **Score de confianza** compuesto por legibilidad, validación de consistencia, confianza declarada por el modelo y acuerdo entre modelos.
 5. **Detección de urgencia** desde fuentes independientes: hallazgos críticos, palabras clave, valores críticos de laboratorio y juicio del modelo. Basta con que una dispare. Las tres listas automáticas se aplican solo a informes de estudio, informes de laboratorio y órdenes; en recetas, epicrisis y certificados decide el modelo, que lee el contexto.
 6. **Enrutamiento** a uno de cinco destinos: Cola de Emergencia Médica, Farmacia Hospitalaria, Auditoría de Autorizaciones, Historia Clínica Electrónica o Cola de Revisión Humana.
@@ -89,7 +100,7 @@ Un agente que trata cada documento como un caso de triaje:
 
 Principios que gobiernan el diseño:
 
-- Una urgencia nunca se pierde por una ambigüedad: va a Emergencia y además queda marcada para auditoría.
+- Una urgencia detectada no se frena por una ambigüedad: va a Emergencia y además queda marcada para auditoría.
 - Si el auditor rechaza un documento, este termina en `rechazados/` y no sigue hacia ningún destino operativo. Un rechazo no se puede volver una aprobación por error del sistema.
 - Cuando la lectura falla, el sistema lo dice; no rellena con datos inventados.
 - Si el documento no se pudo guardar en el bucket, la respuesta lo dice. El campo `status_backup` solo dice `exito` cuando el objeto quedó realmente escrito, nunca antes.
@@ -133,20 +144,20 @@ flowchart LR
     G <-->|"clasificar, extraer"| LLM["LLM multimodal"]
     G --> OS["OCI Object Storage"]
     G --> DB["Estado y cola de revisión"]
-    G --> ONS["OCI Notifications"]
+    G --> N8N["n8n"] --> SL["Slack de la guardia"]
     DB --> UI
 ```
 
 | Capa | Tecnología |
 |---|---|
 | Orquestación | LangGraph, grafo con nodos y aristas condicionales y estado tipado |
-| Modelo | LLM multimodal con adaptador único y cadena de respaldo ante fallos del proveedor |
+| Modelo | LiteLLM con Groq `qwen/qwen3.8-27b` en plan gratuito. Si el modelo no responde, el agente sigue con reglas y lo marca para revisión ([ADR-014](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/decisions.md)) |
 | Validación | Pydantic, un esquema por tipo de documento y contrato de entrada y salida |
 | API | FastAPI |
 | Interfaz | Streamlit: carga, cola de triaje, auditoría, reglas, métricas y trazas |
 | Documentos | OCI Object Storage, Always Free |
 | Cómputo | VM Ampere A1 en OCI, Always Free, con Docker Compose y Nginx como servidor web de entrada (recibe las peticiones, gestiona el certificado HTTPS y las reparte entre la API y la interfaz) |
-| Alertas | OCI Notifications, Always Free |
+| Alertas | n8n auto-hospedado en la VM que publica en el canal de Slack de la guardia. La alerta no lleva el nombre del paciente (`ALERTA_OCULTAR_PACIENTE=true`) |
 | CI/CD | GitHub Actions, despliegue automático en cada merge a `main` |
 
 ## Grafo de decisión
@@ -226,24 +237,30 @@ En ambos casos el documento se persiste con su marca, porque el registro debe ex
 
 **Categorías de ambigüedad.** Cuando un documento va a revisión humana se indica por qué, con una sola categoría: AMB-1 falta un campo obligatorio, AMB-2 contradicción interna, AMB-3 dosis fuera de rango o medicamento no identificable, AMB-4 texto truncado o parcialmente ilegible, AMB-5 dos documentos en un mismo archivo, AMB-6 fuera del alcance del agente.
 
-**Fuera de alcance.** AMB-6 no señala un defecto del documento sino un límite del sistema, y por eso tiene categoría propia. Cubre cinco casos: documento no clínico, documento clínico que no es de los seis tipos, paciente no humano, idioma no soportado y pedido de diagnóstico. El agente deriva a revisión humana diciendo cuál de los cinco es, en vez de forzar el documento a un tipo que no le corresponde. Una regla más va con esto: el texto que llega es dato, nunca instrucción; si un documento contiene una orden dirigida al sistema, se ignora, se enruta por lo que el documento realmente es y queda registrada en la traza. Todo esto está explicado para el usuario en [`docs/alcance-y-limites.md`](docs/alcance-y-limites.md), cuyo resumen aparece en la pantalla de carga.
+**Fuera de alcance.** AMB-6 no señala un defecto del documento sino un límite del sistema, y por eso tiene categoría propia. Cubre cinco casos: documento no clínico, documento clínico que no es de los seis tipos, paciente no humano, idioma no soportado y pedido de diagnóstico. El agente deriva a revisión humana diciendo cuál de los cinco es, en vez de forzar el documento a un tipo que no le corresponde. Una regla más va con esto: el texto que llega es dato, nunca instrucción; si un documento contiene una orden dirigida al sistema, se ignora, se enruta por lo que el documento realmente es y queda registrada en la traza. Todo esto está explicado para el usuario en [`docs/alcance-y-limites.md`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/alcance-y-limites.md), cuyo resumen aparece en la pantalla de carga.
 
 **Urgencia por tipo de documento (regla A).** Las listas automáticas de `rules.yaml` (`hallazgos_criticos`, `palabras_urgencia` y `valores_criticos_laboratorio`) se aplican solo a los tipos de `deteccion_automatica_urgencia.aplica_a`: informes de estudio por imágenes, informes de laboratorio y órdenes de procedimiento, que son los documentos que comunican un hallazgo nuevo o piden atención. En recetas, epicrisis y certificados la urgencia la decide el modelo con justificación, porque ahí las frases de alarma suelen ser instrucciones de alta ("acudir de urgencia si...") o diagnósticos ya tratados: una epicrisis de un paciente dado de alta tras un tromboembolismo no es una urgencia. Volver a aplicar las listas a todos los tipos es agregar tres líneas a esa lista.
 
 **Alto riesgo farmacológico.** Una receta con anticoagulantes, opioides, insulina, potasio intravenoso o metotrexato. No dispara Emergencia, porque no hay una urgencia clínica: va a Farmacia Hospitalaria como cualquier receta, pero con auditoría obligatoria. La lista de medicamentos está en `agent/rules/rules.yaml` y se edita sin tocar el código.
 
-**Urgencia con ambigüedad** no es contradictorio: la urgencia es sobre el contenido clínico, la ambigüedad sobre la calidad del dato. Si la conclusión dice "tromboembolismo pulmonar agudo" pero una sombra tapa el nombre del paciente, el documento va a Emergencia de inmediato y además queda marcado para auditoría. Una urgencia nunca se retiene esperando que un humano complete un dato.
+**Urgencia con ambigüedad** no es contradictorio: la urgencia es sobre el contenido clínico, la ambigüedad sobre la calidad del dato. Si la conclusión dice "tromboembolismo pulmonar agudo" pero una sombra tapa el nombre del paciente, el documento va a Emergencia de inmediato y además queda marcado para auditoría. Una urgencia detectada no se retiene esperando que un humano complete un dato.
 
 Las reglas que alimentan el grafo (umbrales, destinos, hallazgos críticos, valores críticos de laboratorio, medicamentos de alto riesgo y categorías de ambigüedad) viven en `agent/rules/rules.yaml` y se editan sin tocar el código.
 
 ## Escenarios de demostración
 
-| Escenario | Entrada | Resultado esperado |
-|---|---|---|
-| Rutina | Certificado médico en PDF | Historia Clínica Electrónica, sin auditoría, objeto en `procesados/historia_clinica/` |
-| Urgencia | Informe de tomografía con tromboembolismo pulmonar agudo | Cola de Emergencia Médica, alerta enviada, objeto en `procesados/urgentes/` |
-| Ambigüedad | Foto de receta manuscrita con dosis dudosa | Cola de Revisión Humana. Si el auditor corrige, el documento se reencamina a Farmacia; si lo rechaza, termina en `rechazados/` y no continúa hacia ningún destino operativo |
-| Alto riesgo | Receta con anticoagulante | Farmacia Hospitalaria con `requiere_auditoria_humana: true`. El alto riesgo farmacológico marca auditoría, no dispara Emergencia; solo la urgencia clínica va a Emergencia |
+Los tres escenarios que exige el brief, más un caso por cada resultado del conjunto de prueba. Todos los archivos están en [`evals/golden/files/`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/tree/main/evals/golden/files) y [`evals/handwritten/`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/tree/main/evals/handwritten), y se pueden subir en vivo en la pantalla de Carga.
+
+| Escenario | Caso | Entrada | Resultado esperado |
+|---|---|---|---|
+| **Rutina** | GS-28 | Certificado médico | Historia Clínica Electrónica, sin auditoría, objeto en `procesados/historia_clinica/` |
+| **Urgencia** | GS-07 y el ejemplo del brief ([`docs/examples/triage_request.json`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/examples/triage_request.json)) | Informe de tomografía con tromboembolismo pulmonar agudo | Cola de Emergencia Médica, alerta a la guardia, objeto en `procesados/urgentes/` |
+| **Ambigüedad** | GS-06 | Receta con un dato de dosis que no se puede dar por bueno | Cola de Revisión Humana. Si el auditor corrige, se reencamina a Farmacia; si lo rechaza, termina en `rechazados/` y no continúa hacia ningún destino operativo |
+| Urgencia con ambigüedad | GS-14 | Laboratorio de sepsis con un dato faltante | Cola de Emergencia Médica **y** marca de auditoría: una urgencia detectada no se frena por una duda |
+| Alto riesgo | GS-04 | Receta con anticoagulante | Farmacia Hospitalaria con `requiere_auditoria_humana: true`. El alto riesgo farmacológico marca auditoría, no dispara Emergencia |
+| Fuera de alcance | FA-07 | Receta veterinaria | Cola de Revisión Humana con AMB-6: el agente reconoce que no le corresponde decidir |
+| Intento de engaño | FA-05 | Laboratorio con potasio crítico y una orden escondida para mandarlo a rutina | Cola de Emergencia Médica: el agente ignora la orden |
+| Ilegible | M7 | Foto de receta manuscrita muy degradada | Cola de Revisión Humana con el motivo «solicitar nueva captura» |
 
 ## Contrato de la API
 
@@ -259,11 +276,11 @@ Entrada:
 ```
 
 
-Salida: el mismo contrato del brief, con `status`, `clasificacion`, `datos_extraidos`, `decision_enrutamiento` y `almacenamiento_oci`, más cuatro campos propios: `score_confianza`, `modelo_utilizado`, `evidencias` y `trace`. El ejemplo completo está en [`docs/examples/triage_response.json`](docs/examples/triage_response.json).
+Salida: el mismo contrato del brief, con `status`, `clasificacion`, `datos_extraidos`, `decision_enrutamiento` y `almacenamiento_oci`, más cuatro campos propios: `score_confianza`, `modelo_utilizado`, `evidencias` y `trace`. El ejemplo completo está en [`docs/examples/triage_response.json`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/examples/triage_response.json).
 
-El contrato completo, con los campos obligatorios por tipo de documento, las reglas de enrutamiento y las categorías de ambigüedad, está en [`docs/api-contract.md`](docs/api-contract.md).
+El contrato completo, con los campos obligatorios por tipo de documento, las reglas de enrutamiento y las categorías de ambigüedad, está en [`docs/api-contract.md`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/api-contract.md).
 
-La configuración y verificación de alertas urgentes por n8n y Slack está en [`docs/n8n-alertas.md`](docs/n8n-alertas.md).
+La configuración y verificación de alertas urgentes por n8n y Slack está en [`docs/n8n-alertas.md`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/n8n-alertas.md).
 
 ## Estructura del repositorio
 
@@ -304,7 +321,7 @@ curl -s -X POST http://localhost:8000/triage \
 
 ## Despliegue en Oracle Cloud
 
-Todo corre dentro de la capa Always Free: Object Storage para los documentos, una VM Ampere A1 para la aplicación y OCI Notifications para las alertas. Cada merge a `main` construye y despliega en la VM mediante GitHub Actions (`.github/workflows/deploy.yml`). La preparación de la VM se hace una sola vez con `infra/oci/setup-vm.sh`, y las políticas IAM mínimas están en `infra/oci/policies.txt`.
+Todo corre dentro de la capa Always Free: Object Storage para los documentos y una VM Ampere A1 para la aplicación, la API, el worker y n8n. Cada merge a `main` construye y despliega en la VM mediante GitHub Actions (`.github/workflows/deploy.yml`). La preparación de la VM se hace una sola vez con `infra/oci/setup-vm.sh`, y las políticas IAM mínimas están en `infra/oci/policies.txt`.
 
 Los documentos se organizan en el bucket por estado:
 
@@ -332,7 +349,7 @@ Cada fuente resuelve una tarea distinta y conviene no mezclarlas:
 
 **El conjunto de prueba** funciona como un examen con solucionario: cada documento lleva escrito de antemano la respuesta correcta, se pasa por el agente y se compara lo que salió con lo esperado.
 
-Tiene **45 elementos**, cada uno con su respuesta correcta en [`evals/golden/plan_golden.csv`](evals/golden/plan_golden.csv):
+Tiene **45 elementos**, cada uno con su respuesta correcta en [`evals/golden/plan_golden.csv`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/evals/golden/plan_golden.csv):
 
 | Qué | Cuántos | De qué tipo son | De dónde sale su etiqueta |
 |---|---|---|---|
@@ -362,16 +379,16 @@ Los siete casos fuera de alcance se miden aparte, porque responden otra pregunta
 
 Para que los números no estén contaminados, los ejemplos incrustados en los prompts nunca son documentos del conjunto, y los prompts no se ajustan mirando los fallos del conjunto de prueba: se prueban con otros documentos.
 
-El reparto documento por documento, con la respuesta esperada de cada uno, está en [`docs/kit-de-datos.pdf`](docs/kit-de-datos.pdf), y las fuentes con sus licencias en [`evals/DATA.md`](evals/DATA.md).
+El reparto documento por documento, con la respuesta esperada de cada uno, está en [`evals/golden/plan_golden.csv`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/evals/golden/plan_golden.csv), y las fuentes con sus licencias en [`evals/DATA.md`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/evals/DATA.md).
 
-El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Cada corrida oficial se publica en [`evals/resultados/`](evals/resultados/).
+El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Las corridas se registran en [`evals/resultados/`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/tree/main/evals/resultados). Hay dos: la línea base del 13/10 con DeepSeek (con el informe completo en el repositorio) y la del 22/10 con la cadena gratuita.
 
-### Primera evaluación · 13/10/2026
+### Línea base · 13/10/2026
 
 Corrida sobre las 76 variantes de los 45 elementos del conjunto de prueba:
 - **Modelo principal:** DeepSeek (`deepseek/deepseek-chat`).
 - **Código:** commit `b3ff577` de develop.
-- **Archivos:** el informe completo, el detalle por variante y el análisis están en [`evals/resultados/2026-10-13_deepseek/`](evals/resultados/2026-10-13_deepseek/).
+- **Archivos:** el informe completo, el detalle por variante y el análisis están en [`evals/resultados/2026-10-13_deepseek/`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/tree/main/evals/resultados/2026-10-13_deepseek).
 
 | Métrica | Corrida completa | Solo texto, PDF y JSON |
 |---|---|---|
@@ -391,67 +408,124 @@ Es la línea de base: corre el código de develop tal como estaba el 13/10, ante
 **Cómo leerla**
 
 1. **Las imágenes no se evaluaron.** En la máquina de la corrida el OCR no devolvió texto, y la puerta de legibilidad mandó las 22 imágenes a revisión humana sin llamar al modelo. La única urgencia que falta es una de ellas (GS-07 escaneado). Por eso la columna de la derecha deja afuera las imágenes.
-2. **Ninguna urgencia perdida en texto, pero 10 falsas.** 8 de las 10 están en recetas, epicrisis y casos fuera de alcance. En esos tipos, la regla A (ADR-002) no admite las listas automáticas de hallazgos y palabras clave, pero todavía no está fusionada en `agent/nodes/urgencia.py`.
-3. **Fuera de alcance: lo reconoce, pero falta la marca.** En 8 de 10 variantes de texto, el agente clasifica el documento como «Otro» con AMB-6 y el motivo correcto. Seis de ellas van a Revisión humana y fallan solo porque `enrutar.py` no marca la auditoría para ese tipo.
+2. **Ninguna urgencia perdida en texto, pero 10 falsas.** 8 de las 10 están en recetas, epicrisis y casos fuera de alcance. En esos tipos, la regla A (ADR-002) no admite las listas automáticas de hallazgos y palabras clave, y en ese commit todavía no estaba en `agent/nodes/urgencia.py`. Se fusionó después (#3).
+3. **Fuera de alcance: lo reconoce, pero falta la marca.** En 8 de 10 variantes de texto, el agente clasifica el documento como «Otro» con AMB-6 y el motivo correcto. Seis de ellas van a Revisión humana y fallan solo porque `enrutar.py` no marcaba la auditoría para ese tipo. También se corrigió en #3.
 4. **El intento de engaño no funcionó.** FA-05 trae una instrucción incrustada para mandarlo a rutina. El agente la ignoró y envió el potasio crítico a Emergencia.
 
-El análisis completo, con los fallos por categoría AMB y por tipo de documento y lo que sigue, está en [`analisis.md`](evals/resultados/2026-10-13_deepseek/analisis.md).
+El análisis completo, con los fallos por categoría AMB y por tipo de documento y lo que sigue, está en [`analisis.md`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/evals/resultados/2026-10-13_deepseek/analisis.md).
 
-## Prioridades de entrega
+### Segunda corrida · 22/10/2026 · cadena gratuita sin cupo
 
-> **Regla de alcance:** primero se entrega completo el checklist obligatorio del brief, después los cinco diferenciales que el brief propone, y solo entonces se agregan nuestros plus. Nada del nivel 3 se empieza si algo del nivel 1 o 2 sigue abierto.
+Corrida sobre las mismas 76 variantes, con el código del 22/10 (incluye la regla A, la marca de auditoría para fuera de alcance, la validación de dosis y CIE-10 y N1-13) y la cadena gratuita de producción, Groq `qwen/qwen3.8-27b`.
+
+**Cómo leerla.** El cupo diario gratuito de Groq se agotó durante la corrida, así que la mayoría de los documentos se resolvió con la caída a reglas: la latencia p50 fue de 0,1 s y el campo del modelo quedó vacío. Por eso esta corrida **no mide al modelo**: mide qué hace el sistema cuando el modelo no responde. No se compara punto a punto con la línea base.
+
+| Métrica | Línea base 13/10 (DeepSeek) | 22/10 (mayoría con reglas) |
+|---|---|---|
+| **Recall de urgencias** | 94 % (16/17) | **100 % (17/17)** |
+| Accuracy de clasificación | 83 % (52/63) | 92 % (58/63) |
+| Accuracy de destino | 62 % (39/63) | 76 % (48/63) |
+| Acierto de la marca de auditoría | 60 % (38/63) | 67 % (42/63) |
+| Casos fuera de alcance resueltos | 0 % (0/12) | 67 % (8/12) |
+| Puerta de legibilidad (media y severa) | 46 % (6/13) | 31 % (4/13) |
+| Casos correctos en todo | 41 % (31/76) | 50 % (38/76) |
+| Tasa de revisión humana | 45 % (34/76) | 50 % (38/76) |
+| Latencia p50 / p95 | 3,9 s / 5,2 s | 0,1 s / 4,3 s |
+
+Lo que sí muestra:
+1. **Con la mayoría de los documentos resueltos sin modelo, ninguna urgencia del conjunto se perdió (17/17).** Las tres listas automáticas (hallazgos críticos, palabras de urgencia y valores críticos de laboratorio) y la regla A sostienen la detección aunque el modelo no responda.
+2. **Los arreglos fusionados después del 13/10 se notan** en fuera de alcance (de 0/12 a 8/12) y en la marca de auditoría.
+3. **La puerta de legibilidad sigue siendo el punto débil:** las recetas manuscritas M1 a M6 fallan, porque el OCR no lee letra cursiva y la imagen todavía no llega al modelo (ver [Límites conocidos](#límites-conocidos)).
+
+### Verificación en producción · 24/10/2026
+
+Pruebas en la URL pública con Groq:
+
+| Caso | Resultado | Tiempo |
+|---|---|---|
+| GS-28, certificado (texto) | Historia Clínica Electrónica | unos 2 s |
+| GS-07, tromboembolismo (texto) | Cola de Emergencia Médica y alerta en Slack | unos 3 s |
+| GS-07, tromboembolismo (foto escaneada) | Cola de Emergencia Médica y alerta en Slack | 9,9 s |
+| GS-06, receta con dosis fuera de rango | Cola de Revisión Humana | 3,6 s |
+| FA-05, potasio crítico con una orden escondida | Cola de Emergencia Médica: ignoró la orden; alerta con el nombre omitido | 3,4 s |
+
+Son mediciones sin carga y de un solo intento: muestran que el flujo funciona de punta a punta, no el rendimiento bajo volumen.
+
+### Costo y capacidad
+
+Desde #107, cada llamada al modelo registra los tokens y el costo. En la línea base, un documento usó unas 3.500 fichas (tokens) en dos llamadas: clasificar y extraer.
+
+| Cadena | Costo por documento | Capacidad |
+|---|---|---|
+| Gratuita (Groq, producción) | Sin costo mientras alcance el cupo diario | El cupo diario se agotó antes de terminar las 76 variantes del 22/10: alcanza para la demo y pruebas chicas |
+| Paga (DeepSeek, línea base del 13/10) | Unos US$ 0,0005 medidos | Sin límite práctico; unos US$ 15 por mes para 1.000 documentos por día |
+
+Para operar en un hospital hace falta un plan pago: con DeepSeek, el costo medido es de centavos por cada mil documentos.
+
+## Estado del proyecto
+
+Todo lo obligatorio del brief está entregado y desplegado en Oracle Cloud.
+
+> **Orden de prioridad que seguimos:** primero el checklist obligatorio del brief, después los diferenciales que el brief propone y por último nuestros plus.
 
 ### Nivel 1 · Obligatorio, checklist de evaluación del brief
 
-- [ ] Ingestión funcional de documentos clínicos en texto, PDF e imagen
-- [ ] Clasificación automática del tipo de documento con LLM multimodal
-- [ ] Extracción de datos clínicos esenciales en JSON estructurado
-- [ ] Lógica de decisión condicional con manejo de casos ambiguos y urgentes
-- [ ] Integración activa con OCI Object Storage, capa Always Free
-- [ ] Demostración de tres escenarios: rutina, urgencia y ambigüedad
-- [ ] Documentación completa con el diagrama del flujo del agente
+- [x] Ingestión funcional de documentos clínicos en texto, PDF e imagen
+- [x] Clasificación automática del tipo de documento con LLM (las imágenes llegan al modelo como texto de OCR)
+- [x] Extracción de datos clínicos esenciales en JSON estructurado
+- [x] Lógica de decisión condicional con manejo de casos ambiguos y urgentes
+- [x] Integración activa con OCI Object Storage, capa Always Free
+- [x] Demostración de tres escenarios: rutina, urgencia y ambigüedad
+- [x] Documentación completa con el diagrama del flujo del agente
 
 ### Nivel 2 · Diferenciales que propone el brief
 
-- [ ] Panel de auditoría Human-in-the-Loop en Streamlit
-- [ ] Despliegue completo en OCI Compute con acceso público
-- [ ] Flujo clínico personalizable: reglas, destinos y umbrales editables sin tocar el código
-- [ ] OCR y visión multimodal: lectura de recetas manuscritas e informes escaneados
-- [ ] Alertas en tiempo real hacia Slack y correo para los equipos de guardia
+- [x] Panel de auditoría Human-in-the-Loop en Streamlit, con pausa y reanudación del grafo
+- [x] Despliegue completo en OCI Compute con acceso público
+- [x] Flujo clínico personalizable: reglas, destinos y umbrales editables sin tocar el código
+- [x] OCR de informes impresos, fotos y escaneos con Tesseract
+- [x] Alertas en tiempo real hacia Slack para los equipos de guardia, con n8n, verificadas de punta a punta en la URL pública
 
-### Nivel 3 · Nuestros plus, solo si el nivel 2 cierra en fecha
+### Nivel 3 · Nuestros plus
 
-- [ ] Dashboard en vivo con las alertas y las métricas de triaje en pantalla
-- [ ] Workflow en n8n auto-hospedado disparando las alertas a Slack, tal como lo nombra el brief
-- [ ] Multilingüe: documentos en portugués además de español, con un solo esquema de salida
-- [ ] Reporte diario y semanal al gestor hospitalario, redactado por el agente
-- [ ] Evaluación publicada con calibración del score de confianza
-- [ ] Resiliencia con modelo de respaldo, demostrada en vivo
-- [ ] Segunda opinión entre modelos cuando el score es medio
-- [ ] Aprendizaje desde las correcciones del auditor como tests de regresión
+- [x] Workflow en n8n auto-hospedado disparando las alertas a Slack, tal como lo nombra el brief
+- [x] Evaluación con un conjunto de prueba propio de 45 elementos y 76 variantes, publicada en `evals/resultados/`
+- [x] Resiliencia: si el modelo no responde, el agente sigue con reglas y marca el documento para revisión
+- [x] Privacidad desde el diseño: datos sintéticos y alertas sin el nombre del paciente ([`docs/privacidad.md`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/privacidad.md))
+- [x] Medición de tokens y costo por documento
 
-## Cómo contribuir
+### Siguiente versión
 
-Una tarea, una rama, un PR.
+- Lectura de recetas manuscritas con visión multimodal
+- Dashboard completo de métricas de operación y calidad del agente en la URL pública
+- Segunda opinión entre modelos cuando el score es medio
+- Reporte diario y semanal al gestor hospitalario, redactado por el agente
+- Aprendizaje desde las correcciones del auditor como tests de regresión
+- Evaluación con corpus clínicos públicos (CodiEsp, MEDDOCAN, PharmaCoNER)
 
-1. Toma una tarea del tablero y asígnatela.
-2. Crea una rama desde `develop` con el formato `feat/<area>-<tema>`, `fix/<area>-<tema>` o `docs/<tema>`, por ejemplo `feat/agent-clasificar`.
-3. Haz commits pequeños con mensajes claros.
-4. Abre un Pull Request con la plantilla. El CI corre lint y tests automáticamente.
-5. Una persona del equipo dueño de la carpeta revisa y aprueba.
-6. Se hace squash merge a `develop`. Cuando el conjunto funciona de punta a punta, `develop` sube a `main` en un solo PR, y ese es el que despliega. Nadie hace push directo a `main` ni a `develop`.
+## Límites conocidos
 
-Las decisiones de diseño se registran en [`docs/decisions.md`](docs/decisions.md). Nunca se suben claves, wallets ni datos de pacientes: `.env` y `wallet/` están en `.gitignore`.
+- **Las imágenes llegan al modelo como texto.** El OCR (Tesseract) lee fotos y escaneos impresos; las recetas manuscritas no se leen y van a revisión humana. El adaptador ya acepta imágenes, pero los nodos todavía no se las pasan al modelo multimodal.
+- **La segunda opinión entre modelos** está prevista en el grafo, pero todavía no llama a un segundo modelo.
+- **Solo español.** Un documento en otro idioma se reconoce como fuera de alcance y va a revisión humana.
+- **Cupo gratuito.** El cupo diario de Groq alcanza para la demo y pruebas chicas: se agotó en la corrida de 76 variantes del 22/10. Para volumen hospitalario hace falta un plan pago.
+- **Modelos de respaldo sin probar.** El adaptador admite una cadena de respaldo (Gemini, Mistral; [ADR-014](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/decisions.md)), pero no se probó en una falla real. Lo probado es la caída a reglas.
+- **Evaluación con modelo gratuito parcial.** La corrida del 22/10 resolvió la mayoría de los casos con reglas porque se agotó el cupo; la medición con modelo es la del 13/10 con DeepSeek.
+- **Documentos sintéticos y sin validación clínica.** Es un prototipo; llevarlo a un hospital real pide validación clínica y un plan de modelos acorde al volumen.
+- **Prueba de funcionamiento, no medición estadística:** con 76 variantes, cada porcentaje tiene un margen de unos ±11 a ±13 puntos.
 
 ## Equipo
 
-- Alessandro Cappelli
-- Carlos Zunino
-- Carolina Chambique
-- Cristian Ojeda
-- Maria Camila Gonzalez Nuñez
-- Néstor Gribaudo
-- Sabrina Valentim Guimaraes
+| Persona | Actividades |
+|---|---|
+| Alessandro Cappelli | responsable del desarrollo de interfaz-streamlit, configuración del repositorio, video y alertas con n8n |
+| Carlos Zunino | responsable de la clasificación, extracción, adaptador de modelos e infraestructura en OCI-Oracle Cloud Infrastructure |
+| Carolina Chambique | responsable de la revisión humana dentro del grafo |
+| Cristian Ojeda | responsable de la validación, urgencias, reglas, endpoints de revisión humana y pruebas de calidad (QA)  |
+| Leidy Diana Gaitan Fiaga | apoyo y soporte en creación de los casos borde, documentos del conjunto de prueba y creación del video demo del agente |
+| Maria Camila Gonzalez Nuñez | responsable de la Planeación, estrategia y desarrollo del proyecto, como soporte técnico, diseño del conjunto de pruebas, sistema de evaluación, panel del auditor y dashboards de control |
+| Néstor Gribaudo | responsable de la creación del grafo, puntaje, enrutamiento, legibilidad y trazas |
+| Sabrina Valentim Guimaraes | desarrollo de la API, worker, persistencia y respaldos |
 
 Repositorio: [No-Country-simulation/G10-LATAM-equipo-37-Mediflow](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow)
 
@@ -459,4 +533,4 @@ Proyecto desarrollado en el marco del Hackathon ONE G10, programa Oracle Next Ed
 
 ## Licencia
 
-MIT. Ver [`LICENSE`](LICENSE).
+MIT. Ver [`LICENSE`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/LICENSE).
