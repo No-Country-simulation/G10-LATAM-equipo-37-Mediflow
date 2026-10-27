@@ -60,7 +60,13 @@ def enrutar(state: TriageState) -> dict:
 
     elif ambiguedad or score < umbrales["segunda_opinion"]:
         destino, auditoria = revision, True
-        justificacion = "Confianza baja, datos ambiguos o incompletos. Requiere revisión humana."
+        if ambiguedad:
+            categoria = validacion.get("categoria_amb")
+            conflictos = validacion.get("conflictos") or []
+            detalle = f": {conflictos[0].rstrip('.')}" if conflictos else ""
+            justificacion = f"Revisión humana por ambigüedad ({categoria}){detalle}."
+        else:
+            justificacion = f"Revisión humana por score bajo ({round(score, 2)})."
 
     else:
         destino = destinos["por_tipo"].get(tipo, revision)
