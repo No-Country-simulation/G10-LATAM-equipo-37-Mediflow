@@ -25,8 +25,7 @@ MediFlow recibe documentos clínicos en PDF, imagen, texto o JSON, los clasifica
 | Qué | Dónde |
 |---|---|
 | Aplicación (carga, cola, auditoría, reglas y trazas) | [mediflow-equipo37.duckdns.org](https://mediflow-equipo37.duckdns.org/) |
-| API y su documentación interactiva | [mediflow-equipo37.duckdns.org/api/docs](https://mediflow-equipo37.duckdns.org/api/docs) |
-| Evaluación publicada | [`evals/resultados/`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/tree/main/evals/resultados) |
+
 
 Todo corre en la capa Always Free de Oracle Cloud y con un modelo de lenguaje en plan gratuito. Los documentos de la demo son sintéticos: ningún dato pertenece a un paciente real.
 
