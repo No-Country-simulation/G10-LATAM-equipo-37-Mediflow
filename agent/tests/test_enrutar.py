@@ -134,3 +134,25 @@ def test_score_entre_umbrales_se_enruta_pero_se_audita():
     d = _decision(score=medio)
     assert d["destino_principal"] == DESTINOS["por_tipo"]["Informe de Laboratorio"]
     assert d["requiere_auditoria_humana"] is True
+
+
+def test_ambiguedad_amb3_va_a_revision_y_la_justificacion_nombra_el_motivo():
+    """Con score alto, la revisión la manda la regla de ambigüedad, no la confianza."""
+    d = _decision(
+        score=0.92,
+        validacion={
+            "categoria_amb": "AMB-3",
+            "conflictos": ["Dosis fuera de rango para amoxicilina: 5000 mg"],
+        },
+    )
+    assert d["requiere_auditoria_humana"] is True
+    texto = d["justificacion_enrutamiento"]
+    assert "ambigüedad (AMB-3)" in texto
+    assert "Dosis fuera de rango" in texto
+    assert "onfianza" not in texto
+
+
+def test_score_bajo_sin_ambiguedad_dice_score_bajo():
+    d = _decision(score=0.10, validacion={"conflictos": []})
+    assert d["requiere_auditoria_humana"] is True
+    assert "score bajo" in d["justificacion_enrutamiento"]
