@@ -156,3 +156,18 @@ def test_score_bajo_sin_ambiguedad_dice_score_bajo():
     d = _decision(score=0.10, validacion={"conflictos": []})
     assert d["requiere_auditoria_humana"] is True
     assert "score bajo" in d["justificacion_enrutamiento"]
+
+
+def test_revision_sin_categoria_no_muestra_none():
+    d = _decision(validacion={"campos_faltantes": ["paciente.nombre"]})
+    assert d["requiere_auditoria_humana"] is True
+    assert "None" not in d["justificacion_enrutamiento"]
+
+
+def test_categoria_principal_y_conflicto_coexistente_se_muestran_separados():
+    d = _decision(validacion={
+        "categoria_amb": "AMB-1",
+        "campos_faltantes": ["paciente.nombre"],
+        "conflictos": ["Dosis fuera de rango: 5000 mg."],
+    })
+    assert "(AMB-1). Conflicto detectado: Dosis fuera de rango" in d["justificacion_enrutamiento"]

@@ -63,8 +63,9 @@ def enrutar(state: TriageState) -> dict:
         if ambiguedad:
             categoria = validacion.get("categoria_amb")
             conflictos = validacion.get("conflictos") or []
-            detalle = f": {conflictos[0].rstrip('.')}" if conflictos else ""
-            justificacion = f"Revisión humana por ambigüedad ({categoria}){detalle}."
+            etiqueta = f" ({categoria})" if categoria else ""
+            detalle = f" Conflicto detectado: {conflictos[0].rstrip('.')}." if conflictos else ""
+            justificacion = f"Revisión humana por ambigüedad{etiqueta}.{detalle}"
         else:
             justificacion = f"Revisión humana por score bajo ({round(score, 2)})."
 

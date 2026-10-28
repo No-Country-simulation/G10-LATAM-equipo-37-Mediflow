@@ -96,7 +96,8 @@ def render_result(result: dict[str, Any]) -> None:
     c1, c2, c3 = st.columns(3)
     c1.metric("Documento", result.get("documento_id", "-"))
     c2.metric("Tipo", classification.get("tipo_documento", "-"))
-    c3.metric("Confianza de lectura", f"{float(score):.0%}" if isinstance(score, (int, float)) else "-")
+    c3.metric("Confianza global", f"{float(score):.0%}" if isinstance(score, (int, float)) else "-",
+              help="Puntaje compuesto de legibilidad, validación, clasificación y acuerdo.")
     st.write("**Destino:**", decision.get("destino_principal", "-"))
     st.write("**Justificación:**", decision.get("justificacion_enrutamiento", "-"))
     with st.expander("Resultado completo"):

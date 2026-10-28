@@ -378,9 +378,10 @@ with derecha:
     score = aud.score_de(extraccion)
     st.markdown(
         f"**Destino actual:** {aud.md(decision_actual.get('destino_principal') or '—')} · "
-        f"**Confianza de lectura:** {f'{round(score * 100)} %' if score is not None else '—'} · "
+        f"**Confianza global:** {f'{round(score * 100)} %' if score is not None else '—'} · "
         f"**Canal:** {aud.md(extraccion.get('canal_origen') or '—')}"
     )
+    st.caption("Puntaje compuesto de legibilidad, validación, clasificación y acuerdo.")
     enviado = formulario(documento_id, extraccion)
     if enviado["accion"]:
         errores = resolver(documento_id, extraccion, enviado, demo)
