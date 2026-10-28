@@ -46,8 +46,8 @@ oci os bucket create \
 
 ### Estado actual
 
-**Fecha:** 12 de octubre de 2026
-**Estado:** ✅ Deploy funcionando con HTTPS y dominio propio
+**Última revisión:** 27 de octubre de 2026
+**Estado:** ✅ Deploy funcionando con HTTPS y dominio propio. Cada merge a `main` despliega con GitHub Actions (`.github/workflows/deploy.yml`)
 **Responsable:** Carlos Zunino
 **Revisora:** Sabrina
 
@@ -57,7 +57,7 @@ oci os bucket create \
 | :--- | :--- | :--- |
 | **UI Streamlit** | https://mediflow-equipo37.duckdns.org/ | ✅ Funcionando |
 | **API** | https://mediflow-equipo37.duckdns.org/api/ | ✅ Funcionando |
-| **API Docs** | https://mediflow-equipo37.duckdns.org/api/docs | ✅ Funcionando |
+| **API Docs** | https://mediflow-equipo37.duckdns.org/api/docs | ✅ Funcionando (requiere el bloque `/openapi.json` en `infra/nginx.conf`) |
 | **Health Check** | https://mediflow-equipo37.duckdns.org/api/health | ✅ `{"status":"ok","service":"mediflow-api"}` |
 
 **Redirección:** `http://mediflow-equipo37.duckdns.org/` → `301` → `https://mediflow-equipo37.duckdns.org/`
@@ -68,7 +68,7 @@ oci os bucket create \
 | :--- | :--- |
 | **Proveedor** | DuckDNS (gratuito) |
 | **Dominio** | `mediflow-equipo37.duckdns.org` |
-| **IP** | `144.22.215.79` |
+| **IP** | IP pública de la VM (ver consola de OCI) |
 
 ### Certificado SSL
 
@@ -91,9 +91,9 @@ oci os bucket create \
 | **RAM** | 12 GB |
 | **Disco** | 30 GB (raíz) + 15 GB (/var/oled) |
 | **Sistema Operativo** | Oracle Linux 9.8 (aarch64) |
-| **IP pública** | 144.22.215.79 |
+| **IP pública** | ver consola de OCI |
 | **Usuario SSH** | `opc` |
-| **Clave SSH** | `~/.ssh/mediflow-vm-1.key` |
+| **Clave SSH** | la entrega el responsable de infraestructura; nunca se sube al repositorio |
 | **Región** | sa-saopaulo-1 |
 | **Dominio de disponibilidad** | AD-1 |
 
@@ -119,14 +119,18 @@ oci os bucket create \
 ### Cómo conectarse a la VM
 
 ```bash
-ssh -i "$env:USERPROFILE\.ssh\mediflow-vm-1.key" opc@144.22.215.79
+ssh -i <ruta-de-la-clave> opc@<IP_DE_LA_VM>
 ```
 
 ### Cómo deployar
 
-#### Stack `infra` (con nginx + HTTPS)
+#### Despliegue automático
 
-**Nota:** `podman-compose` falla con Python 3.9. Los contenedores se levantan manualmente.
+El camino normal es hacer merge a `main` por PR. El workflow `deploy.yml` se conecta por SSH, hace `git reset` a `origin/main`, reconstruye con `docker compose -f infra/docker-compose.yml`, verifica `/api/health` y, si algo falla, vuelve al commit anterior. El paso SSH tiene un límite de 30 minutos (`command_timeout`), porque la reconstrucción completa tarda más de 10.
+
+#### Despliegue manual (respaldo)
+
+Solo si el workflow no está disponible. Los contenedores se pueden levantar a mano con `podman run`:
 
 ```bash
 # 1. Construir las imágenes
@@ -245,7 +249,7 @@ El certificado dura 90 días. Para renovarlo manualmente:
 sudo certbot renew
 ```
 
-**Nota:** Para el DemoDay (27/10/2026) no hace falta renovar. El certificado vence el 10/01/2027.
+**Nota:** el certificado vence el 10/01/2027. Renovarlo antes de esa fecha.
 
 ### Archivos de configuración
 
@@ -266,35 +270,18 @@ STORAGE_BACKEND=oci
 RULES_ADMIN_TOKEN=<TOKEN>
 ```
 
-### Pendientes
+### Estado al cierre del hackathon
 
-#### Seguridad de endpoints
+- **PUT /rules:** valida token. Responde 503 si falta `RULES_ADMIN_TOKEN`, 401 si el token no coincide y 422 si falta `X-Editor`.
+- **POST /audit/{id}:** no valida token. Queda para la siguiente versión.
+- **Autonomous Database:** fuera del MVP. El estado del grafo y la cola de revisión usan SQLite en el volumen `mediflow-data`. La carpeta `wallet/` no se usa.
 
-- **PUT /rules:** ✅ Implementado y validando token en la VM. Valida: 503 si falta `RULES_ADMIN_TOKEN`, 401 si el token no coincide, 422 si falta `X-Editor`.
-- **POST /audit/{id}:** No valida token. Es módulo de Cristian; queda así por ahora y se coordina con Camila después de H3.
-- **Acción:** Ninguna pendiente para H3. `POST /audit/{id}` se coordina después de H3.
+### Alertas (N2-09 y N3-08)
 
-#### ADB (Autonomous Database)
-
-- **Estado:** No implementado en el MVP.
-- **Nota:** El `docs/api-contract.md` dice que el MVP usa SQLite. ADB es para Sprint 3.
-- **Wallet:** La carpeta `wallet/` está vacía (no se necesita para el MVP).
-
-#### podman-compose
-
-- **Estado:** Roto (falla con Python 3.9).
-- **Workaround:** Los contenedores se levantan manualmente con `podman run`.
-- **Fix:** Instalar Python 3.11+ en la VM.
-
-
-### Alertas (N2-09)
-
-- **OCI Notifications (correo):** Configurado y funcionando en la VM. Es el **canal activo para H3**.
-- **Discord directo:** Configurado en el `.env` de la VM, pero el código del PR #83 aún no está mergeado.
-- **Slack vía n8n (N3-08):** Es de Alessandro y Sabrina.
-- **Configuración en la VM:** incluir `N8N_WEBHOOK_URL` en `/opt/mediflow/.env`; tanto `api` como `worker` cargan ese archivo (`env_file` en Compose y `--env-file` en el despliegue manual).
-- **Al desplegar el #83, el canal activo pasa a Discord** (prioridad N8N > Discord > OCI, un solo canal). Para seguir con correo, quitar `DISCORD_WEBHOOK_URL` del `.env`.
-- [ ] **Antes del Demo Day:** confirmar que n8n está ejecutándose y accesible para el servicio que envía la alerta. Si n8n no responde, el webhook puede esperar unos 10 segundos antes de continuar con el fallback a Discord/OCI.
+- **Canal activo: n8n → Slack.** El contenedor `n8n` recibe el webhook en `N8N_WEBHOOK_URL` y publica en el canal de Slack de la guardia. Verificado de punta a punta en la URL pública el 24/10/2026. Detalle en `docs/n8n-alertas.md`.
+- **Respaldos:** si n8n no responde, la alerta cae a Discord (`DISCORD_WEBHOOK_URL`) y después a OCI Notifications por correo (`ONS_TOPIC_OCID`). Se usa un solo canal por alerta.
+- **Privacidad:** con `ALERTA_OCULTAR_PACIENTE=true`, la alerta no incluye el nombre del paciente.
+- `api` y `worker` cargan `/opt/mediflow/.env`, así que las dos leen las mismas variables de alertas.
 
 ### Historial de cambios
 
@@ -302,20 +289,24 @@ RULES_ADMIN_TOKEN=<TOKEN>
 | :--- | :--- |
 | 9 oct 2026 | Deploy inicial en VM ARM. 3 contenedores corriendo (api, ui, worker). |
 | 12 oct 2026 | Deploy con HTTPS y dominio (DuckDNS + Let's Encrypt + nginx). 4 contenedores en stack `infra`. Bloque `/openapi.json` para Swagger. |
+| 16 oct 2026 | Alertas en tiempo real con n8n → Slack (#83 y #128). |
+| 18 y 19 oct 2026 | Deploy automático con `docker compose`, rollback y aviso a Discord. |
+| 23 oct 2026 | `command_timeout` de 30 minutos en el paso SSH (#154). |
+| 27 oct 2026 | Revisión de cierre: se quitan la IP, la ruta de la clave, el OCID del topic y el correo personal; alertas actualizadas a n8n → Slack. |
 
 ## 8. Alertas en tiempo real (N2-09)
 
 ### Topic de OCI Notifications
 
 - **Nombre:** `mediflow-alertas`
-- **OCID:** `ocid1.onstopic.oc1.sa-saopaulo-1.amaaaaaaof3op2aa77wg5xnuyc4cxw2wqahukas2shrzamxyg2jhdrlenx2q`
+- **OCID:** en `ONS_TOPIC_OCID` del `.env` de la VM (no se publica)
 - **Variable de entorno:** `ONS_TOPIC_OCID`
 
 ### Suscripciones
 
 | Protocolo | Endpoint | Estado | Notas |
 |---|---|---|---|
-| EMAIL | `zunino.cau@gmail.com` | ✅ ACTIVE | Recibe alertas de urgencia |
+| EMAIL | correo del responsable de guardia | ✅ ACTIVE | Respaldo de último nivel |
 | CUSTOM_HTTPS | Discord webhook | ⚠️ PENDING | OCI no valida webhooks de Discord |
 
 ### Cómo funciona
@@ -332,6 +323,6 @@ El nodo `notificar` lee `notificacion_generada` del state y llama a `publicar()`
 
 ```bash
 # Alertas (N2-09): prioridad N8N > DISCORD > OCI
-# N8N_WEBHOOK_URL=           # (Nivel 3, N3-08)
+N8N_WEBHOOK_URL=http://n8n:5678/webhook/mediflow-alert   # canal activo (n8n → Slack)
 DISCORD_WEBHOOK_URL=         # URL del webhook de Discord
 ONS_TOPIC_OCID=              # OCID del topic de OCI Notifications
