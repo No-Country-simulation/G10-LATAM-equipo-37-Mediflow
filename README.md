@@ -380,7 +380,7 @@ Para que los números no estén contaminados, los ejemplos incrustados en los pr
 
 El reparto documento por documento, con la respuesta esperada de cada uno, está en [`evals/golden/plan_golden.csv`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/evals/golden/plan_golden.csv), y las fuentes con sus licencias en [`evals/DATA.md`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/evals/DATA.md).
 
-El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Las corridas se registran en [`evals/resultados/`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/tree/main/evals/resultados). Hay dos: la línea base del 13/10 con DeepSeek (con el informe completo en el repositorio) y la del 22/10 con la cadena gratuita.
+El golden set se corre con `evals/run.py` y mide accuracy de clasificación, precisión y recall por campo, recall de urgencias, tasa de revisión humana y latencia. Las corridas se registran en [`evals/resultados/`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/tree/main/evals/resultados). La corrida publicada es la línea base del 13/10 con DeepSeek, con el informe completo en el repositorio.
 
 ### Línea base · 13/10/2026
 
@@ -413,28 +413,9 @@ Es la línea de base: corre el código de develop tal como estaba el 13/10, ante
 
 El análisis completo, con los fallos por categoría AMB y por tipo de documento y lo que sigue, está en [`analisis.md`](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/evals/resultados/2026-10-13_deepseek/analisis.md).
 
-### Segunda corrida · 22/10/2026 · cadena gratuita sin cupo
+### Evaluación de la cadena gratuita · pendiente
 
-Corrida sobre las mismas 76 variantes, con el código del 22/10 (incluye la regla A, la marca de auditoría para fuera de alcance, la validación de dosis y CIE-10 y N1-13) y la cadena gratuita de producción, Groq `qwen/qwen3.8-27b`.
-
-**Cómo leerla.** El cupo diario gratuito de Groq se agotó durante la corrida, así que la mayoría de los documentos se resolvió con la caída a reglas: la latencia p50 fue de 0,1 s y el campo del modelo quedó vacío. Por eso esta corrida **no mide al modelo**: mide qué hace el sistema cuando el modelo no responde. No se compara punto a punto con la línea base.
-
-| Métrica | Línea base 13/10 (DeepSeek) | 22/10 (mayoría con reglas) |
-|---|---|---|
-| **Recall de urgencias** | 94 % (16/17) | **100 % (17/17)** |
-| Accuracy de clasificación | 83 % (52/63) | 92 % (58/63) |
-| Accuracy de destino | 62 % (39/63) | 76 % (48/63) |
-| Acierto de la marca de auditoría | 60 % (38/63) | 67 % (42/63) |
-| Casos fuera de alcance resueltos | 0 % (0/12) | 67 % (8/12) |
-| Puerta de legibilidad (media y severa) | 46 % (6/13) | 31 % (4/13) |
-| Casos correctos en todo | 41 % (31/76) | 50 % (38/76) |
-| Tasa de revisión humana | 45 % (34/76) | 50 % (38/76) |
-| Latencia p50 / p95 | 3,9 s / 5,2 s | 0,1 s / 4,3 s |
-
-Lo que sí muestra:
-1. **Con la mayoría de los documentos resueltos sin modelo, ninguna urgencia del conjunto se perdió (17/17).** Las tres listas automáticas (hallazgos críticos, palabras de urgencia y valores críticos de laboratorio) y la regla A sostienen la detección aunque el modelo no responda.
-2. **Los arreglos fusionados después del 13/10 se notan** en fuera de alcance (de 0/12 a 8/12) y en la marca de auditoría.
-3. **La puerta de legibilidad sigue siendo el punto débil:** las recetas manuscritas M1 a M6 fallan, porque el OCR no lee letra cursiva y la imagen todavía no llega al modelo (ver [Límites conocidos](#límites-conocidos)).
+La corrida prevista para el 22/10 no llegó a ejecutarse, según confirmó su responsable el 27/10. No se generaron report.md ni resultados.json; por eso no se publican métricas ni comparaciones atribuidas a esa corrida. La evaluación completa con la cadena gratuita queda pendiente. Las pruebas puntuales de producción de la sección siguiente no reemplazan esa evaluación.
 
 ### Verificación en producción · 24/10/2026
 
@@ -456,7 +437,7 @@ Desde #107, cada llamada al modelo registra los tokens y el costo. En la línea 
 
 | Cadena | Costo por documento | Capacidad |
 |---|---|---|
-| Gratuita (Groq, producción) | Sin costo mientras alcance el cupo diario | El cupo diario se agotó antes de terminar las 76 variantes del 22/10: alcanza para la demo y pruebas chicas |
+| Gratuita (Groq, producción) | Sin costo mientras alcance el cupo diario | Sujeta a cuotas del proveedor; capacidad no medida en una corrida completa |
 | Paga (DeepSeek, línea base del 13/10) | Unos US$ 0,0005 medidos | Sin límite práctico; unos US$ 15 por mes para 1.000 documentos por día |
 
 Para operar en un hospital hace falta un plan pago: con DeepSeek, el costo medido es de centavos por cada mil documentos.
@@ -507,9 +488,9 @@ Todo lo obligatorio del brief está entregado y desplegado en Oracle Cloud.
 - **Las imágenes llegan al modelo como texto.** El OCR (Tesseract) lee fotos y escaneos impresos; las recetas manuscritas no se leen y van a revisión humana. El adaptador ya acepta imágenes, pero los nodos todavía no se las pasan al modelo multimodal.
 - **La segunda opinión entre modelos** está prevista en el grafo, pero todavía no llama a un segundo modelo.
 - **Solo español.** Un documento en otro idioma se reconoce como fuera de alcance y va a revisión humana.
-- **Cupo gratuito.** El cupo diario de Groq alcanza para la demo y pruebas chicas: se agotó en la corrida de 76 variantes del 22/10. Para volumen hospitalario hace falta un plan pago.
+- **Cupo gratuito.** Sujeto a disponibilidad y cuotas del proveedor. No se ha medido la capacidad para procesar el conjunto completo con la cadena gratuita.
 - **Modelos de respaldo sin probar.** El adaptador admite una cadena de respaldo (Gemini, Mistral; [ADR-014](https://github.com/No-Country-simulation/G10-LATAM-equipo-37-Mediflow/blob/main/docs/decisions.md)), pero no se probó en una falla real. Lo probado es la caída a reglas.
-- **Evaluación con modelo gratuito parcial.** La corrida del 22/10 resolvió la mayoría de los casos con reglas porque se agotó el cupo; la medición con modelo es la del 13/10 con DeepSeek.
+- **Evaluación completa con modelo gratuito pendiente.** La medición publicada con modelo es la del 13/10 con DeepSeek.
 - **Documentos sintéticos y sin validación clínica.** Es un prototipo; llevarlo a un hospital real pide validación clínica y un plan de modelos acorde al volumen.
 - **Prueba de funcionamiento, no medición estadística:** con 76 variantes, cada porcentaje tiene un margen de unos ±11 a ±13 puntos.
 
